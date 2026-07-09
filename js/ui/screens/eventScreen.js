@@ -1,4 +1,4 @@
-﻿// eventScreen.js
+// eventScreen.js
 //
 // Ekran wydarzenia decyzyjnego: pokazuje opis sytuacji i dostępne
 // wybory. Koszt w spoons jest pokazywany jawnie przy każdej opcji —
@@ -6,10 +6,12 @@
 // nie mówi co jest dobre").
 
 import { showScreen } from "../uiManager.js";
+import { getState } from "../../state/gameState.js";
 import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js";
 
 export function renderEventScreen(container) {
   const event = getCurrentEvent();
+  const state = getState();
 
   const wrapper = document.createElement("div");
   wrapper.className = "screen event-screen";
@@ -19,7 +21,7 @@ export function renderEventScreen(container) {
   wrapper.appendChild(title);
 
   const description = document.createElement("p");
-  description.textContent = event.description;
+  description.textContent = event.description.replace(/\{partnerName\}/g, state.partner.name);
   wrapper.appendChild(description);
 
   const choicesList = document.createElement("div");

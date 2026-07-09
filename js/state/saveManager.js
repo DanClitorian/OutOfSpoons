@@ -12,12 +12,11 @@ import { getState, setState } from "./gameState.js";
 
 const STORAGE_KEY = "outOfSpoons_save";
 
-// v0.2: dodaliśmy pole "player" (kreator postaci) do struktury zapisu.
-// To niekompatybilna zmiana ze starymi zapisami z v0.1, dlatego wersja
-// rośnie do 2. Zapisy w starszej wersji są po prostu odrzucane niżej —
-// to jest ta "prosta obsługa braku starego playera": zamiast wczytać
-// stan bez pola player i wywołać błąd gdzieś w UI, w ogóle go nie wczytujemy.
-const SUPPORTED_SAVE_VERSION = 2;
+// v0.3: dodaliśmy pole "partner" (wygenerowany profil) do struktury
+// zapisu, zastępując statycznego Alexa. To kolejna niekompatybilna
+// zmiana ze starszymi zapisami, dlatego wersja rośnie do 3. Starsze
+// zapisy (v1, v2) są po prostu odrzucane niżej.
+const SUPPORTED_SAVE_VERSION = 3;
 
 /**
  * Zapisuje aktualny stan gry do localStorage.

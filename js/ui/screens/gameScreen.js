@@ -1,13 +1,18 @@
 // gameScreen.js
 //
-// Ekran poranka: pokazuje aktualny dzień, stan spoons oraz wiadomość
-// od NPC. Stąd gracz przechodzi do wydarzenia dnia.
+// Ekran poranka: pokazuje aktualny dzień, imię gracza, stan spoons,
+// zdanie statusu zależne od cech oraz kartę partnera. Stąd gracz
+// przechodzi do wydarzenia dnia.
+//
+// v0.3: partner nie jest już statycznym Alexem z data/npcData.js —
+// jego pełny profil (imię, etykieta relacji, opis relacji, wiadomość
+// poranna) pochodzi bezpośrednio ze stanu gry (state.partner),
+// wygenerowanego przez systems/partnerSystem.js przy starcie gry.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { goToEvent } from "../../systems/dayCycle.js";
 import { buildStatusSentence } from "../../systems/characterSystem.js";
-import { npcData } from "../../data/npcData.js";
 
 export function renderGameScreen(container) {
   const state = getState();
@@ -31,14 +36,9 @@ export function renderGameScreen(container) {
     wrapper.appendChild(statusSentence);
   }
 
-  // Prototyp v0.1: jeden NPC, więc bierzemy pierwszego z listy.
-  const npcId = Object.keys(state.npcs)[0];
-  const npcDefinition = npcData[npcId];
-
-  const message = document.createElement("p");
-  message.className = "npc-message";
-  message.textContent = npcDefinition.morningMessage;
-  wrapper.appendChild(message);
+  if (state.partner) {
+    wrapper.appendChild(renderPartnerCard(state.partner));
+  }
 
   const continueButton = document.createElement("button");
   continueButton.className = "primary-button";
@@ -74,4 +74,36 @@ function renderSpoonsMeter(spoons) {
   meter.appendChild(row);
 
   return meter;
+}
+
+/**
+ * Buduje kartę partnera: imię, etykieta relacji, krótki opis relacji
+ * i wiadomość poranna. To kluczowe dla czytelności — gracz musi od razu
+ * widzieć, że to osoba partnerska, a nie przypadkowy NPC.
+ */
+function renderPartnerCard(partner) {
+  const card = document.createElement("div");
+  card.className = "partner-card";
+
+  const name = document.createElement("p");
+  name.className = "partner-name";
+  name.textContent = partner.name;
+  card.appendChild(name);
+
+  const relationshipLabel = document.createElement("p");
+  relationshipLabel.className = "partner-relationship-label";
+  relationshipLabel.textContent = partner.relationshipLabel;
+  card.appendChild(relationshipLabel);
+
+  const summary = document.createElement("p");
+  summary.className = "partner-relationship-summary";
+  summary.textContent = partner.relationshipSummary;
+  card.appendChild(summary);
+
+  const message = document.createElement("p");
+  message.className = "npc-message";
+  message.textContent = partner.morningMessage;
+  card.appendChild(message);
+
+  return card;
 }

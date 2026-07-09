@@ -59,6 +59,14 @@ function handleContinue() {
     return;
   }
 
+  if (!state.partner) {
+    // v0.3: zapis bez wygenerowanego partnera (np. zapis sprzed
+    // wprowadzenia generatora partnera) — z tych samych powodów co
+    // wyżej, po prostu pomijamy wczytanie zamiast ryzykować błąd w UI.
+    console.warn("Zapis nie zawiera danych partnera — pomijam wczytywanie.");
+    return;
+  }
+
   if (state.phase === "event") {
     showScreen("event");
     return;

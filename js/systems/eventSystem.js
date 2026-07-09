@@ -1,4 +1,4 @@
-﻿// eventSystem.js
+// eventSystem.js
 //
 // Logika wydarzeń decyzyjnych. Napisana tak, by od razu obsługiwać
 // wiele wydarzeń w puli — w v0.1 pula zawiera tylko jedno wydarzenie,
@@ -33,15 +33,22 @@ export function applyChoice(state, event, choiceId) {
     throw new Error(`Nieznany wybór "${choiceId}" dla wydarzenia "${event.id}"`);
   }
 
+  // v0.3: wydarzenia w puli dotyczą obecnie zawsze aktualnego partnera
+  // z rozgrywki. Gdy pojawią się wydarzenia z innymi NPC, trzeba tu
+  // będzie dodać właściwe wskazanie celu zamiast zawsze brać partnera.
+  const partnerId = state.partner.id;
+
   modifySpoons(state, -choice.spoonsCost);
-  modifyTrust(state, event.npcId, choice.trustChange);
-  modifyFrustration(state, event.npcId, choice.frustrationChange);
+  modifyTrust(state, partnerId, choice.trustChange);
+  modifyFrustration(state, partnerId, choice.frustrationChange);
+
+  const resultText = choice.resultText.replace(/\{partnerName\}/g, state.partner.name);
 
   state.log.push({
     day: state.day,
     eventId: event.id,
     choiceId: choice.id,
-    resultText: choice.resultText
+    resultText
   });
 
   return choice;

@@ -376,3 +376,40 @@ button:focus-visible {
   color: var(--color-muted);
   font-style: italic;
 }
+
+/* ==========================================================================
+   v0.3 — Karta partnera
+   Dopisane bez zmiany istniejących reguł powyżej.
+   ========================================================================== */
+
+.partner-card {
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  margin: var(--space-md) 0 var(--space-lg) 0;
+}
+
+.partner-name {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin: 0 0 2px 0;
+}
+
+.partner-relationship-label {
+  color: var(--color-sage);
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 0 0 var(--space-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.partner-relationship-summary {
+  color: var(--color-muted);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.partner-card .npc-message {
+  margin-bottom: 0;
+}
