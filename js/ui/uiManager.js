@@ -1,16 +1,18 @@
-﻿// uiManager.js
+// uiManager.js
 //
 // Odpowiada wyłącznie za przełączanie ekranów. Nie zawiera logiki gry —
 // tylko wie, jak wyrenderować dany ekran do kontenera #app.
 // Ekrany same decydują, kiedy poprosić o przejście do innego ekranu.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
+import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
 import { renderGameScreen } from "./screens/gameScreen.js";
 import { renderEventScreen } from "./screens/eventScreen.js";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js";
 
 const screens = {
   mainMenu: renderMainMenu,
+  characterCreator: renderCharacterCreatorScreen,
   game: renderGameScreen,
   event: renderEventScreen,
   reflection: renderReflectionScreen

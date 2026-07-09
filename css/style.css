@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    OUT OF SPOONS — style v0.1
 
    Paleta i typografia celowo unikają "domyślnego AI wyglądu"
@@ -290,4 +290,89 @@ button:focus-visible {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ==========================================================================
+   v0.2 — Kreator postaci
+   Dopisane bez zmiany istniejących reguł powyżej.
+   ========================================================================== */
+
+.field-label {
+  display: block;
+  font-weight: 600;
+  margin-top: var(--space-md);
+  margin-bottom: 4px;
+}
+
+.text-input {
+  display: block;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: 3px;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.text-input:focus-visible {
+  outline: 2px solid var(--color-sage);
+  outline-offset: 1px;
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.15rem;
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: var(--space-sm);
+}
+
+.field-hint {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.traits-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0 var(--space-md) 0;
+}
+
+.trait-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: 3px;
+  background-color: var(--color-paper);
+  cursor: pointer;
+}
+
+.trait-option:hover {
+  border-color: var(--color-sage);
+}
+
+.trait-option input[type="checkbox"] {
+  accent-color: var(--color-sage);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.field-error {
+  color: var(--color-rose);
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.status-sentence {
+  color: var(--color-muted);
+  font-style: italic;
 }

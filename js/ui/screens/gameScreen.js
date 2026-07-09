@@ -1,4 +1,4 @@
-﻿// gameScreen.js
+// gameScreen.js
 //
 // Ekran poranka: pokazuje aktualny dzień, stan spoons oraz wiadomość
 // od NPC. Stąd gracz przechodzi do wydarzenia dnia.
@@ -6,19 +6,30 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { goToEvent } from "../../systems/dayCycle.js";
+import { buildStatusSentence } from "../../systems/characterSystem.js";
 import { npcData } from "../../data/npcData.js";
 
 export function renderGameScreen(container) {
   const state = getState();
+  // Zabezpieczenie na wypadek nietypowego stanu bez postaci —
+  // w normalnym flow (kreator -> start gry) player zawsze istnieje.
+  const playerName = state.player ? state.player.name : "Ty";
 
   const wrapper = document.createElement("div");
   wrapper.className = "screen game-screen";
 
   const header = document.createElement("h2");
-  header.textContent = `Dzień ${state.day}`;
+  header.textContent = `Dzień ${state.day} — ${playerName}`;
   wrapper.appendChild(header);
 
   wrapper.appendChild(renderSpoonsMeter(state.resources.spoons));
+
+  if (state.player) {
+    const statusSentence = document.createElement("p");
+    statusSentence.className = "status-sentence";
+    statusSentence.textContent = buildStatusSentence(state.player);
+    wrapper.appendChild(statusSentence);
+  }
 
   // Prototyp v0.1: jeden NPC, więc bierzemy pierwszego z listy.
   const npcId = Object.keys(state.npcs)[0];

@@ -1,4 +1,4 @@
-﻿// saveManager.js
+// saveManager.js
 //
 // Odpowiada wyłącznie za persystencję stanu gry w localStorage.
 // Nie zna logiki gry — tylko zapisuje i odtwarza obiekt stanu.
@@ -11,7 +11,13 @@
 import { getState, setState } from "./gameState.js";
 
 const STORAGE_KEY = "outOfSpoons_save";
-const SUPPORTED_SAVE_VERSION = 1;
+
+// v0.2: dodaliśmy pole "player" (kreator postaci) do struktury zapisu.
+// To niekompatybilna zmiana ze starymi zapisami z v0.1, dlatego wersja
+// rośnie do 2. Zapisy w starszej wersji są po prostu odrzucane niżej —
+// to jest ta "prosta obsługa braku starego playera": zamiast wczytać
+// stan bez pola player i wywołać błąd gdzieś w UI, w ogóle go nie wczytujemy.
+const SUPPORTED_SAVE_VERSION = 2;
 
 /**
  * Zapisuje aktualny stan gry do localStorage.
