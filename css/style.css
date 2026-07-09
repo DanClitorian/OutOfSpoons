@@ -1,0 +1,293 @@
+﻿/* ==========================================================================
+   OUT OF SPOONS — style v0.1
+
+   Paleta i typografia celowo unikają "domyślnego AI wyglądu"
+   (kremowe tło + serif + terakota). Zamiast tego: przygaszony,
+   papierowy dziennik — spokojna, introspekcyjna estetyka pasująca
+   do gry o zarządzaniu ograniczoną pojemnością człowieka.
+   ========================================================================== */
+
+:root {
+  /* Kolory */
+  --color-ink: #2B2A28;        /* tekst główny, ciepła prawie-czerń */
+  --color-paper: #E7E2D8;      /* tło strony */
+  --color-panel: #F2EEE6;      /* karta / panel treści */
+  --color-line: #C9C2B3;       /* linie, obramowania */
+  --color-muted: #6B665C;      /* tekst pomocniczy */
+  --color-sage: #5C7266;       /* akcent — spokój, regeneracja */
+  --color-rose: #AD6656;       /* akcent — koszt, ostrzeżenie */
+  --color-gold: #BE9A3D;       /* wypełnione spoons */
+
+  /* Typografia */
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  /* Odstępy */
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: var(--space-xl) var(--space-md);
+}
+
+#app {
+  width: 100%;
+  max-width: 560px;
+}
+
+/* --------------------------------------------------------------------
+   Karta ekranu (efekt "strony dziennika")
+   -------------------------------------------------------------------- */
+
+.screen {
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-lg);
+  box-shadow: 0 1px 3px rgba(43, 42, 40, 0.08);
+  animation: fadeIn 0.35s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen {
+    animation: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  margin: 0 0 var(--space-md) 0;
+  color: var(--color-ink);
+}
+
+h1 {
+  font-size: 2rem;
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: var(--space-sm);
+}
+
+h2 {
+  font-size: 1.5rem;
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: var(--space-sm);
+}
+
+.subtitle {
+  color: var(--color-muted);
+  font-style: italic;
+  margin-top: -0.5rem;
+  margin-bottom: var(--space-lg);
+}
+
+p {
+  margin: 0 0 var(--space-md) 0;
+}
+
+.npc-message {
+  background-color: var(--color-paper);
+  border-left: 3px solid var(--color-sage);
+  padding: var(--space-md);
+  border-radius: 2px;
+}
+
+.reflection-text {
+  background-color: var(--color-paper);
+  border-left: 3px solid var(--color-gold);
+  padding: var(--space-md);
+  border-radius: 2px;
+}
+
+.spoons-summary {
+  color: var(--color-muted);
+}
+
+/* --------------------------------------------------------------------
+   Licznik spoons — element sygnaturowy interfejsu.
+   Każda "łyżeczka" rysowana jest czystym CSS: owalna miseczka + trzonek.
+   -------------------------------------------------------------------- */
+
+.spoons-meter {
+  margin: var(--space-md) 0 var(--space-lg) 0;
+}
+
+.spoons-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  margin-bottom: var(--space-sm);
+}
+
+.spoons-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.spoon {
+  display: inline-block;
+  position: relative;
+  width: 14px;
+  height: 22px;
+}
+
+.spoon::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 3px;
+  width: 8px;
+  height: 12px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.spoon::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 6px;
+  width: 2px;
+  height: 11px;
+  background: currentColor;
+}
+
+.spoon.full {
+  color: var(--color-gold);
+}
+
+.spoon.empty {
+  color: var(--color-line);
+}
+
+/* --------------------------------------------------------------------
+   Przyciski
+   -------------------------------------------------------------------- */
+
+button {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-sage);
+  outline-offset: 2px;
+}
+
+.primary-button {
+  display: block;
+  width: 100%;
+  background-color: var(--color-ink);
+  color: var(--color-panel);
+  margin-top: var(--space-md);
+}
+
+.primary-button:hover {
+  background-color: var(--color-sage);
+}
+
+.secondary-button {
+  display: block;
+  width: 100%;
+  background-color: transparent;
+  color: var(--color-ink);
+  border-color: var(--color-line);
+  margin-top: var(--space-sm);
+}
+
+.secondary-button:hover {
+  border-color: var(--color-sage);
+  color: var(--color-sage);
+}
+
+/* --------------------------------------------------------------------
+   Wybory w wydarzeniu decyzyjnym
+   -------------------------------------------------------------------- */
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.choice-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  text-align: left;
+  background-color: var(--color-paper);
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
+
+.choice-button:hover {
+  border-color: var(--color-ink);
+  background-color: var(--color-panel);
+}
+
+.choice-label {
+  font-weight: 600;
+}
+
+.choice-cost {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  color: var(--color-rose);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------
+   Responsywność
+   -------------------------------------------------------------------- */
+
+@media (max-width: 480px) {
+  body {
+    padding: var(--space-md);
+  }
+
+  .screen {
+    padding: var(--space-md);
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  .choice-button {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
