@@ -1,16 +1,16 @@
 // characterCreatorScreen.js
 //
-// Ekran kreatora postaci: imię, zaimki/sposób zwracania się oraz wybór
-// 2-5 cech psychologicznych. Cechy są prezentowane jako sposoby reakcji
-// na presję, nie jako diagnozy medyczne — stąd nagłówek "Jak działa
-// Twoja postać pod presją?" zamiast listy jednostek chorobowych.
+// Ekran kreatora postaci: imię, zaimki/sposób zwracania się oraz opcjonalny
+// wybór 0-5 cech psychologicznych. Cechy są prezentowane jako sposoby
+// reakcji na presję, nie jako diagnozy medyczne, i nie są obowiązkowe —
+// stąd nagłówek "Jak działa Twoja postać pod presją?" zamiast listy
+// jednostek chorobowych.
 
 import { showScreen } from "../uiManager.js";
 import { startNewGame } from "../../systems/dayCycle.js";
 import {
   getTraitsData,
   isValidTraitSelection,
-  MIN_TRAITS,
   MAX_TRAITS
 } from "../../systems/characterSystem.js";
 
@@ -47,8 +47,9 @@ export function renderCharacterCreatorScreen(container) {
   const traitsHint = document.createElement("p");
   traitsHint.className = "field-hint";
   traitsHint.textContent =
-    `Wybierz od ${MIN_TRAITS} do ${MAX_TRAITS} cech. To nie są diagnozy — to sposoby, ` +
-    "w jakie Twoja postać reaguje na obciążenie.";
+    `Możesz wybrać do ${MAX_TRAITS} cech, które wpływają na funkcjonowanie postaci pod presją. ` +
+    "Możesz też nie wybrać żadnej — to nie są diagnozy, tylko sposoby, w jakie Twoja postać " +
+    "reaguje na obciążenie.";
   wrapper.appendChild(traitsHint);
 
   const errorMessage = document.createElement("p");
@@ -98,7 +99,7 @@ export function renderCharacterCreatorScreen(container) {
       .map((checkbox) => checkbox.value);
 
     if (!isValidTraitSelection(selectedTraitIds)) {
-      errorMessage.textContent = `Wybierz od ${MIN_TRAITS} do ${MAX_TRAITS} cech, żeby kontynuować.`;
+      errorMessage.textContent = `Możesz wybrać maksymalnie ${MAX_TRAITS} cech.`;
       errorMessage.hidden = false;
       return;
     }

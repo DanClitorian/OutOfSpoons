@@ -9,7 +9,11 @@
 
 import { traitsData } from "../data/traitsData.js";
 
-export const MIN_TRAITS = 2;
+// v0.3.1: cechy są opcjonalne. Gracz może wybrać od 0 do MAX_TRAITS cech —
+// wcześniejszy wymóg minimum 2 cech błędnie sugerował, że każda postać
+// musi mieć jakieś "zaburzenie", żeby zacząć grę. 0 cech oznacza po
+// prostu neutralny profil startowy (patrz buildStatusSentence niżej).
+export const MIN_TRAITS = 0;
 export const MAX_TRAITS = 5;
 
 const BASE_STARTING_SPOONS = 10;
@@ -77,6 +81,15 @@ export function calculateStartingSpoons(player) {
  * wpływają na jego funkcjonowanie. Pokazywane na ekranie dnia.
  */
 export function buildStatusSentence(player) {
+  // v0.3.1: gracz mógł świadomie nie wybrać żadnej cechy — to osobny,
+  // jawnie nazwany przypadek, a nie tylko "brak flavor textu".
+  if (player.traits.length === 0) {
+    return (
+      "Dziś zaczynasz z neutralnym profilem obciążenia. To nie znaczy, że będzie łatwo — " +
+      "tylko że gra nie dodaje Ci dodatkowych filtrów na start."
+    );
+  }
+
   const selectedTraits = player.traits
     .map((id) => traitsData.find((trait) => trait.id === id))
     .filter(Boolean);

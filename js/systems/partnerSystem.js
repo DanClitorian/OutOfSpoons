@@ -5,10 +5,15 @@
 // ani prawdziwego AI — to jednorazowo wylosowany, statyczny profil
 // plus kilka podstawowych, na razie biernych statystyk (przygotowanych
 // pod przyszłe mechaniki, podobnie jak player.flags z kreatora postaci).
+//
+// v0.3.1: generator najpierw losuje obiekt imienia ({ name, gender }),
+// a dopiero potem dobiera etykietę relacji zgodną z tym gender. To
+// naprawia błąd z v0.3, w którym imię i etykieta relacji były losowane
+// niezależnie od siebie (np. "Zuzia — Twój chłopak").
 
 import {
   partnerNamePool,
-  relationshipLabels,
+  relationshipLabelsByGender,
   relationshipSummaries,
   communicationStyles,
   morningMessageTemplates
@@ -39,15 +44,22 @@ function slugify(name) {
  * w gameState jako state.partner.
  */
 export function generatePartner() {
-  const name = pickRandom(partnerNamePool);
-  const relationshipLabel = pickRandom(relationshipLabels);
+  // Krok 1: losujemy imię razem z jego gender.
+  const nameEntry = pickRandom(partnerNamePool);
+
+  // Krok 2: dopiero teraz dobieramy etykietę relacji spośród opcji
+  // pasujących do gender wylosowanego imienia — nigdy niezależnie.
+  const relationshipLabelOptions = relationshipLabelsByGender[nameEntry.gender];
+  const relationshipLabel = pickRandom(relationshipLabelOptions);
+
   const relationshipSummary = pickRandom(relationshipSummaries);
   const communicationStyle = pickRandom(communicationStyles);
-  const morningMessage = pickRandom(morningMessageTemplates).replace("{name}", name);
+  const morningMessage = pickRandom(morningMessageTemplates).replace("{name}", nameEntry.name);
 
   return {
-    id: slugify(name),
-    name,
+    id: slugify(nameEntry.name),
+    name: nameEntry.name,
+    gender: nameEntry.gender,
     relationshipLabel,
     relationshipSummary,
     communicationStyle,

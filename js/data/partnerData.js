@@ -3,35 +3,45 @@
 // Statyczne pule danych używane przez generator partnera
 // (patrz systems/partnerSystem.js). Ten plik nie zawiera żadnej logiki
 // losowania — tylko surowe dane, zgodnie z podziałem data / systems / ui.
+//
+// v0.3.1: partnerNamePool zawiera teraz obiekty { name, gender } zamiast
+// gołych stringów imion. To naprawia błąd z v0.3, w którym imię i etykieta
+// relacji ("Twój partner" / "Twoja partnerka" / "Osoba partnerska") były
+// losowane całkowicie niezależnie od siebie i mogły się nie zgadzać
+// (np. "Zuzia — Twój chłopak"). Teraz generator najpierw losuje obiekt
+// imienia, a etykietę relacji dobiera na podstawie jego pola gender
+// (patrz relationshipLabelsByGender niżej).
 
 // Minimum 8 imion — losowany partner nie musi za każdym razem nazywać
-// się tak samo.
+// się tak samo. gender: "female" | "male" | "neutral".
 export const partnerNamePool = [
-  "Mira",
-  "Kuba",
-  "Ola",
-  "Tomek",
-  "Zuzia",
-  "Adam",
-  "Nina",
-  "Filip",
-  "Hania",
-  "Marek"
+  { name: "Mira", gender: "female" },
+  { name: "Kuba", gender: "male" },
+  { name: "Ola", gender: "female" },
+  { name: "Tomek", gender: "male" },
+  { name: "Zuzia", gender: "female" },
+  { name: "Adam", gender: "male" },
+  { name: "Nina", gender: "female" },
+  { name: "Filip", gender: "male" },
+  { name: "Hania", gender: "female" },
+  { name: "Marek", gender: "male" },
+  { name: "Alex", gender: "neutral" },
+  { name: "Sasza", gender: "neutral" }
 ];
 
-// Etykieta relacji pokazywana graczowi wprost na karcie partnera.
-// To kluczowe dla czytelności: gracz musi od razu wiedzieć, że to osoba
-// partnerska, a nie losowy, niezwiązany z nim NPC.
-export const relationshipLabels = [
-  "Twój partner",
-  "Twoja partnerka",
-  "Osoba partnerska",
-  "Twój chłopak",
-  "Twoja dziewczyna"
-];
+// Etykiety relacji pogrupowane po gender wylosowanego imienia. Zawsze
+// pokazywane graczowi wprost na karcie partnera — to kluczowe dla
+// czytelności: gracz musi od razu wiedzieć, że to osoba partnerska,
+// a nie losowy, niezwiązany z nim NPC.
+export const relationshipLabelsByGender = {
+  female: ["Twoja partnerka", "Twoja dziewczyna", "Osoba partnerska"],
+  male: ["Twój partner", "Twój chłopak", "Osoba partnerska"],
+  neutral: ["Osoba partnerska", "Twoja osoba partnerska"]
+};
 
 // Minimum 6 krótkich opisów relacji — kontekst, w jakim gracz i partner
 // się znajdują. Celowo różnorodne: różne etapy, różne dynamiki.
+// Bez odniesień do płci partnera, więc nie zależą od gender.
 export const relationshipSummaries = [
   "Jesteście razem od kilku miesięcy. Relacja jest ciepła, ale jeszcze krucha — oboje sprawdzacie, jak dużo bliskości możecie udźwignąć bez utraty oddechu.",
   "Znacie się od lat, ale związek zaczęliście dopiero niedawno. Wciąż uczycie się, jak rozmawiać o trudnych rzeczach bez cofania się do starych, przyjacielskich nawyków.",
@@ -56,9 +66,15 @@ export const communicationStyles = [
 
 // Szablony wiadomości porannej. Token {name} jest podmieniany przez
 // systems/partnerSystem.js na wylosowane imię partnera.
+//
+// v0.3.1: szablony przepisane tak, żeby nie zawierały form typu
+// "myślałam/em" (czasowniki czasu przeszłego w 1. os. l.poj. są w polskim
+// nacechowane rodzajem gramatycznym). Wszystkie zdania używają czasu
+// teraźniejszego, który w tych konstrukcjach nie wymaga takiego wyboru,
+// więc wiadomość brzmi naturalnie niezależnie od gender partnera.
 export const morningMessageTemplates = [
   "{name} pisze: „Możemy dziś porozmawiać? Mam coś, co siedzi mi w głowie od wczoraj.”",
-  "{name} pisze: „Cześć, myślałam/em o nas ostatnio. Znajdziesz dziś chwilę?”",
-  "{name} pisze: „Nic złego się nie stało, ale chciałabym/chciałbym coś z Tobą omówić.”",
-  "{name} pisze: „Hej, masz dziś trochę czasu? Chodzi mi coś po głowie odkąd się widzieliśmy.”"
+  "{name} pisze: „Hej, masz dziś trochę czasu? Chcę pogadać o czymś ważnym.”",
+  "{name} pisze: „Cześć, myślę o nas ostatnio. Znajdziesz dziś chwilę?”",
+  "{name} pisze: „Nic złego się nie stało, ale chcę coś z Tobą omówić.”"
 ];
