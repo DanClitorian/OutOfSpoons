@@ -1,25 +1,56 @@
 // eventSystem.js
 //
-// Logika wydarzeń decyzyjnych. Napisana tak, by od razu obsługiwać
-// wiele wydarzeń w puli — w v0.1 pula zawiera tylko jedno wydarzenie,
-// ale funkcja wyboru wydarzenia (getEventForDay) jest już osobną
-// funkcją, gotową na rozbudowę o warunki (dzień, stan zasobów,
-// relacje z NPC itd.) bez zmiany reszty systemu.
+// Logika wydarzeń decyzyjnych.
+//
+// v0.4: pula ma teraz kilka wydarzeń, więc getEventForDay(day) faktycznie
+// losuje spośród nich (respektując opcjonalne pole minDay), zamiast
+// zawsze zwracać to samo. Losowanie jest na razie czysto losowe — nie ma
+// pamięci o tym, co już się pojawiło (świadomy zakres v0.4).
+//
+// Stabilność wydarzenia w ramach jednego dnia NIE jest zapewniana przez
+// ten moduł — o to dba dayCycle.js, wywołując getEventForDay() dokładnie
+// raz (przy przejściu poranek -> event) i zapamiętując wynik jako
+// state.currentEventId. getEventById() poniżej służy właśnie do
+// późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
+// losowania.
 
 import { eventPool } from "../data/eventData.js";
 import { modifySpoons } from "./spoonsSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
+function pickRandom(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
 /**
- * Zwraca wydarzenie, które powinno się pojawić danego dnia.
+ * Zwraca wydarzenia dopuszczalne danego dnia — takie, które albo nie
+ * mają pola minDay, albo dzień gry jest >= ich minDay.
+ */
+function getEligibleEvents(day) {
+  return eventPool.filter((event) => !event.minDay || day >= event.minDay);
+}
+
+/**
+ * Losuje wydarzenie, które powinno się pojawić danego dnia.
  *
- * v0.1: zawsze zwraca pierwsze wydarzenie z puli.
- * W przyszłości: filtrowanie eventPool po warunkach (dzień, zasoby,
- * relacje, wcześniejsza historia) i losowanie spośród pasujących.
+ * Wywoływana tylko raz na dzień (patrz dayCycle.goToEvent) — wynik
+ * trzeba zapamiętać po stronie wywołującej, jeśli ma pozostać stabilny.
  */
 export function getEventForDay(day) {
-  const availableEvents = eventPool;
-  return availableEvents[0];
+  const eligibleEvents = getEligibleEvents(day);
+  // Zabezpieczenie: gdyby filtr minDay z jakiegoś powodu wyciął całą
+  // pulę (np. błąd w danych), wracamy do pełnej puli — gra nigdy nie
+  // powinna utknąć bez żadnego wydarzenia na dany dzień.
+  const pool = eligibleEvents.length > 0 ? eligibleEvents : eventPool;
+  return pickRandom(pool);
+}
+
+/**
+ * Zwraca wydarzenie o podanym id, bez żadnego losowania. Używane do
+ * stabilnego odczytu wydarzenia dnia już zapisanego w state.currentEventId.
+ */
+export function getEventById(eventId) {
+  return eventPool.find((event) => event.id === eventId);
 }
 
 /**
