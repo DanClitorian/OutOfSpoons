@@ -14,6 +14,7 @@ import { renderEventScreen } from "./screens/eventScreen.js";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js";
 let appContainer = null;
 
 const screens = {
@@ -28,8 +29,8 @@ const screens = {
 
   event: renderEventScreen,
   reflection: renderReflectionScreen,
-  evening: renderEveningScreen
-};
+  evening: renderEveningScreen,
+  weeklySummary: renderWeeklySummaryScreen};
 
 export function initUI(rootElementId = "app") {
   appContainer = document.getElementById(rootElementId);

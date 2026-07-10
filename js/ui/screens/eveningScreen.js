@@ -12,6 +12,7 @@ import {
   getEveningRecoveryOptions,
   applyEveningRecovery
 } from "../../systems/eveningRecoverySystem.js";
+import { shouldShowWeeklySummary } from "../../systems/weeklySummarySystem.js";
 
 export function renderEveningScreen(container) {
   const state = getState();
@@ -63,14 +64,19 @@ function renderEveningOptionButton(option, state) {
   effects.textContent = formatEffects(option.effects);
   button.appendChild(effects);
 
-  button.addEventListener("click", () => {
+    button.addEventListener("click", () => {
     const currentState = getState();
+    const completedDay = currentState.day;
 
     applyEveningRecovery(option.id, currentState);
     advanceToNextDay();
     saveGame(currentState);
 
-    showScreen("game");
+    if (shouldShowWeeklySummary(completedDay)) {
+      showScreen("weeklySummary");
+    } else {
+      showScreen("game");
+    }
   });
 
   return button;

@@ -787,3 +787,81 @@ button:focus-visible {
   margin: 0;
 }
 /* END CLEAN v0.10 previous evening summary */
+
+
+/* CLEAN v0.11 weekly summary */
+.weekly-summary-period {
+  color: var(--color-muted);
+  font-style: italic;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.weekly-summary-text {
+  color: var(--color-ink);
+  margin: 0 0 var(--space-lg) 0;
+}
+
+.weekly-summary-panel,
+.weekly-summary-current-state {
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.weekly-summary-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.05rem;
+  color: var(--color-ink);
+  margin: 0 0 var(--space-sm) 0;
+  border-bottom: 1px dotted var(--color-line);
+  padding-bottom: var(--space-sm);
+}
+
+.weekly-summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.weekly-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--color-line);
+}
+
+.weekly-summary-item:last-child {
+  border-bottom: none;
+}
+
+.weekly-summary-label {
+  color: var(--color-muted);
+}
+
+.weekly-summary-value {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.weekly-summary-current-state p {
+  margin: 0 0 4px 0;
+}
+
+.weekly-summary-current-state p:last-child {
+  margin-bottom: 0;
+}
+
+.weekly-summary-mood-description {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+/* END CLEAN v0.11 weekly summary */
