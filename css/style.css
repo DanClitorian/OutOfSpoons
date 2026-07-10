@@ -404,16 +404,6 @@ button:focus-visible {
 }
 
 .partner-card 
-/* v0.5.2: styl komunikacji partnera na karcie poranka — zastępuje
-   dawną wiadomość poranną (partner.morningMessage), która myliła się
-   z eventem dnia. Subtelny, informacyjny tekst, bez kolorów. */
-.partner-communication-style {
-  color: var(--color-muted);
-  font-size: 0.9rem;
-  font-style: italic;
-  margin: 0;
-}
-
 /* ==========================================================================
    v0.5 — Sekcja konsekwencji na ekranie refleksji
    Dopisane bez zmiany istniejących reguł powyżej. Świadomie bez kolorów
@@ -483,7 +473,17 @@ button:focus-visible {
 }
 
 
-/* CLEAN v0.6 relationship state */
+
+
+
+/* CLEAN v0.7 relationship state and mood */
+.partner-communication-style {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+}
+
 .relationship-state {
   margin-top: var(--space-md);
   padding-top: var(--space-sm);
@@ -553,6 +553,27 @@ button:focus-visible {
   color: var(--color-ink);
 }
 
+.relationship-mood {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px dotted var(--color-line);
+}
+
+.relationship-mood-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-ink);
+  margin: 0 0 2px 0;
+}
+
+.relationship-mood-description {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
 .debug-version-marker {
   color: var(--color-muted);
   font-size: 0.75rem;
@@ -560,4 +581,4 @@ button:focus-visible {
   margin: 0 0 var(--space-sm) 0;
   opacity: 0.65;
 }
-/* END CLEAN v0.6 relationship state */
+/* END CLEAN v0.7 relationship mood */

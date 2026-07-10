@@ -1,4 +1,50 @@
-// gameScreen.js
+# apply_clean_v0_7_relationship_mood.py
+#
+# Clean v0.7 updater for Out of Spoons.
+#
+# Adds descriptive relationship mood under relationship bars.
+#
+# Does not restore morning messages.
+# Does not touch partnerData.js, partnerSystem.js, eventData.js,
+# eventSystem.js, dayCycle.js, saveManager.js, uiManager.js, main.js.
+#
+# It only overwrites:
+# - js/ui/screens/gameScreen.js
+# - css/style.css
+#
+# Run:
+#   cd C:\OutOfSpoons
+#   py .\apply_clean_v0_7_relationship_mood.py
+
+from pathlib import Path
+import re
+import sys
+
+ROOT = Path.cwd()
+
+def require(rel):
+    path = ROOT / rel
+    if not path.exists():
+        print(f"BLAD: nie znaleziono {rel}")
+        print("Uruchom skrypt z folderu C:\\OutOfSpoons.")
+        sys.exit(1)
+    return path
+
+def write(rel, text):
+    path = require(rel)
+    path.write_text(text, encoding="utf-8", newline="\n")
+    print(f"OK -> {rel}")
+
+# Safety check: current project should already be v0.6-ish.
+game_path = require(Path("js/ui/screens/gameScreen.js"))
+game_before = game_path.read_text(encoding="utf-8")
+
+if "relationship-meter" not in game_before:
+    print("BLAD: gameScreen.js nie wyglada na wersje v0.6 z paskami relacji.")
+    print("Uruchom najpierw czysty updater v0.6.")
+    sys.exit(1)
+
+game_screen = r'''// gameScreen.js
 //
 // Morning screen.
 // Shows player state, partner card, relationship bars and relationship mood.
@@ -228,3 +274,189 @@ function buildRelationshipMood(npc) {
 function clampToPercentage(value) {
   return Math.min(100, Math.max(0, Math.round(value)));
 }
+'''
+
+write(Path("js/ui/screens/gameScreen.js"), game_screen)
+
+# Patch CSS without restoring removed message-related CSS.
+style_path = require(Path("css/style.css"))
+style = style_path.read_text(encoding="utf-8")
+
+# Remove old unused message rules/comments if they still exist.
+style = re.sub(r"\n?\.npc-message\s*\{[^}]*\}\s*", "\n", style, flags=re.MULTILINE)
+style = re.sub(r"\n?\.partner-card\s+\.npc-message\s*\{[^}]*\}\s*", "\n", style, flags=re.MULTILINE)
+style = re.sub(
+    r"/\* v0\.5\.2:[\s\S]*?\.partner-communication-style\s*\{[\s\S]*?\}\s*",
+    "",
+    style
+)
+
+# Remove older clean v0.6/v0.7 blocks if present.
+style = re.sub(
+    r"/\* CLEAN v0\.6 relationship state \*/[\s\S]*?/\* END CLEAN v0\.6 relationship state \*/",
+    "",
+    style
+)
+style = re.sub(
+    r"/\* CLEAN v0\.7 relationship mood \*/[\s\S]*?/\* END CLEAN v0\.7 relationship mood \*/",
+    "",
+    style
+)
+
+style += r'''
+
+/* CLEAN v0.7 relationship state and mood */
+.partner-communication-style {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.relationship-state {
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.relationship-state-heading {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.relationship-state-empty {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.relationship-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.relationship-meter-label {
+  flex: 0 0 auto;
+  width: 5.5rem;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.relationship-meter-track {
+  flex: 1 1 auto;
+  height: 6px;
+  background-color: var(--color-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.relationship-meter-fill {
+  height: 100%;
+  background-color: var(--color-ink);
+}
+
+.relationship-meter-fill--trust {
+  background-color: var(--color-sage);
+}
+
+.relationship-meter-fill--frustration {
+  background-color: var(--color-rose);
+}
+
+.relationship-meter-value {
+  flex: 0 0 auto;
+  width: 3.2rem;
+  text-align: right;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-ink);
+}
+
+.relationship-mood {
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px dotted var(--color-line);
+}
+
+.relationship-mood-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-ink);
+  margin: 0 0 2px 0;
+}
+
+.relationship-mood-description {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.debug-version-marker {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  text-align: right;
+  margin: 0 0 var(--space-sm) 0;
+  opacity: 0.65;
+}
+/* END CLEAN v0.7 relationship mood */
+'''
+
+style_path.write_text(style, encoding="utf-8", newline="\n")
+print("OK -> css/style.css")
+
+# Cache bust only in index.html.
+index_path = require(Path("index.html"))
+index = index_path.read_text(encoding="utf-8")
+index = re.sub(
+    r'src=(["\'])(?:\.\/)?js\/main\.js(?:\?v=[^"\']+)?\1',
+    'src="./js/main.js?v=070"',
+    index
+)
+index_path.write_text(index, encoding="utf-8", newline="\n")
+print("OK -> index.html")
+
+# Verification.
+print("")
+print("Weryfikacja:")
+
+game_check = (ROOT / "js/ui/screens/gameScreen.js").read_text(encoding="utf-8")
+style_check = (ROOT / "css/style.css").read_text(encoding="utf-8")
+
+for bad in ["morningMessage", "npc-message", "pisze:"]:
+    if bad in game_check:
+        print(f"BLAD: gameScreen.js zawiera stary token: {bad}")
+        sys.exit(1)
+
+for token in [
+    "buildRelationshipMood",
+    "relationship-mood",
+    "relationship-mood-label",
+    "relationship-mood-description",
+    "UI v0.7"
+]:
+    if token not in game_check and token not in style_check:
+        print(f"BLAD: brak {token}")
+        sys.exit(1)
+
+print("OK: gameScreen czysty, bez stalej wiadomosci partnera.")
+print("OK: opisowy stan relacji dodany.")
+print("OK: CSS ma style relationship mood.")
+print("")
+print("Teraz:")
+print("1. Ctrl+C zatrzymaj serwer")
+print("2. py -m http.server 8000")
+print("3. otworz http://localhost:8000/?v=070")
+print("4. Ctrl+F5")
+print("5. Nowa gra")
