@@ -12,6 +12,7 @@ import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js";
 
+import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js";
 export function renderEventScreen(container) {
   const event = getCurrentEvent();
   const state = getState();
@@ -20,6 +21,8 @@ export function renderEventScreen(container) {
 
   const wrapper = document.createElement("div");
   wrapper.className = "screen event-screen";
+
+  wrapper.appendChild(renderEventProgress(state));
 
   wrapper.appendChild(renderResourceSummary(currentSpoons, maxSpoons));
 
@@ -44,6 +47,16 @@ export function renderEventScreen(container) {
 
   wrapper.appendChild(choicesList);
   container.appendChild(wrapper);
+}
+
+function renderEventProgress(state) {
+  const progress = getCurrentAgendaProgress(state);
+
+  const label = document.createElement("p");
+  label.className = "event-progress";
+  label.textContent = `Wydarzenie ${progress.current}/${progress.total} — ${progress.label}`;
+
+  return label;
 }
 
 function renderResourceSummary(currentSpoons, maxSpoons) {

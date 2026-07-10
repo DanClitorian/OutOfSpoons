@@ -27,6 +27,7 @@ import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
 import { getWeightedEventForDay } from "./eventWeightSystem.js";
+import { completeCurrentAgendaItem } from "./dayAgendaSystem.js";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -138,6 +139,8 @@ export function applyChoice(state, event, choiceId) {
     resultText,
     consequences
   });
+
+  completeCurrentAgendaItem(state);
 
   return choice;
 }

@@ -14,6 +14,7 @@ import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
 import { ensureMorningEventState, resolveMorningEvents } from "./morningEventSystem.js";
+import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js";
 // v0.5: wpisy w state.log zyskały pole "consequences" (jawne, mechaniczne
 // skutki wyboru: spoonsChange/trustChange/frustrationChange), pokazywane
 // teraz graczowi na ekranie refleksji. To kolejna niekompatybilna zmiana
@@ -107,11 +108,13 @@ export function getCurrentEvent() {
  */
 export function goToEvent() {
   const state = getState();
-  const previousEntry = state.log[state.log.length - 1];
-  const previousEventId = previousEntry ? previousEntry.eventId : null;
-  const event = getEventForDay(state.day, previousEventId, state);
-  state.currentEventId = event.id;
+
+  ensureDailyAgenda(state);
+
+  const currentItem = getCurrentAgendaItem(state);
+  state.currentEventId = currentItem.eventId;
   state.phase = "event";
+
   return state;
 }
 

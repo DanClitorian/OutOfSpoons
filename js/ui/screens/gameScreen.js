@@ -9,6 +9,7 @@ import { getState } from "../../state/gameState.js";
 import { goToEvent } from "../../systems/dayCycle.js";
 import { buildStatusSentence } from "../../systems/characterSystem.js";
 
+import { ensureDailyAgenda, getAgendaSlotLabel } from "../../systems/dayAgendaSystem.js";
 export function renderGameScreen(container) {
   const state = getState();
   const playerName = state.player ? state.player.name : "Ty";
@@ -32,6 +33,8 @@ export function renderGameScreen(container) {
   if (morningEvents) {
     wrapper.appendChild(morningEvents);
   }
+
+  wrapper.appendChild(renderDailyAgendaSection(state));
 
   if (state.player) {
     const statusSentence = document.createElement("p");
@@ -235,6 +238,55 @@ function buildMorningEventEffects(event) {
 
   return effects;
 }
+
+// CLEAN v0.13 daily agenda helpers START
+function renderDailyAgendaSection(state) {
+  const agenda = ensureDailyAgenda(state);
+
+  const section = document.createElement("div");
+  section.className = "daily-agenda";
+
+  const heading = document.createElement("p");
+  heading.className = "daily-agenda-heading";
+  heading.textContent = "Agenda dnia";
+  section.appendChild(heading);
+
+  const list = document.createElement("ul");
+  list.className = "daily-agenda-list";
+
+  agenda.slots.forEach((item, index) => {
+    list.appendChild(renderDailyAgendaItem(item, index, agenda.currentIndex, agenda.slots.length));
+  });
+
+  section.appendChild(list);
+  return section;
+}
+
+function renderDailyAgendaItem(item, index, currentIndex, totalSlots) {
+  const listItem = document.createElement("li");
+  const classes = ["daily-agenda-item"];
+
+  if (item.completed) {
+    classes.push("daily-agenda-item--completed");
+  } else if (index === currentIndex) {
+    classes.push("daily-agenda-item--current");
+  }
+
+  listItem.className = classes.join(" ");
+
+  const indexLabel = document.createElement("span");
+  indexLabel.className = "daily-agenda-index";
+  indexLabel.textContent = `[${index + 1}/${totalSlots}]`;
+  listItem.appendChild(indexLabel);
+
+  const label = document.createElement("span");
+  label.className = "daily-agenda-label";
+  label.textContent = getAgendaSlotLabel(item.slot);
+  listItem.appendChild(label);
+
+  return listItem;
+}
+// CLEAN v0.13 daily agenda helpers END
 
 function renderPartnerCard(partner, npc) {
   const card = document.createElement("div");

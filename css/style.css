@@ -881,3 +881,68 @@ button:focus-visible {
   user-select: none;
 }
 /* END CLEAN v0.11.2 global version badge */
+
+
+/* CLEAN v0.13 daily agenda */
+.daily-agenda {
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  margin: var(--space-md) 0 var(--space-lg) 0;
+}
+
+.daily-agenda-heading {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.daily-agenda-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.daily-agenda-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: 2px 0;
+  color: var(--color-muted);
+}
+
+.daily-agenda-item--current {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.daily-agenda-item--completed {
+  color: var(--color-sage);
+}
+
+.daily-agenda-index {
+  font-family: var(--font-display);
+  font-weight: 600;
+  min-width: 2.5em;
+}
+
+.daily-agenda-label {
+  font-family: var(--font-display);
+}
+
+.event-progress {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: 0 0 var(--space-sm) 0;
+}
+/* END CLEAN v0.13 daily agenda */

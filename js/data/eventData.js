@@ -16,12 +16,15 @@
 
 // v0.12: weightTags wpływają na częstotliwość losowania eventu.
 
+// v0.13: agendaSlots przypisują eventy do slotów dziennej agendy.
+
 export const eventPool = [
   {
     id: "talk_request",
     title: "Prośba o rozmowę",
     tags: ["relationship", "communication"],
     weightTags: ["repair", "high-trust"],
+    agendaSlots: ["relationship"],
     description:
       "{partnerName} chce dziś poważnie porozmawiać o Waszej relacji. Widzisz, że to dla niego/niej ważne, " +
       "ale Twoje zasoby na dziś są ograniczone.",
@@ -63,6 +66,7 @@ export const eventPool = [
     title: "Za mało zasobów na dziś",
     tags: ["relationship", "spoons", "boundaries"],
     weightTags: ["low-spoons", "avoidance"],
+    agendaSlots: ["relationship", "inner"],
     description:
       "Masz umówione spotkanie z {partnerName}, ale czujesz, że dzisiaj po prostu nie dasz rady. " +
       "Wieczór zaczyna wyglądać jak zadanie do odhaczenia, a nie coś, na co miałeś/aś ochotę.",
@@ -103,6 +107,7 @@ export const eventPool = [
     title: "Dzień, w którym nic nie chce ruszyć",
     tags: ["self-care", "spoons"],
     weightTags: ["low-spoons", "avoidance"],
+    agendaSlots: ["inner"],
     description:
       "Budzisz się i wiesz, że priorytetem powinno być dziś po prostu nic nie robić. " +
       "Świat, jak zwykle, ma inne plany.",
@@ -139,6 +144,7 @@ export const eventPool = [
     title: "Wiadomość, którą można czytać na dziesięć sposobów",
     tags: ["communication", "anxiety"],
     weightTags: ["low-trust", "tension"],
+    agendaSlots: ["relationship"],
     description:
       "{partnerName} wysyła wiadomość, która brzmi krócej niż zwykle. Zaczynasz się zastanawiać, " +
       "czy to nic, czy jednak coś.",
@@ -178,6 +184,7 @@ export const eventPool = [
     title: "Zaproszenie na spotkanie towarzyskie",
     tags: ["social", "spoons"],
     weightTags: ["high-spoons"],
+    agendaSlots: ["obligation"],
     minDay: 2,
     description:
       "Znajomi organizują coś w ten weekend. {partnerName} chętnie by poszedł/poszła. " +
@@ -219,6 +226,7 @@ export const eventPool = [
     title: "Obowiązek, który nie pyta o zgodę",
     tags: ["obligation", "time"],
     weightTags: ["tension"],
+    agendaSlots: ["obligation"],
     minDay: 3,
     description:
       "Formalność, której nie da się przełożyć bez konsekwencji, wchodzi dokładnie w czas, " +

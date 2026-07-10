@@ -7,6 +7,8 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 
+import { saveGame } from "../../state/saveManager.js";
+import { hasNextAgendaItem, moveToNextAgendaItem } from "../../systems/dayAgendaSystem.js";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -34,13 +36,25 @@ export function renderReflectionScreen(container, data) {
   summary.textContent = `Zostało Ci ${state.resources.spoons.current} z ${state.resources.spoons.max} spoons na dziś.`;
   wrapper.appendChild(summary);
 
+  const goesToNextEvent = hasNextAgendaItem(state);
+
   const endDayButton = document.createElement("button");
   endDayButton.className = "primary-button";
-  endDayButton.textContent = "Zakończ dzień";
+  endDayButton.textContent = goesToNextEvent
+    ? "Przejdź do następnego wydarzenia"
+    : "Zakończ dzień";
+
   endDayButton.addEventListener("click", () => {
-    state.phase = "evening";
-    showScreen("evening");
+    if (goesToNextEvent) {
+      moveToNextAgendaItem(state);
+      saveGame(state);
+      showScreen("event");
+    } else {
+      state.phase = "evening";
+      showScreen("evening");
+    }
   });
+
   wrapper.appendChild(endDayButton);
 
   container.appendChild(wrapper);
