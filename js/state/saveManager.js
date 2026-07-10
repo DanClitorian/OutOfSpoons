@@ -12,12 +12,11 @@ import { getState, setState } from "./gameState.js";
 
 const STORAGE_KEY = "outOfSpoons_save";
 
-// v0.4: dodaliśmy pole "currentEventId" do struktury zapisu — wydarzenie
-// dnia jest teraz losowane raz i zapamiętane, żeby było stabilne w ramach
-// jednego dnia. To kolejna niekompatybilna zmiana ze starszymi zapisami
-// (v1, v2, v3), dlatego wersja rośnie do 4. Starsze zapisy są po prostu
-// odrzucane niżej.
-const SUPPORTED_SAVE_VERSION = 4;
+// v0.5: wpisy w state.log zyskały pole "consequences" (jawne skutki
+// mechaniczne wyboru), pokazywane na ekranie refleksji. To kolejna
+// niekompatybilna zmiana ze starszymi zapisami (v1-v4), dlatego wersja
+// rośnie do 5. Starsze zapisy są po prostu odrzucane niżej.
+const SUPPORTED_SAVE_VERSION = 5;
 
 /**
  * Zapisuje aktualny stan gry do localStorage.

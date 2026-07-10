@@ -16,7 +16,6 @@ import {
   relationshipLabelsByGender,
   relationshipSummaries,
   communicationStyles,
-  morningMessageTemplates
 } from "../data/partnerData.js";
 
 function pickRandom(list) {
@@ -54,7 +53,6 @@ export function generatePartner() {
 
   const relationshipSummary = pickRandom(relationshipSummaries);
   const communicationStyle = pickRandom(communicationStyles);
-  const morningMessage = pickRandom(morningMessageTemplates).replace("{name}", nameEntry.name);
 
   return {
     id: slugify(nameEntry.name),
@@ -75,6 +73,5 @@ export function generatePartner() {
     baseTrust: randomInt(40, 60),
     baseFrustration: randomInt(10, 30),
 
-    morningMessage
   };
 }

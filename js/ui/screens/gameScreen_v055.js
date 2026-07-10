@@ -1,8 +1,8 @@
-// gameScreen.js
+// gameScreen_v055.js
 //
-// Ekran poranka. Pokazuje stabilny stan gracza i partnera.
-// Nie pokazuje zadnej codziennej wiadomosci partnera.
-// Wydarzenie dnia zaczyna sie dopiero po kliknieciu przycisku.
+// Cache-busted morning screen.
+// This file intentionally has a new filename so the browser cannot reuse
+// an older cached gameScreen.js module.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -16,10 +16,10 @@ export function renderGameScreen(container) {
   const wrapper = document.createElement("div");
   wrapper.className = "screen game-screen";
 
-  const marker = document.createElement("p");
-  marker.className = "debug-version-marker";
-  marker.textContent = "UI v0.5.9";
-  wrapper.appendChild(marker);
+  const versionMarker = document.createElement("p");
+  versionMarker.className = "debug-version-marker";
+  versionMarker.textContent = "UI v0.5.5";
+  wrapper.appendChild(versionMarker);
 
   const header = document.createElement("h2");
   header.textContent = `Dzie\u0144 ${state.day} \u2014 ${playerName}`;

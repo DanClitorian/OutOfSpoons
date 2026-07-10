@@ -1,4 +1,222 @@
-/* ==========================================================================
+r"""
+apply_v0_5_2_partner_card_cleanup.py
+
+Hotfix v0.5.2 dla Out of Spoons: karta partnera nie moze udawac
+wydarzenia dnia.
+
+Problem: ekran poranka pokazywal partner.morningMessage - wiadomosc
+wylosowana raz przy tworzeniu partnera, ktora potem wygladala identycznie
+kazdego dnia. To mylilo graczy: karta partnera wygladala jak wydarzenie dnia,
+podczas gdy prawdziwy, losowany kazdego dnia event (z ochrona przed powtorka
+z v0.5.1) jest dopiero na ekranie wydarzenia.
+
+Ten hotfix:
+
+  1. Usuwa partner.morningMessage z renderowania na ekranie poranka
+     (js/ui/screens/gameScreen.js). Pole zostaje w state.partner -
+     nic go nie kasuje - po prostu przestajemy je pokazywac.
+
+  2. Karta partnera pokazuje teraz zamiast tego communicationStyle jako
+     subtelny tekst, np. "Styl komunikacji: bezposrednia - mowi wprost,
+     czego potrzebuje".
+
+  3. Zmienia tekst przycisku z "Zobacz, co sie dzieje" na "Przejdz do
+     wydarzenia dnia" - jasny sygnal, ze dopiero teraz zaczyna sie event.
+
+  4. Dodaje do style.css klase .partner-communication-style - subtelna,
+     bez kolorow, spojna z reszta estetyki dziennika.
+
+Ten skrypt NIE rusza eventScreen.js, partnerSystem.js, eventSystem.js,
+dayCycle.js ani puli wydarzen. saveVersion NIE zostal zmieniony (to czysto
+wizualna zmiana w UI - state.partner.morningMessage nadal istnieje
+w strukturze stanu, tylko przestaje byc renderowany).
+
+Zaklada, ze w folderze C:\OutOfSpoons istnieje juz kompletny projekt
+w wersji v0.5.1 (v0.1 + v0.2 kreator postaci + v0.3 generator partnera
++ hotfix v0.3.1 + v0.4 pula wydarzen + v0.5 widoczne konsekwencje
++ hotfix v0.5.1 brak natychmiastowej powtorki eventu).
+
+Co robi:
+  - nadpisuje dokladnie 2 pliki wymienione w CHANGED_FILES ponizej
+  - nie tworzy zadnych nowych plikow
+  - NIE rusza pozostalych plikow projektu (eventScreen.js, eventData.js,
+    partnerSystem.js, eventSystem.js, dayCycle.js, saveManager.js,
+    kreator postaci pozostaja nietkniete)
+
+Uruchomienie (z wnetrza folderu C:\OutOfSpoons):
+
+    cd C:\OutOfSpoons
+    python apply_v0_5_2_partner_card_cleanup.py
+"""
+
+import os
+import sys
+
+# Sciezki plikow sa wzgledne wobec katalogu, w ktorym uruchamiany jest
+# ten skrypt. Uruchamiaj go z wnetrza C:\OutOfSpoons.
+PROJECT_ROOT = os.getcwd()
+
+# Prosty check bezpieczenstwa: upewniamy sie, ze uruchamiamy skrypt
+# we wlasciwym miejscu i ze projekt ma juz karte partnera (v0.3+).
+SANITY_CHECK_FILE = os.path.join(PROJECT_ROOT, "js", "ui", "screens", "gameScreen.js")
+
+
+def sanity_check():
+    if not os.path.isfile(SANITY_CHECK_FILE):
+        print("BLAD: nie znaleziono js/ui/screens/gameScreen.js w biezacym folderze.")
+        print("Uruchom ten skrypt z wnetrza folderu C:\\OutOfSpoons,")
+        print("w ktorym istnieje juz projekt z wersji v0.5.1.")
+        sys.exit(1)
+
+    with open(SANITY_CHECK_FILE, "r", encoding="utf-8") as f:
+        content = f.read()
+    if "partner-card" not in content:
+        print("BLAD: js/ui/screens/gameScreen.js nie wyglada na wersje z kartą")
+        print("partnera (v0.3+). Uruchom najpierw apply_v0_3_partner_generator.py")
+        print("a dopiero potem ten skrypt.")
+        sys.exit(1)
+
+
+def write_file(relative_path, content):
+    full_path = os.path.join(PROJECT_ROOT, *relative_path.split("/"))
+    parent_dir = os.path.dirname(full_path)
+    if parent_dir and not os.path.isdir(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
+    with open(full_path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(content)
+    print(f"  -> {relative_path}")
+
+
+FILES = {}
+
+FILES["js/ui/screens/gameScreen.js"] = """// gameScreen.js
+//
+// Ekran poranka: pokazuje aktualny dzień, imię gracza, stan spoons,
+// zdanie statusu zależne od cech oraz kartę partnera. Stąd gracz
+// przechodzi do wydarzenia dnia.
+//
+// v0.3: partner nie jest już statycznym Alexem z data/npcData.js —
+// jego pełny profil (imię, etykieta relacji, opis relacji, styl
+// komunikacji) pochodzi bezpośrednio ze stanu gry (state.partner),
+// wygenerowanego przez systems/partnerSystem.js przy starcie gry.
+//
+// v0.5.2: karta partnera przestaje pokazywać partner.morningMessage.
+// Ta wiadomość jest losowana raz przy tworzeniu partnera i potem
+// wygląda identycznie każdego poranka, co myliło graczy — wyglądało to
+// jak wydarzenie dnia, podczas gdy prawdziwe (losowane każdego dnia,
+// z ochroną przed powtórką) wydarzenie jest dopiero na eventScreen.
+// Karta partnera pokazuje teraz zamiast tego styl komunikacji partnera —
+// informację stabilną i niemylącą się z eventem dnia. Pole
+// partner.morningMessage zostaje w stanie gry (może się przydać
+// w przyszłości), po prostu nic go już tutaj nie renderuje.
+
+import { showScreen } from "../uiManager.js";
+import { getState } from "../../state/gameState.js";
+import { goToEvent } from "../../systems/dayCycle.js";
+import { buildStatusSentence } from "../../systems/characterSystem.js";
+
+export function renderGameScreen(container) {
+  const state = getState();
+  // Zabezpieczenie na wypadek nietypowego stanu bez postaci —
+  // w normalnym flow (kreator -> start gry) player zawsze istnieje.
+  const playerName = state.player ? state.player.name : "Ty";
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "screen game-screen";
+
+  const header = document.createElement("h2");
+  header.textContent = `Dzień ${state.day} — ${playerName}`;
+  wrapper.appendChild(header);
+
+  wrapper.appendChild(renderSpoonsMeter(state.resources.spoons));
+
+  if (state.player) {
+    const statusSentence = document.createElement("p");
+    statusSentence.className = "status-sentence";
+    statusSentence.textContent = buildStatusSentence(state.player);
+    wrapper.appendChild(statusSentence);
+  }
+
+  if (state.partner) {
+    wrapper.appendChild(renderPartnerCard(state.partner));
+  }
+
+  const continueButton = document.createElement("button");
+  continueButton.className = "primary-button";
+  continueButton.textContent = "Przejdź do wydarzenia dnia";
+  continueButton.addEventListener("click", () => {
+    goToEvent();
+    showScreen("event");
+  });
+  wrapper.appendChild(continueButton);
+
+  container.appendChild(wrapper);
+}
+
+/**
+ * Buduje wizualny licznik spoons (etykieta liczbowa + rząd ikon).
+ */
+function renderSpoonsMeter(spoons) {
+  const meter = document.createElement("div");
+  meter.className = "spoons-meter";
+
+  const label = document.createElement("span");
+  label.className = "spoons-label";
+  label.textContent = `Spoons: ${spoons.current}/${spoons.max}`;
+  meter.appendChild(label);
+
+  const row = document.createElement("div");
+  row.className = "spoons-row";
+  for (let i = 0; i < spoons.max; i++) {
+    const spoon = document.createElement("span");
+    spoon.className = i < spoons.current ? "spoon full" : "spoon empty";
+    row.appendChild(spoon);
+  }
+  meter.appendChild(row);
+
+  return meter;
+}
+
+/**
+ * Buduje kartę partnera: imię, etykieta relacji, krótki opis relacji
+ * i styl komunikacji. To kluczowe dla czytelności — gracz musi od razu
+ * widzieć, że to osoba partnerska, a nie przypadkowy NPC.
+ *
+ * v0.5.2: karta NIE pokazuje już partner.morningMessage — to pole
+ * wyglądało jak wydarzenie dnia, a nim nie jest (patrz komentarz
+ * na górze pliku). Zamiast tego pokazujemy styl komunikacji: stabilną,
+ * opisową informację o partnerze, która nie zmienia się każdego dnia
+ * i nie sugeruje niczego, co nie jest prawdą.
+ */
+function renderPartnerCard(partner) {
+  const card = document.createElement("div");
+  card.className = "partner-card";
+
+  const name = document.createElement("p");
+  name.className = "partner-name";
+  name.textContent = partner.name;
+  card.appendChild(name);
+
+  const relationshipLabel = document.createElement("p");
+  relationshipLabel.className = "partner-relationship-label";
+  relationshipLabel.textContent = partner.relationshipLabel;
+  card.appendChild(relationshipLabel);
+
+  const summary = document.createElement("p");
+  summary.className = "partner-relationship-summary";
+  summary.textContent = partner.relationshipSummary;
+  card.appendChild(summary);
+
+  const communicationStyle = document.createElement("p");
+  communicationStyle.className = "partner-communication-style";
+  communicationStyle.textContent = `Styl komunikacji: ${partner.communicationStyle}`;
+  card.appendChild(communicationStyle);
+
+  return card;
+}
+"""
+
+FILES["css/style.css"] = """/* ==========================================================================
    OUT OF SPOONS — style v0.1
 
    Paleta i typografia celowo unikają "domyślnego AI wyglądu"
@@ -482,12 +700,42 @@ button:focus-visible {
   font-style: italic;
   margin: var(--space-sm) 0 0 0;
 }
+"""
+
+CHANGED_FILES = [
+    "js/ui/screens/gameScreen.js",
+    "css/style.css",
+]
 
 
-.debug-version-marker {
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  text-align: right;
-  margin: 0 0 var(--space-sm) 0;
-  opacity: 0.65;
-}
+def main():
+    sanity_check()
+
+    print("Out of Spoons - hotfix v0.5.2 (karta partnera bez wiadomosci porannej)")
+    print("")
+
+    print("Nadpisywanie plikow...")
+    for path in CHANGED_FILES:
+        write_file(path, FILES[path])
+
+    print("")
+    print("Gotowe! Hotfix v0.5.2 zastosowany.")
+    print("")
+    print("Karta partnera na ekranie poranka pokazuje teraz:")
+    print("  - imie partnera")
+    print("  - etykiete relacji")
+    print("  - krotki opis relacji")
+    print("  - styl komunikacji (zamiast dawnej wiadomosci porannej)")
+    print("")
+    print("Przycisk pod karta: \"Przejdz do wydarzenia dnia\"")
+    print("")
+    print("saveVersion NIE zostal zmieniony - to czysto wizualna zmiana w UI.")
+    print("")
+    print("Aby uruchomic gre lokalnie:")
+    print("  1. python -m http.server 8000")
+    print("  2. Otworz w przegladarce: http://localhost:8000")
+    print("")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,7 +1,7 @@
-// eventScreen.js
+// eventScreen_v055.js
 //
-// Ekran wydarzenia dnia.
-// Placeholder {partnerName} jest podmieniany w tytule, opisie i przyciskach.
+// Cache-busted daily event screen.
+// Replaces placeholders in title, description and choice labels.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";

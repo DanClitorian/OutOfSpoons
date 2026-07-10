@@ -72,9 +72,4 @@ export const communicationStyles = [
 // nacechowane rodzajem gramatycznym). Wszystkie zdania używają czasu
 // teraźniejszego, który w tych konstrukcjach nie wymaga takiego wyboru,
 // więc wiadomość brzmi naturalnie niezależnie od gender partnera.
-export const morningMessageTemplates = [
-  "{name} pisze: „Możemy dziś porozmawiać? Mam coś, co siedzi mi w głowie od wczoraj.”",
-  "{name} pisze: „Hej, masz dziś trochę czasu? Chcę pogadać o czymś ważnym.”",
-  "{name} pisze: „Cześć, myślę o nas ostatnio. Znajdziesz dziś chwilę?”",
-  "{name} pisze: „Nic złego się nie stało, ale chcę coś z Tobą omówić.”"
-];
+export const morningMessageTemplates = [];
