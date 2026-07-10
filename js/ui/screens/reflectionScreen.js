@@ -88,6 +88,10 @@ function renderConsequences(consequences) {
   list.appendChild(buildConsequenceItem("Spoons", consequences.spoonsChange));
   list.appendChild(buildConsequenceItem("Zaufanie", consequences.trustChange));
   list.appendChild(buildConsequenceItem("Frustracja", consequences.frustrationChange));
+
+  if (typeof consequences.fatigueChange === "number" && consequences.fatigueChange !== 0) {
+    list.appendChild(buildConsequenceItem("Przeciążenie", consequences.fatigueChange));
+  }
   section.appendChild(list);
 
   const interpretation = buildInterpretation(consequences);
@@ -145,6 +149,10 @@ function buildInterpretation(consequences) {
 
   if (consequences.spoonsChange < 0) {
     sentences.push("Koszt tej decyzji poczujesz jeszcze dziś.");
+  }
+
+  if (consequences.fatigueChange > 0) {
+    sentences.push("Ta decyzja zwiększyła przeciążenie, które przejdzie na kolejny dzień.");
   }
 
   if (sentences.length === 0) {

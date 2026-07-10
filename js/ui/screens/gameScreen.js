@@ -1,8 +1,8 @@
 // gameScreen.js
 //
 // Morning screen.
-// Shows player state, partner card, relationship bars and relationship mood.
-// The daily event starts only after clicking the main button.
+// Shows persistent spoons, morning events, player status, partner card,
+// relationship bars and relationship mood.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -18,7 +18,7 @@ export function renderGameScreen(container) {
 
   const marker = document.createElement("p");
   marker.className = "debug-version-marker";
-  marker.textContent = "UI v0.7";
+  marker.textContent = "UI v0.8.2";
   wrapper.appendChild(marker);
 
   const header = document.createElement("h2");
@@ -26,6 +26,12 @@ export function renderGameScreen(container) {
   wrapper.appendChild(header);
 
   wrapper.appendChild(renderSpoonsMeter(state.resources.spoons));
+  wrapper.appendChild(renderPersistentSpoonsNote());
+
+  const morningEvents = renderMorningEvents(state);
+  if (morningEvents) {
+    wrapper.appendChild(morningEvents);
+  }
 
   if (state.player) {
     const statusSentence = document.createElement("p");
@@ -71,6 +77,89 @@ function renderSpoonsMeter(spoons) {
 
   meter.appendChild(row);
   return meter;
+}
+
+function renderPersistentSpoonsNote() {
+  const note = document.createElement("p");
+  note.className = "persistent-spoons-note";
+  note.textContent = "Spoons nie odnawiają się automatycznie. To, co zostaje po dniu, przechodzi na kolejny poranek.";
+  return note;
+}
+
+function renderMorningEvents(state) {
+  const morning = state.todayMorningEvents;
+
+  if (!morning || !Array.isArray(morning.events) || morning.events.length === 0) {
+    return null;
+  }
+
+  if (morning.day !== state.day) {
+    return null;
+  }
+
+  const section = document.createElement("div");
+  section.className = "morning-events";
+
+  const heading = document.createElement("p");
+  heading.className = "morning-events-heading";
+  heading.textContent = "Poranek";
+  section.appendChild(heading);
+
+  morning.events.forEach((event) => {
+    section.appendChild(renderMorningEvent(event));
+  });
+
+  if (typeof morning.netSpoonsChange === "number" && morning.netSpoonsChange !== 0) {
+    const net = document.createElement("p");
+    net.className = "morning-events-net";
+    net.textContent = `Bilans poranka: ${formatSigned(morning.netSpoonsChange)} spoons`;
+    section.appendChild(net);
+  }
+
+  return section;
+}
+
+function renderMorningEvent(event) {
+  const item = document.createElement("div");
+  item.className = `morning-event morning-event--${event.type}`;
+
+  const title = document.createElement("p");
+  title.className = "morning-event-title";
+  title.textContent = event.title;
+  item.appendChild(title);
+
+  const description = document.createElement("p");
+  description.className = "morning-event-description";
+  description.textContent = event.description;
+  item.appendChild(description);
+
+  const effects = buildMorningEventEffects(event);
+  if (effects.length > 0) {
+    const effectLine = document.createElement("p");
+    effectLine.className = "morning-event-effects";
+    effectLine.textContent = effects.join(" · ");
+    item.appendChild(effectLine);
+  }
+
+  return item;
+}
+
+function buildMorningEventEffects(event) {
+  const effects = [];
+
+  if (typeof event.actualSpoonsChange === "number" && event.actualSpoonsChange !== 0) {
+    effects.push(`Spoons ${formatSigned(event.actualSpoonsChange)}`);
+  }
+
+  if (typeof event.trustChange === "number" && event.trustChange !== 0) {
+    effects.push(`Zaufanie ${formatSigned(event.trustChange)}`);
+  }
+
+  if (typeof event.frustrationChange === "number" && event.frustrationChange !== 0) {
+    effects.push(`Frustracja ${formatSigned(event.frustrationChange)}`);
+  }
+
+  return effects;
 }
 
 function renderPartnerCard(partner, npc) {
@@ -223,6 +312,10 @@ function buildRelationshipMood(npc) {
     label: "Niejasno",
     description: "Relacja jest w ruchu. Jeszcze nie wiadomo, w którą stronę pójdzie."
   };
+}
+
+function formatSigned(value) {
+  return value > 0 ? `+${value}` : `${value}`;
 }
 
 function clampToPercentage(value) {

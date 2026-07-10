@@ -582,3 +582,111 @@ button:focus-visible {
   opacity: 0.65;
 }
 /* END CLEAN v0.7 relationship mood */
+
+
+/* CLEAN v0.8 spoons choice availability */
+.event-resource-summary {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.choice-button--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.choice-button--disabled:hover {
+  border-color: var(--color-line);
+  background-color: var(--color-paper);
+}
+
+.choice-button--forced {
+  border-color: var(--color-muted);
+  border-style: dashed;
+}
+
+.choice-unavailable-note {
+  color: var(--color-muted);
+  font-weight: 400;
+  font-style: italic;
+}
+/* END CLEAN v0.8 spoons choice availability */
+
+
+/* HOTFIX v0.8.1 fatigue carryover */
+.fatigue-summary {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: calc(-1 * var(--space-sm)) 0 var(--space-md) 0;
+}
+/* END HOTFIX v0.8.1 fatigue carryover */
+
+
+/* HOTFIX v0.8.2 persistent spoons and morning events */
+.persistent-spoons-note {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: calc(-1 * var(--space-md)) 0 var(--space-md) 0;
+}
+
+.morning-events {
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  margin: var(--space-md) 0 var(--space-lg) 0;
+}
+
+.morning-events-heading {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.morning-event {
+  border-top: 1px dotted var(--color-line);
+  padding-top: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.morning-event:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.morning-event-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0 0 2px 0;
+}
+
+.morning-event-description {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.morning-event-effects {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+  margin: 4px 0 0 0;
+}
+
+.morning-events-net {
+  border-top: 1px dotted var(--color-line);
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: var(--space-sm) 0 0 0;
+  padding-top: var(--space-sm);
+}
+/* END HOTFIX v0.8.2 persistent spoons and morning events */

@@ -8,10 +8,12 @@
 import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
 import { regenerateSpoons } from "./spoonsSystem.js";
+import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
 import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
+import { ensureMorningEventState, resolveMorningEvents } from "./morningEventSystem.js";
 // v0.5: wpisy w state.log zyskały pole "consequences" (jawne, mechaniczne
 // skutki wyboru: spoonsChange/trustChange/frustrationChange), pokazywane
 // teraz graczowi na ekranie refleksji. To kolejna niekompatybilna zmiana
@@ -46,12 +48,22 @@ export function startNewGame(playerData) {
     player,
     partner,
     resources: {
-      spoons: { current: startingSpoons, max: startingSpoons }
+      spoons: { current: startingSpoons, max: startingSpoons },
+      fatigue: { current: 0, max: 6, lastChange: 0, lastReason: "new-game" }
     },
     npcs: {
       [partner.id]: initNpc(partner)
     },
     log: []
+  };
+
+  state.morningEventHistory = { lastGlobalId: null, lastPartnerKindnessId: null };
+  state.todayMorningEvents = {
+    day: state.day,
+    events: [],
+    spoonsBefore: state.resources.spoons.current,
+    spoonsAfter: state.resources.spoons.current,
+    netSpoonsChange: 0
   };
 
   setState(state);
@@ -72,6 +84,7 @@ export function startNewGame(playerData) {
  */
 export function getCurrentEvent() {
   const state = getState();
+  ensureFatigueState(state);
   const event = getEventById(state.currentEventId);
   if (event) {
     return event;
@@ -123,9 +136,17 @@ export function resolveEvent(choiceId) {
  */
 export function advanceToNextDay() {
   const state = getState();
-  regenerateSpoons(state, DAILY_SPOONS_REGEN);
+
+  // v0.8.2:
+  // Spoons are persistent. We do NOT reset them to max here.
+  // The new morning starts with whatever was left after the previous day,
+  // then global and partner morning events modify that number.
   state.day += 1;
   state.phase = "morning";
   state.currentEventId = null;
+
+  ensureMorningEventState(state);
+  resolveMorningEvents(state);
+
   return state;
 }

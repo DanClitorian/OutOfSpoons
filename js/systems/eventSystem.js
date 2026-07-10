@@ -23,6 +23,7 @@
 
 import { eventPool } from "../data/eventData.js";
 import { modifySpoons } from "./spoonsSystem.js";
+import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
 function pickRandom(list) {
@@ -108,7 +109,12 @@ export function applyChoice(state, event, choiceId) {
   // będzie dodać właściwe wskazanie celu zamiast zawsze brać partnera.
   const partnerId = state.partner.id;
 
+  ensureFatigueState(state);
+  const currentSpoonsBeforeChoice = state.resources.spoons.current;
+  const missingSpoons = Math.max(0, choice.spoonsCost - currentSpoonsBeforeChoice);
+
   modifySpoons(state, -choice.spoonsCost);
+  const fatigueDebt = addFatigueDebt(state, missingSpoons);
   modifyTrust(state, partnerId, choice.trustChange);
   modifyFrustration(state, partnerId, choice.frustrationChange);
 
@@ -120,7 +126,8 @@ export function applyChoice(state, event, choiceId) {
   const consequences = {
     spoonsChange: -choice.spoonsCost,
     trustChange: choice.trustChange,
-    frustrationChange: choice.frustrationChange
+    frustrationChange: choice.frustrationChange,
+    fatigueChange: fatigueDebt
   };
 
   state.log.push({
