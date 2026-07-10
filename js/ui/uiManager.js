@@ -17,6 +17,7 @@ import { renderEveningScreen } from "./screens/eveningScreen.js";
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js";
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js";
+import { appendGameHud } from "./gameHud.js";
 let appContainer = null;
 
 const screens = {
@@ -84,6 +85,8 @@ export function showScreen(screenName, data = null) {
   }
 
   appContainer.innerHTML = "";
+  document.body.dataset.gameScreen = screenName;
   render(appContainer, data);
+  appendGameHud(appContainer, screenName);
   appendVersionBadge(appContainer);
 }

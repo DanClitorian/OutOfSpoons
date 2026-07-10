@@ -963,7 +963,8 @@ button:focus-visible {
 
 .agenda-choice-button {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--space-sm);
   text-align: left;
   padding: 0.9rem 1rem;
@@ -972,6 +973,13 @@ button:focus-visible {
   color: var(--color-ink);
   font-family: var(--font-body);
   font-size: 1rem;
+}
+
+.agenda-choice-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
 }
 
 .agenda-choice-button:hover:not(:disabled) {
@@ -1004,3 +1012,202 @@ button:focus-visible {
   font-style: italic;
 }
 /* END CLEAN v0.14 agenda choice */
+
+/* CLEAN v0.15 RPG gameplay shell */
+
+/* --------------------------------------------------------------------
+   Globalny HUD (karta postaci / panel gry)
+   -------------------------------------------------------------------- */
+
+.gameplay-hud {
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  box-shadow: 0 1px 3px rgba(43, 42, 40, 0.08);
+}
+
+.gameplay-hud-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-md);
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.gameplay-hud-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.gameplay-hud-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.gameplay-hud-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.gameplay-hud-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gameplay-hud-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.gameplay-hud-value {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.gameplay-hud-bar {
+  height: 6px;
+  background-color: var(--color-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.gameplay-hud-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.gameplay-hud-bar-fill--spoons {
+  background-color: var(--color-gold);
+}
+
+.gameplay-hud-bar-fill--trust {
+  background-color: var(--color-sage);
+}
+
+.gameplay-hud-bar-fill--frustration {
+  background-color: var(--color-rose);
+}
+
+.gameplay-hud-relationship {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-line);
+}
+
+.gameplay-hud-mood {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.gameplay-hud-day-progress {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------
+   Agenda dnia jako karty wyboru akcji (ryzyko / obciążenie / hint)
+   -------------------------------------------------------------------- */
+
+.agenda-choice-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-line);
+  font-size: 0.8rem;
+}
+
+.agenda-choice-risk,
+.agenda-choice-pressure {
+  color: var(--color-muted);
+}
+
+.agenda-choice-hint {
+  margin-top: 2px;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+/* --------------------------------------------------------------------
+   Refleksja: panel skutku decyzji
+   -------------------------------------------------------------------- */
+
+.reflection-impact-panel {
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  margin: 0 0 var(--space-md) 0;
+}
+
+.reflection-impact-title {
+  margin: 0 0 var(--space-sm) 0;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.reflection-day-progress {
+  margin: var(--space-sm) 0 0 0;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------
+   Wieczór: nuta końca dnia
+   -------------------------------------------------------------------- */
+
+.evening-phase-note {
+  color: var(--color-muted);
+  font-style: italic;
+  border-left: 2px solid var(--color-line);
+  padding-left: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+/* --------------------------------------------------------------------
+   Fazy dnia — różny odcień w zależności od ekranu (body[data-game-screen])
+   -------------------------------------------------------------------- */
+
+body[data-game-screen="event"],
+body[data-game-screen="reflection"] {
+  --color-panel: #EFE8D8;
+  --color-line: #B8AF9C;
+}
+
+body[data-game-screen="evening"] {
+  --color-paper: #1E1C1A;
+  --color-panel: #2A2724;
+  --color-line: #45403A;
+  --color-ink: #E7E2D8;
+  --color-muted: #A39C8E;
+}
+
+body[data-game-screen="weeklySummary"] {
+  --color-panel: #F5EEDC;
+}
+/* END CLEAN v0.15 RPG gameplay shell */

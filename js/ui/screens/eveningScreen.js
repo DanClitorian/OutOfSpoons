@@ -24,6 +24,11 @@ export function renderEveningScreen(container) {
   title.textContent = "Wieczór";
   wrapper.appendChild(title);
 
+  const phaseNote = document.createElement("p");
+  phaseNote.className = "evening-phase-note";
+  phaseNote.textContent = "Koniec dnia. To, co zostało w zasobach, przechodzi na jutro.";
+  wrapper.appendChild(phaseNote);
+
   const intro = document.createElement("p");
   intro.className = "evening-intro";
   intro.textContent = "Dzień już się wydarzył. Teraz zostaje pytanie, co robisz z resztką siebie.";

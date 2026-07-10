@@ -9,7 +9,7 @@ import { getState } from "../../state/gameState.js";
 
 import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
+
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -29,7 +29,7 @@ export function renderReflectionScreen(container, data) {
   wrapper.appendChild(result);
 
   if (consequences) {
-    wrapper.appendChild(renderConsequences(consequences));
+    wrapper.appendChild(renderImpactPanel(consequences, state));
   }
 
   const summary = document.createElement("p");
@@ -60,6 +60,44 @@ export function renderReflectionScreen(container, data) {
 
   container.appendChild(wrapper);
 }
+
+// CLEAN v0.15 reflection impact panel START
+// v0.15: RPG Gameplay Shell. Opakowuje istniejące konsekwencje w bardziej
+// "gameplayowy" panel z wyraźnym nagłówkiem, żeby refleksja mocniej
+// pokazywała skutek decyzji, zamiast wyglądać jak sam tekst.
+function renderImpactPanel(consequences, state) {
+  const panel = document.createElement("div");
+  panel.className = "reflection-impact-panel";
+
+  const title = document.createElement("p");
+  title.className = "reflection-impact-title";
+  title.textContent = "Skutek decyzji";
+  panel.appendChild(title);
+
+  panel.appendChild(renderConsequences(consequences));
+
+  const dayProgress = buildDayProgressLine(state);
+  if (dayProgress) {
+    panel.appendChild(dayProgress);
+  }
+
+  return panel;
+}
+
+function buildDayProgressLine(state) {
+  if (!state.dailyAgenda || !Array.isArray(state.dailyAgenda.slots)) {
+    return null;
+  }
+
+  const total = state.dailyAgenda.slots.length;
+  const completed = state.dailyAgenda.slots.filter((item) => item.completed).length;
+
+  const line = document.createElement("p");
+  line.className = "reflection-day-progress";
+  line.textContent = `Postęp dnia: ${completed}/${total}`;
+  return line;
+}
+// CLEAN v0.15 reflection impact panel END
 
 function renderConsequences(consequences) {
   const section = document.createElement("div");
