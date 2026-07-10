@@ -110,13 +110,6 @@ p {
   margin: 0 0 var(--space-md) 0;
 }
 
-.npc-message {
-  background-color: var(--color-paper);
-  border-left: 3px solid var(--color-sage);
-  padding: var(--space-md);
-  border-radius: 2px;
-}
-
 .reflection-text {
   background-color: var(--color-paper);
   border-left: 3px solid var(--color-gold);
@@ -410,10 +403,7 @@ button:focus-visible {
   margin: 0 0 var(--space-md) 0;
 }
 
-.partner-card .npc-message {
-  margin-bottom: 0;
-}
-
+.partner-card 
 /* v0.5.2: styl komunikacji partnera na karcie poranka — zastępuje
    dawną wiadomość poranną (partner.morningMessage), która myliła się
    z eventem dnia. Subtelny, informacyjny tekst, bez kolorów. */
@@ -491,3 +481,83 @@ button:focus-visible {
   margin: 0 0 var(--space-sm) 0;
   opacity: 0.65;
 }
+
+
+/* CLEAN v0.6 relationship state */
+.relationship-state {
+  margin-top: var(--space-md);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.relationship-state-heading {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.relationship-state-empty {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.relationship-meter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.relationship-meter-label {
+  flex: 0 0 auto;
+  width: 5.5rem;
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+
+.relationship-meter-track {
+  flex: 1 1 auto;
+  height: 6px;
+  background-color: var(--color-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.relationship-meter-fill {
+  height: 100%;
+  background-color: var(--color-ink);
+}
+
+.relationship-meter-fill--trust {
+  background-color: var(--color-sage);
+}
+
+.relationship-meter-fill--frustration {
+  background-color: var(--color-rose);
+}
+
+.relationship-meter-value {
+  flex: 0 0 auto;
+  width: 3.2rem;
+  text-align: right;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-ink);
+}
+
+.debug-version-marker {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  text-align: right;
+  margin: 0 0 var(--space-sm) 0;
+  opacity: 0.65;
+}
+/* END CLEAN v0.6 relationship state */
