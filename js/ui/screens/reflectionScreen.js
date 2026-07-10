@@ -1,19 +1,11 @@
 // reflectionScreen.js
 //
-// Ekran wieczornej refleksji: pokazuje konsekwencje decyzji podjętej
-// w wydarzeniu oraz aktualny stan spoons. Przycisk zapisuje grę
-// i przechodzi do poranka kolejnego dnia.
-//
-// v0.5: oprócz tekstu rezultatu (resultText) pokazujemy teraz wprost
-// mechaniczne skutki wyboru — sekcję "Konsekwencje" z trzema wartościami
-// ze znakiem (spoons/zaufanie/frustracja) i krótką, nieoceniającą
-// interpretacją pod nimi. Wcześniej gracz widział tylko opis fabularny —
-// to za mało, żeby zrozumieć, co faktycznie się zmieniło w mechanice gry.
+// Reflection screen after the daily event.
+// v0.9: this screen no longer advances to the next day.
+// It leads to the evening recovery screen instead.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { advanceToNextDay } from "../../systems/dayCycle.js";
-import { saveGame } from "../../state/saveManager.js";
 
 export function renderReflectionScreen(container, data) {
   const state = getState();
@@ -42,38 +34,18 @@ export function renderReflectionScreen(container, data) {
   summary.textContent = `Zostało Ci ${state.resources.spoons.current} z ${state.resources.spoons.max} spoons na dziś.`;
   wrapper.appendChild(summary);
 
-  const saveButton = document.createElement("button");
-  saveButton.className = "primary-button";
-  saveButton.textContent = "Zapisz i przejdź do kolejnego dnia";
-  saveButton.addEventListener("click", () => {
-    advanceToNextDay();
-    saveGame();
-    showScreen("game");
+  const endDayButton = document.createElement("button");
+  endDayButton.className = "primary-button";
+  endDayButton.textContent = "Zakończ dzień";
+  endDayButton.addEventListener("click", () => {
+    state.phase = "evening";
+    showScreen("evening");
   });
-  wrapper.appendChild(saveButton);
+  wrapper.appendChild(endDayButton);
 
   container.appendChild(wrapper);
 }
 
-/**
- * Formatuje liczbę ze znakiem: dodatnie dostają jawny "+", ujemne mają
- * "-" (naturalnie, z zapisu liczby), a zero jest pokazywane jako "0" —
- * NIE ukrywamy zer, żeby gracz wiedział, że coś się nie zmieniło.
- */
-function formatSignedNumber(value) {
-  if (value > 0) {
-    return `+${value}`;
-  }
-  if (value < 0) {
-    return `${value}`;
-  }
-  return "0";
-}
-
-/**
- * Buduje sekcję "Konsekwencje": listę trzech wartości mechanicznych
- * oraz krótką interpretację pod nimi (jeśli jest co powiedzieć).
- */
 function renderConsequences(consequences) {
   const section = document.createElement("div");
   section.className = "consequences";
@@ -85,6 +57,7 @@ function renderConsequences(consequences) {
 
   const list = document.createElement("ul");
   list.className = "consequences-list";
+
   list.appendChild(buildConsequenceItem("Spoons", consequences.spoonsChange));
   list.appendChild(buildConsequenceItem("Zaufanie", consequences.trustChange));
   list.appendChild(buildConsequenceItem("Frustracja", consequences.frustrationChange));
@@ -92,6 +65,7 @@ function renderConsequences(consequences) {
   if (typeof consequences.fatigueChange === "number" && consequences.fatigueChange !== 0) {
     list.appendChild(buildConsequenceItem("Przeciążenie", consequences.fatigueChange));
   }
+
   section.appendChild(list);
 
   const interpretation = buildInterpretation(consequences);
@@ -105,9 +79,6 @@ function renderConsequences(consequences) {
   return section;
 }
 
-/**
- * Buduje pojedynczy wiersz konsekwencji: etykieta + wartość ze znakiem.
- */
 function buildConsequenceItem(label, value) {
   const item = document.createElement("li");
   item.className = "consequences-item";
@@ -125,13 +96,6 @@ function buildConsequenceItem(label, value) {
   return item;
 }
 
-/**
- * Buduje krótką, nieoceniającą interpretację konsekwencji. Sklejamy
- * wszystkie pasujące zdania (dla zaufania, frustracji i spoons) w jeden
- * krótki akapit — wybór gracza często zmienia więcej niż jedną wartość
- * naraz, więc gracz powinien zobaczyć wszystkie istotne skutki, nie
- * tylko jeden wybrany arbitralnie.
- */
 function buildInterpretation(consequences) {
   const sentences = [];
 
@@ -160,4 +124,16 @@ function buildInterpretation(consequences) {
   }
 
   return sentences.join(" ");
+}
+
+function formatSignedNumber(value) {
+  if (value > 0) {
+    return `+${value}`;
+  }
+
+  if (value < 0) {
+    return `${value}`;
+  }
+
+  return "0";
 }

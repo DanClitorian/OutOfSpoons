@@ -1,19 +1,20 @@
 // uiManager.js
 //
 // Centralny router ekranów.
-// Restore-fix v0.5.8:
-// - eksportuje initUI(), którego oczekuje main.js,
-// - eksportuje showScreen(),
-// - rejestruje wszystkie ekrany,
-// - bez query-stringów w importach modułów.
+// Hotfix v0.9.1:
+// - naprawia składnię obiektu screens,
+// - rejestruje ekran evening,
+// - zachowuje initUI i showScreen,
+// - wspiera stare aliasy nazw ekranów.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
 import { renderGameScreen } from "./screens/gameScreen.js";
 import { renderEventScreen } from "./screens/eventScreen.js";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js";
+import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-const app = document.getElementById("app");
+let appContainer = null;
 
 const screens = {
   mainMenu: renderMainMenu,
@@ -26,24 +27,35 @@ const screens = {
   morning: renderGameScreen,
 
   event: renderEventScreen,
-
-  reflection: renderReflectionScreen
+  reflection: renderReflectionScreen,
+  evening: renderEveningScreen
 };
 
-export function initUI() {
-  showScreen("mainMenu");
+export function initUI(rootElementId = "app") {
+  appContainer = document.getElementById(rootElementId);
+
+  if (!appContainer) {
+    console.error(`Nie znaleziono elementu #${rootElementId}.`);
+    return;
+  }
 }
 
 export function showScreen(screenName, data = null) {
-  if (!app) {
-    throw new Error("Nie znaleziono elementu #app w index.html.");
+  if (!appContainer) {
+    appContainer = document.getElementById("app");
+  }
+
+  if (!appContainer) {
+    console.error("UI Manager nie został zainicjalizowany i nie znaleziono #app.");
+    return;
   }
 
   const render = screens[screenName];
 
   if (!render) {
     console.error("Nieznany ekran:", screenName, "Dostępne ekrany:", Object.keys(screens));
-    app.innerHTML = "";
+
+    appContainer.innerHTML = "";
 
     const error = document.createElement("div");
     error.className = "screen";
@@ -62,10 +74,10 @@ export function showScreen(screenName, data = null) {
     button.addEventListener("click", () => showScreen("mainMenu"));
     error.appendChild(button);
 
-    app.appendChild(error);
+    appContainer.appendChild(error);
     return;
   }
 
-  app.innerHTML = "";
-  render(app, data);
+  appContainer.innerHTML = "";
+  render(appContainer, data);
 }

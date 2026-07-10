@@ -690,3 +690,58 @@ button:focus-visible {
   padding-top: var(--space-sm);
 }
 /* END HOTFIX v0.8.2 persistent spoons and morning events */
+
+
+/* CLEAN v0.9 evening recovery */
+.evening-intro {
+  color: var(--color-muted);
+  font-style: italic;
+  margin: 0 0 var(--space-md) 0;
+}
+
+.evening-resource-summary {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  margin: 0 0 var(--space-lg) 0;
+}
+
+.evening-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.evening-option-button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+  padding: 0.9rem 1rem;
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+}
+
+.evening-option-button:hover {
+  border-color: var(--color-ink);
+  background-color: var(--color-panel);
+}
+
+.evening-option-label {
+  font-weight: 600;
+}
+
+.evening-option-description {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.evening-option-effects {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+/* END CLEAN v0.9 evening recovery */
