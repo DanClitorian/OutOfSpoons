@@ -28,6 +28,11 @@ export function renderGameScreen(container) {
   wrapper.appendChild(renderSpoonsMeter(state.resources.spoons));
   wrapper.appendChild(renderPersistentSpoonsNote());
 
+  const previousEveningSummary = renderPreviousEveningSummary(state);
+  if (previousEveningSummary) {
+    wrapper.appendChild(previousEveningSummary);
+  }
+
   const morningEvents = renderMorningEvents(state);
   if (morningEvents) {
     wrapper.appendChild(morningEvents);
@@ -85,6 +90,80 @@ function renderPersistentSpoonsNote() {
   note.textContent = "Spoons nie odnawiają się automatycznie. To, co zostaje po dniu, przechodzi na kolejny poranek.";
   return note;
 }
+
+// CLEAN v0.10 previous evening summary helpers START
+function renderPreviousEveningSummary(state) {
+  const recovery = state.lastEveningRecovery;
+
+  if (!recovery || recovery.day !== state.day - 1) {
+    return null;
+  }
+
+  const section = document.createElement("div");
+  section.className = "previous-evening-summary";
+
+  const heading = document.createElement("p");
+  heading.className = "previous-evening-heading";
+  heading.textContent = "Wczoraj wieczorem";
+  section.appendChild(heading);
+
+  const label = document.createElement("p");
+  label.className = "previous-evening-label";
+  label.textContent = replacePartnerPlaceholder(recovery.label, state);
+  section.appendChild(label);
+
+  const description = document.createElement("p");
+  description.className = "previous-evening-description";
+  description.textContent = replacePartnerPlaceholder(recovery.description, state);
+  section.appendChild(description);
+
+  const effects = document.createElement("p");
+  effects.className = "previous-evening-effects";
+  effects.textContent = formatPreviousEveningEffects(recovery.effects);
+  section.appendChild(effects);
+
+  return section;
+}
+
+function formatPreviousEveningEffects(effects) {
+  if (!effects) {
+    return "Bez wyraźnych efektów mechanicznych.";
+  }
+
+  const parts = [];
+
+  if (effects.spoonsChange !== 0) {
+    parts.push(`Spoons ${formatSignedForPreviousEvening(effects.spoonsChange)}`);
+  }
+
+  if (effects.trustChange !== 0) {
+    parts.push(`Zaufanie ${formatSignedForPreviousEvening(effects.trustChange)}`);
+  }
+
+  if (effects.frustrationChange !== 0) {
+    parts.push(`Frustracja ${formatSignedForPreviousEvening(effects.frustrationChange)}`);
+  }
+
+  if (parts.length === 0) {
+    return "Bez wyraźnych efektów mechanicznych.";
+  }
+
+  return parts.join(" · ");
+}
+
+function replacePartnerPlaceholder(text, state) {
+  if (!text) {
+    return "";
+  }
+
+  const partnerName = state.partner ? state.partner.name : "partner";
+  return text.replace(/\{partnerName\}/g, partnerName);
+}
+
+function formatSignedForPreviousEvening(value) {
+  return value > 0 ? `+${value}` : `${value}`;
+}
+// CLEAN v0.10 previous evening summary helpers END
 
 function renderMorningEvents(state) {
   const morning = state.todayMorningEvents;

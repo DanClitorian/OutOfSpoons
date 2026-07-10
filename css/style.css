@@ -745,3 +745,45 @@ button:focus-visible {
   font-weight: 600;
 }
 /* END CLEAN v0.9 evening recovery */
+
+
+/* CLEAN v0.10 previous evening summary */
+.previous-evening-summary {
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  margin: var(--space-md) 0;
+}
+
+.previous-evening-heading {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-sm) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.previous-evening-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-ink);
+  margin: 0 0 2px 0;
+}
+
+.previous-evening-description {
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.previous-evening-effects {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+}
+/* END CLEAN v0.10 previous evening summary */
