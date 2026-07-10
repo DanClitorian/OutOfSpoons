@@ -16,11 +16,6 @@ export function renderGameScreen(container) {
   const wrapper = document.createElement("div");
   wrapper.className = "screen game-screen";
 
-  const marker = document.createElement("p");
-  marker.className = "debug-version-marker";
-  marker.textContent = "UI v0.8.2";
-  wrapper.appendChild(marker);
-
   const header = document.createElement("h2");
   header.textContent = `Dzie\u0144 ${state.day} \u2014 ${playerName}`;
   wrapper.appendChild(header);

@@ -15,6 +15,7 @@ import { renderReflectionScreen } from "./screens/reflectionScreen.js";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js";
+import { appendVersionBadge } from "./versionBadge.js";
 let appContainer = null;
 
 const screens = {
@@ -81,4 +82,5 @@ export function showScreen(screenName, data = null) {
 
   appContainer.innerHTML = "";
   render(appContainer, data);
+  appendVersionBadge(appContainer);
 }

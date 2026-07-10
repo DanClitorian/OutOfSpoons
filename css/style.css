@@ -865,3 +865,19 @@ button:focus-visible {
   font-style: italic;
 }
 /* END CLEAN v0.11 weekly summary */
+
+
+
+
+
+/* CLEAN v0.11.2 global version badge */
+.version-badge {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-align: right;
+  opacity: 0.65;
+  margin: var(--space-sm) 2px 0 0;
+  user-select: none;
+}
+/* END CLEAN v0.11.2 global version badge */
