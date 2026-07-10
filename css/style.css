@@ -946,3 +946,61 @@ button:focus-visible {
   margin: 0 0 var(--space-sm) 0;
 }
 /* END CLEAN v0.13 daily agenda */
+
+
+/* CLEAN v0.14 agenda choice */
+.agenda-choice-intro {
+  color: var(--color-muted);
+  font-style: italic;
+  margin: 0 0 var(--space-lg) 0;
+}
+
+.agenda-choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.agenda-choice-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: left;
+  padding: 0.9rem 1rem;
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.agenda-choice-button:hover:not(:disabled) {
+  border-color: var(--color-ink);
+  background-color: var(--color-panel);
+  cursor: pointer;
+}
+
+.agenda-choice-button--completed {
+  color: var(--color-muted);
+  border-style: dashed;
+  cursor: default;
+}
+
+.agenda-choice-marker {
+  font-family: var(--font-display);
+  font-weight: 600;
+  min-width: 2em;
+}
+
+.agenda-choice-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+  flex-grow: 1;
+}
+
+.agenda-choice-status {
+  color: var(--color-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+/* END CLEAN v0.14 agenda choice */

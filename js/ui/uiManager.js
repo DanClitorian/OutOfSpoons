@@ -16,6 +16,7 @@ import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js";
 import { appendVersionBadge } from "./versionBadge.js";
+import { renderAgendaScreen } from "./screens/agendaScreen.js";
 let appContainer = null;
 
 const screens = {
@@ -31,7 +32,9 @@ const screens = {
   event: renderEventScreen,
   reflection: renderReflectionScreen,
   evening: renderEveningScreen,
-  weeklySummary: renderWeeklySummaryScreen};
+  weeklySummary: renderWeeklySummaryScreen,
+  agenda: renderAgendaScreen
+};
 
 export function initUI(rootElementId = "app") {
   appContainer = document.getElementById(rootElementId);

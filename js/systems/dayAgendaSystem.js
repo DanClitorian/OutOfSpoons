@@ -116,3 +116,48 @@ function getEligibleEventsForDay(day) {
   const eligible = eventPool.filter((event) => !event.minDay || day >= event.minDay);
   return eligible.length > 0 ? eligible : eventPool;
 }
+
+
+// CLEAN v0.14 choose agenda order helpers START
+export function getAvailableAgendaItems(state) {
+  const agenda = ensureDailyAgenda(state);
+
+  return agenda.slots
+    .map((item, index) => ({
+      index,
+      slot: item.slot,
+      label: getAgendaSlotLabel(item.slot),
+      eventId: item.eventId,
+      completed: item.completed
+    }))
+    .filter((item) => !item.completed);
+}
+
+export function hasRemainingAgendaItems(state) {
+  const agenda = ensureDailyAgenda(state);
+  return agenda.slots.some((item) => !item.completed);
+}
+
+export function selectAgendaItem(state, agendaIndex) {
+  const agenda = ensureDailyAgenda(state);
+  let selectedIndex = agendaIndex;
+  let selectedItem = agenda.slots[selectedIndex];
+
+  if (!selectedItem || selectedItem.completed) {
+    const fallbackIndex = agenda.slots.findIndex((item) => !item.completed);
+
+    if (fallbackIndex === -1) {
+      return state;
+    }
+
+    selectedIndex = fallbackIndex;
+    selectedItem = agenda.slots[selectedIndex];
+  }
+
+  agenda.currentIndex = selectedIndex;
+  state.currentEventId = selectedItem.eventId;
+  state.phase = "event";
+
+  return state;
+}
+// CLEAN v0.14 choose agenda order helpers END

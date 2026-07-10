@@ -6,10 +6,10 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { goToEvent } from "../../systems/dayCycle.js";
 import { buildStatusSentence } from "../../systems/characterSystem.js";
 
 import { ensureDailyAgenda, getAgendaSlotLabel } from "../../systems/dayAgendaSystem.js";
+import { saveGame } from "../../state/saveManager.js";
 export function renderGameScreen(container) {
   const state = getState();
   const playerName = state.player ? state.player.name : "Ty";
@@ -50,10 +50,11 @@ export function renderGameScreen(container) {
 
   const continueButton = document.createElement("button");
   continueButton.className = "primary-button";
-  continueButton.textContent = "Przejd\u017a do wydarzenia dnia";
+  continueButton.textContent = "Wybierz, czym zajmiesz się teraz";
   continueButton.addEventListener("click", () => {
-    goToEvent();
-    showScreen("event");
+    ensureDailyAgenda(state);
+    saveGame(state);
+    showScreen("agenda");
   });
   wrapper.appendChild(continueButton);
 
