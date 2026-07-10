@@ -243,11 +243,14 @@ button:focus-visible {
   text-align: left;
   background-color: var(--color-paper);
   border-color: var(--color-line);
+  border-left: 3px solid var(--color-line);
+  border-radius: 8px;
   color: var(--color-ink);
 }
 
 .choice-button:hover {
   border-color: var(--color-ink);
+  border-left-color: var(--color-sage);
   background-color: var(--color-panel);
 }
 
@@ -1211,3 +1214,330 @@ body[data-game-screen="weeklySummary"] {
   --color-panel: #F5EEDC;
 }
 /* END CLEAN v0.15 RPG gameplay shell */
+
+/* CLEAN v0.16 visual novel RPG layout */
+
+/* --------------------------------------------------------------------
+   Szerszy #app i mniejszy padding body na ekranach gameplayowych,
+   żeby zmieścić dwukolumnowy layout bez wymuszania scrolla strony
+   na typowym laptopie (1366x768 / 1440x900).
+   -------------------------------------------------------------------- */
+
+body[data-game-screen="game"] #app,
+body[data-game-screen="morning"] #app,
+body[data-game-screen="agenda"] #app,
+body[data-game-screen="event"] #app,
+body[data-game-screen="reflection"] #app,
+body[data-game-screen="evening"] #app,
+body[data-game-screen="weeklySummary"] #app {
+  max-width: 860px;
+}
+
+body[data-game-screen="game"],
+body[data-game-screen="morning"],
+body[data-game-screen="agenda"],
+body[data-game-screen="event"],
+body[data-game-screen="reflection"],
+body[data-game-screen="evening"],
+body[data-game-screen="weeklySummary"] {
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+}
+
+/* --------------------------------------------------------------------
+   VN shell: górny pasek / boczna karta gracza / scena / panel akcji.
+   max-height + overflow: hidden na zewnątrz, overflow: auto na
+   panelach wewnętrznych — to daje "bez scrolla strony", nawet jeśli
+   pojedyncza karta wewnątrz ma więcej treści niż się zmieści.
+   -------------------------------------------------------------------- */
+
+.vn-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  padding: var(--space-md);
+  box-shadow: 0 1px 3px rgba(43, 42, 40, 0.08);
+  min-height: calc(100vh - 260px);
+  max-height: calc(100vh - 220px);
+  overflow: hidden;
+}
+
+.vn-topline {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: var(--space-sm);
+}
+
+.vn-main {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: var(--space-md);
+  flex: 1;
+  min-height: 0;
+}
+
+.vn-side {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.vn-stage {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.vn-actions {
+  flex-shrink: 0;
+  border-top: 1px solid var(--color-line);
+  padding-top: var(--space-sm);
+}
+
+@media (max-width: 760px) {
+  .vn-screen {
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .vn-main {
+    grid-template-columns: 1fr;
+  }
+
+  .vn-side,
+  .vn-stage {
+    overflow-y: visible;
+  }
+}
+
+/* --------------------------------------------------------------------
+   Karta gracza (symboliczna: imię, faza, spoons, zaufanie)
+   -------------------------------------------------------------------- */
+
+.vn-player-card {
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.vn-player-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-ink);
+}
+
+.vn-player-meta {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vn-player-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.vn-player-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.vn-player-stat-value {
+  font-weight: 600;
+  color: var(--color-ink);
+  font-size: 0.85rem;
+  align-self: flex-end;
+}
+
+.vn-player-bar {
+  height: 6px;
+  background-color: var(--color-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.vn-player-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.vn-player-bar-fill--spoons {
+  background-color: var(--color-gold);
+}
+
+.vn-player-bar-fill--trust {
+  background-color: var(--color-sage);
+}
+
+/* --------------------------------------------------------------------
+   Scena centralna: duży symbol + tytuł + tekst + kompaktowe karty
+   -------------------------------------------------------------------- */
+
+.vn-scene-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.vn-scene-symbol {
+  font-size: 2.6rem;
+  line-height: 1;
+  text-align: center;
+  padding: var(--space-md) 0;
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+}
+
+.vn-scene-symbol--morning {
+  background-color: #EFEAE0;
+}
+
+.vn-scene-symbol--agenda {
+  background-color: #EAE6DA;
+}
+
+.vn-scene-symbol--event {
+  background-color: var(--color-panel);
+}
+
+.vn-scene-symbol--reflection {
+  background-color: var(--color-paper);
+}
+
+.vn-scene-symbol--evening {
+  background-color: #33302B;
+}
+
+.vn-scene-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 400;
+  border-bottom: none;
+  padding-bottom: 0;
+  color: var(--color-ink);
+}
+
+.vn-scene-text {
+  color: var(--color-ink);
+  font-size: 0.95rem;
+}
+
+.vn-scene-text p {
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.vn-compact-card {
+  max-height: 130px;
+  overflow-y: auto;
+  padding: var(--space-sm);
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* --------------------------------------------------------------------
+   Panel akcji: siatka kart (agenda) albo lista przycisków dialogowych
+   -------------------------------------------------------------------- */
+
+.vn-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+@media (max-width: 760px) {
+  .vn-action-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.vn-action-card {
+  border-radius: 8px;
+}
+
+.vn-action-card--completed {
+  opacity: 0.6;
+}
+
+.vn-action-card-meta {
+  font-size: 0.75rem;
+}
+
+.vn-choice-button {
+  border-radius: 8px;
+}
+
+/* --------------------------------------------------------------------
+   Konsekwencje jako duże, wyraźne kafle (reflection screen)
+   -------------------------------------------------------------------- */
+
+.vn-consequence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--space-sm);
+  margin: var(--space-sm) 0;
+}
+
+.vn-consequence-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--space-sm);
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.vn-consequence-label {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vn-consequence-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-ink);
+}
+
+.vn-consequence-card--positive .vn-consequence-value {
+  color: var(--color-sage);
+}
+
+.vn-consequence-card--negative .vn-consequence-value {
+  color: var(--color-rose);
+}
+
+.vn-consequence-card--neutral .vn-consequence-value {
+  color: var(--color-muted);
+}
+/* END CLEAN v0.16 visual novel RPG layout */

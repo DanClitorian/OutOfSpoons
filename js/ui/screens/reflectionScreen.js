@@ -3,12 +3,24 @@
 // Reflection screen after the daily event.
 // v0.9: this screen no longer advances to the next day.
 // It leads to the evening recovery screen instead.
+//
+// v0.16: Visual Novel RPG Layout Redesign. To jest ekran, na którym
+// gracz PIERWSZY RAZ widzi dokładne liczby dla swojej decyzji (event
+// screen celowo ich już nie pokazuje — patrz eventScreen.js). Dlatego
+// konsekwencje są tu teraz dużymi, wyraźnymi kaflami (vn-consequence-*),
+// a nie cichą listą tekstu.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-
 import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
+import {
+  createVnShell,
+  createScenePanel,
+  createPlayerCard,
+  createActionPanel,
+  createConsequencePanel
+} from "../vnLayout.js";
 
 export function renderReflectionScreen(container, data) {
   const state = getState();
@@ -16,31 +28,25 @@ export function renderReflectionScreen(container, data) {
   const resultText = (data && data.resultText) || (lastEntry ? lastEntry.resultText : "");
   const consequences = lastEntry ? lastEntry.consequences : null;
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "screen reflection-screen";
-
-  const title = document.createElement("h2");
-  title.textContent = "Wieczorna refleksja";
-  wrapper.appendChild(title);
-
-  const result = document.createElement("p");
-  result.className = "reflection-text";
-  result.textContent = resultText;
-  wrapper.appendChild(result);
-
+  const sceneExtra = [];
   if (consequences) {
-    wrapper.appendChild(renderImpactPanel(consequences, state));
+    sceneExtra.push(renderImpactPanel(consequences, state));
   }
 
-  const summary = document.createElement("p");
-  summary.className = "spoons-summary";
-  summary.textContent = `Zostało Ci ${state.resources.spoons.current} z ${state.resources.spoons.max} spoons na dziś.`;
-  wrapper.appendChild(summary);
+  const scene = createScenePanel({
+    symbol: "✍️",
+    symbolModifier: "reflection",
+    title: "Skutek decyzji",
+    text: resultText,
+    extra: sceneExtra
+  });
+
+  const side = createPlayerCard(state, `Dzień ${state.day} · Refleksja`);
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
   const endDayButton = document.createElement("button");
-  endDayButton.className = "primary-button";
+  endDayButton.className = "primary-button vn-choice-button";
   endDayButton.textContent = goesBackToAgenda
     ? "Wróć do agendy dnia"
     : "Zakończ dzień";
@@ -56,15 +62,23 @@ export function renderReflectionScreen(container, data) {
     }
   });
 
-  wrapper.appendChild(endDayButton);
+  const actions = createActionPanel([endDayButton]);
 
-  container.appendChild(wrapper);
+  const shell = createVnShell({
+    screenClass: "reflection",
+    phaseLabel: "Refleksja",
+    scene,
+    side,
+    actions
+  });
+
+  container.appendChild(shell);
 }
 
-// CLEAN v0.15 reflection impact panel START
-// v0.15: RPG Gameplay Shell. Opakowuje istniejące konsekwencje w bardziej
-// "gameplayowy" panel z wyraźnym nagłówkiem, żeby refleksja mocniej
-// pokazywała skutek decyzji, zamiast wyglądać jak sam tekst.
+// CLEAN v0.16 reflection impact panel START
+// v0.16: konsekwencje jako duże kafle (vn-consequence-grid) zamiast
+// cichej listy <ul>. Dane i interpretacja tekstowa są dokładnie te
+// same co w v0.15 — zmienia się tylko prezentacja.
 function renderImpactPanel(consequences, state) {
   const panel = document.createElement("div");
   panel.className = "reflection-impact-panel";
@@ -74,7 +88,30 @@ function renderImpactPanel(consequences, state) {
   title.textContent = "Skutek decyzji";
   panel.appendChild(title);
 
-  panel.appendChild(renderConsequences(consequences));
+  const items = [
+    { label: "Spoons", value: consequences.spoonsChange },
+    { label: "Zaufanie", value: consequences.trustChange },
+    { label: "Frustracja", value: consequences.frustrationChange }
+  ];
+
+  if (typeof consequences.fatigueChange === "number" && consequences.fatigueChange !== 0) {
+    items.push({ label: "Przeciążenie", value: consequences.fatigueChange });
+  }
+
+  panel.appendChild(createConsequencePanel(items));
+
+  const interpretation = buildInterpretation(consequences);
+  if (interpretation) {
+    const interpretationText = document.createElement("p");
+    interpretationText.className = "consequences-interpretation";
+    interpretationText.textContent = interpretation;
+    panel.appendChild(interpretationText);
+  }
+
+  const spoonsSummary = document.createElement("p");
+  spoonsSummary.className = "spoons-summary";
+  spoonsSummary.textContent = `Zostało Ci ${state.resources.spoons.current} z ${state.resources.spoons.max} spoons na dziś.`;
+  panel.appendChild(spoonsSummary);
 
   const dayProgress = buildDayProgressLine(state);
   if (dayProgress) {
@@ -97,57 +134,7 @@ function buildDayProgressLine(state) {
   line.textContent = `Postęp dnia: ${completed}/${total}`;
   return line;
 }
-// CLEAN v0.15 reflection impact panel END
-
-function renderConsequences(consequences) {
-  const section = document.createElement("div");
-  section.className = "consequences";
-
-  const heading = document.createElement("p");
-  heading.className = "consequences-heading";
-  heading.textContent = "Konsekwencje:";
-  section.appendChild(heading);
-
-  const list = document.createElement("ul");
-  list.className = "consequences-list";
-
-  list.appendChild(buildConsequenceItem("Spoons", consequences.spoonsChange));
-  list.appendChild(buildConsequenceItem("Zaufanie", consequences.trustChange));
-  list.appendChild(buildConsequenceItem("Frustracja", consequences.frustrationChange));
-
-  if (typeof consequences.fatigueChange === "number" && consequences.fatigueChange !== 0) {
-    list.appendChild(buildConsequenceItem("Przeciążenie", consequences.fatigueChange));
-  }
-
-  section.appendChild(list);
-
-  const interpretation = buildInterpretation(consequences);
-  if (interpretation) {
-    const interpretationText = document.createElement("p");
-    interpretationText.className = "consequences-interpretation";
-    interpretationText.textContent = interpretation;
-    section.appendChild(interpretationText);
-  }
-
-  return section;
-}
-
-function buildConsequenceItem(label, value) {
-  const item = document.createElement("li");
-  item.className = "consequences-item";
-
-  const labelSpan = document.createElement("span");
-  labelSpan.className = "consequences-label";
-  labelSpan.textContent = `${label}:`;
-  item.appendChild(labelSpan);
-
-  const valueSpan = document.createElement("span");
-  valueSpan.className = "consequences-value";
-  valueSpan.textContent = formatSignedNumber(value);
-  item.appendChild(valueSpan);
-
-  return item;
-}
+// CLEAN v0.16 reflection impact panel END
 
 function buildInterpretation(consequences) {
   const sentences = [];
@@ -177,16 +164,4 @@ function buildInterpretation(consequences) {
   }
 
   return sentences.join(" ");
-}
-
-function formatSignedNumber(value) {
-  if (value > 0) {
-    return `+${value}`;
-  }
-
-  if (value < 0) {
-    return `${value}`;
-  }
-
-  return "0";
 }

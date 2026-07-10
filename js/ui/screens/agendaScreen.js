@@ -1,6 +1,10 @@
 // agendaScreen.js
 //
 // v0.14: Choose Agenda Order.
+// v0.16: Visual Novel RPG Layout Redesign — agenda jest teraz planszą
+// wyboru akcji (trzy duże karty) w panelu akcji wspólnego VN shellu,
+// zamiast pionowej listy przycisków.
+//
 // The player chooses which remaining daily agenda slot to handle next.
 
 import { showScreen } from "../uiManager.js";
@@ -12,6 +16,7 @@ import {
   selectAgendaItem,
   getAgendaSlotLabel
 } from "../../systems/dayAgendaSystem.js";
+import { createVnShell, createScenePanel, createPlayerCard, createActionPanel } from "../vnLayout.js";
 
 export function renderAgendaScreen(container) {
   const state = getState();
@@ -25,35 +30,35 @@ export function renderAgendaScreen(container) {
     return;
   }
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "screen agenda-choice-screen";
-
-  const title = document.createElement("h2");
-  title.textContent = "Agenda dnia";
-  wrapper.appendChild(title);
-
-  const intro = document.createElement("p");
-  intro.className = "agenda-choice-intro";
-  intro.textContent = "Wybierz, czym zajmiesz się teraz.";
-  wrapper.appendChild(intro);
-
-  const list = document.createElement("div");
-  list.className = "agenda-choice-list";
-
-  agenda.slots.forEach((item, index) => {
-    list.appendChild(renderAgendaChoiceButton(item, index, state));
+  const scene = createScenePanel({
+    symbol: "🗒️",
+    symbolModifier: "agenda",
+    title: "Agenda dnia",
+    text: "Wybierz, czym zajmiesz się teraz."
   });
 
-  wrapper.appendChild(list);
-  container.appendChild(wrapper);
+  const side = createPlayerCard(state, `Dzień ${state.day} · Plan dnia`);
+
+  const cards = agenda.slots.map((item, index) => renderAgendaChoiceButton(item, index, state));
+  const actions = createActionPanel(cards);
+
+  const shell = createVnShell({
+    screenClass: "agenda",
+    phaseLabel: "Plan dnia",
+    scene,
+    side,
+    actions
+  });
+
+  container.appendChild(shell);
 }
 
 function renderAgendaChoiceButton(item, index, state) {
   const button = document.createElement("button");
-  const classes = ["agenda-choice-button"];
+  const classes = ["agenda-choice-button", "vn-action-card"];
 
   if (item.completed) {
-    classes.push("agenda-choice-button--completed");
+    classes.push("agenda-choice-button--completed", "vn-action-card--completed");
   }
 
   button.className = classes.join(" ");
@@ -98,7 +103,7 @@ function renderAgendaChoiceButton(item, index, state) {
 // jeszcze na mechanikę wyboru ani na losowanie eventów.
 function buildSlotMeta(item, state) {
   const meta = document.createElement("span");
-  meta.className = "agenda-choice-card-meta";
+  meta.className = "agenda-choice-card-meta vn-action-card-meta";
 
   const risk = document.createElement("span");
   risk.className = "agenda-choice-risk";

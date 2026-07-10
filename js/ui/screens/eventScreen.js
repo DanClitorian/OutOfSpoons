@@ -7,32 +7,39 @@
 // - if every choice is too expensive, keeps the cheapest one clickable
 //   as the final available option,
 // - replaces {partnerName} in title, description and choice labels.
+//
+// v0.16: Visual Novel RPG Layout Redesign.
+// - event screen jest teraz sceną VN (duży symbol + tytuł + opis) z
+//   panelem decyzji na dole,
+// - WAŻNA ZMIANA ZASADY: przed wyborem NIE pokazujemy już dokładnych
+//   liczb (np. "− 3 spoons"). Zamiast tego pokazujemy jakościowy
+//   poziom (Koszt: niskie/średnie/wysokie, Niepewność: niska/średnia/
+//   wysoka). Dokładne liczby gracz widzi dopiero PO decyzji, na ekranie
+//   refleksji — to się nie zmienia.
+// - choice availability by spoons (blokowanie zbyt drogich wyborów,
+//   forced cheapest choice) zostaje bez zmian — zmienia się tylko to,
+//   co widać, nie logika dostępności.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js";
-
 import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js";
+import { createVnShell, createScenePanel, createPlayerCard, createActionPanel } from "../vnLayout.js";
+
 export function renderEventScreen(container) {
   const event = getCurrentEvent();
   const state = getState();
   const currentSpoons = state.resources.spoons.current;
-  const maxSpoons = state.resources.spoons.max;
+  const progress = getCurrentAgendaProgress(state);
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "screen event-screen";
+  const scene = createScenePanel({
+    symbol: "💬",
+    symbolModifier: "event",
+    title: replacePlaceholders(event.title, state),
+    text: replacePlaceholders(event.description, state)
+  });
 
-  wrapper.appendChild(renderEventProgress(state));
-
-  wrapper.appendChild(renderResourceSummary(currentSpoons, maxSpoons));
-
-  const title = document.createElement("h2");
-  title.textContent = replacePlaceholders(event.title, state);
-  wrapper.appendChild(title);
-
-  const description = document.createElement("p");
-  description.textContent = replacePlaceholders(event.description, state);
-  wrapper.appendChild(description);
+  const side = createPlayerCard(state, `Dzień ${state.day} · Wydarzenie ${progress.current}/${progress.total}`);
 
   const choicesList = document.createElement("div");
   choicesList.className = "choices";
@@ -45,25 +52,17 @@ export function renderEventScreen(container) {
     choicesList.appendChild(renderChoiceButton(choice, state, currentSpoons, isForced));
   });
 
-  wrapper.appendChild(choicesList);
-  container.appendChild(wrapper);
-}
+  const actions = createActionPanel([choicesList]);
 
-function renderEventProgress(state) {
-  const progress = getCurrentAgendaProgress(state);
+  const shell = createVnShell({
+    screenClass: "event",
+    phaseLabel: `Wydarzenie ${progress.current}/${progress.total} — ${progress.label}`,
+    scene,
+    side,
+    actions
+  });
 
-  const label = document.createElement("p");
-  label.className = "event-progress";
-  label.textContent = `Wydarzenie ${progress.current}/${progress.total} — ${progress.label}`;
-
-  return label;
-}
-
-function renderResourceSummary(currentSpoons, maxSpoons) {
-  const summary = document.createElement("p");
-  summary.className = "event-resource-summary";
-  summary.textContent = `Dost\u0119pne spoons: ${currentSpoons}/${maxSpoons}`;
-  return summary;
+  container.appendChild(shell);
 }
 
 function getCheapestChoice(choices) {
@@ -86,7 +85,7 @@ function renderChoiceButton(choice, state, currentSpoons, isForced) {
   const canAfford = choice.spoonsCost <= currentSpoons;
   const isDisabled = !canAfford && !isForced;
 
-  button.className = buildChoiceButtonClass(isDisabled, isForced);
+  button.className = `${buildChoiceButtonClass(isDisabled, isForced)} vn-choice-button`;
 
   const label = document.createElement("span");
   label.className = "choice-label";
@@ -125,22 +124,52 @@ function buildChoiceButtonClass(isDisabled, isForced) {
 }
 
 function renderChoiceCost(choice, currentSpoons, isDisabled, isForced) {
-  if (choice.spoonsCost <= 0) {
-    return null;
-  }
-
   const cost = document.createElement("span");
   cost.className = "choice-cost";
-  cost.textContent = `\u2212 ${choice.spoonsCost} spoons`;
+  cost.textContent = `Koszt: ${buildCostTier(choice.spoonsCost)} · Niepewność: ${buildUncertaintyTier(choice)}`;
 
   if (isDisabled) {
-    const missing = Math.max(0, choice.spoonsCost - currentSpoons);
-    cost.appendChild(renderChoiceNote(` · brakuje ${missing} spoons`));
+    cost.appendChild(renderChoiceNote(" · niedostępne teraz"));
   } else if (isForced) {
     cost.appendChild(renderChoiceNote(" · ostatnia dost\u0119pna opcja"));
   }
 
   return cost;
+}
+
+// v0.16: zamiast dokładnej liczby spoons (np. "− 3 spoons"), pokazujemy
+// tylko jakościowy poziom kosztu. Progi dobrane pod realny zakres
+// spoonsCost w eventData.js (0-5).
+function buildCostTier(spoonsCost) {
+  if (spoonsCost <= 0) {
+    return "brak";
+  }
+
+  if (spoonsCost <= 2) {
+    return "niskie";
+  }
+
+  if (spoonsCost <= 4) {
+    return "\u015brednie";
+  }
+
+  return "wysokie";
+}
+
+// v0.16: "niepewność" to jakościowa miara tego, jak mocno wybór może
+// poruszyć zaufanie/frustrację — bez ujawniania kierunku ani wartości.
+function buildUncertaintyTier(choice) {
+  const magnitude = Math.abs(choice.trustChange || 0) + Math.abs(choice.frustrationChange || 0);
+
+  if (magnitude <= 3) {
+    return "niska";
+  }
+
+  if (magnitude <= 8) {
+    return "\u015brednia";
+  }
+
+  return "wysoka";
 }
 
 function renderChoiceNote(text) {

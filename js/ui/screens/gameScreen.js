@@ -1,86 +1,83 @@
 // gameScreen.js
 //
 // Morning screen.
-// Shows persistent spoons, morning events, player status, partner card,
-// relationship bars and relationship mood.
+// v0.16: Visual Novel RPG Layout Redesign. Zamiast długiej pionowej
+// kolumny statusów, poranek jest teraz sceną VN (symbol + krótki tekst)
+// z boczną kartą gracza i jednym przyciskiem akcji. Istniejące sekcje
+// (previous evening summary, morning events, agenda dnia, status
+// zdania, karta partnera) NIE zostały usunięte — są teraz kompaktowymi
+// kartami wewnątrz sceny (patrz vn-compact-card w CSS), żeby zmieściły
+// się bez przewijania całej strony.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { buildStatusSentence } from "../../systems/characterSystem.js";
-
 import { ensureDailyAgenda, getAgendaSlotLabel } from "../../systems/dayAgendaSystem.js";
 import { saveGame } from "../../state/saveManager.js";
+import { createVnShell, createScenePanel, createPlayerCard, createActionPanel } from "../vnLayout.js";
+
 export function renderGameScreen(container) {
   const state = getState();
-  const playerName = state.player ? state.player.name : "Ty";
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "screen game-screen";
+  const extraCards = [
+    renderPersistentSpoonsNote(),
+    renderPreviousEveningSummary(state),
+    renderMorningEvents(state),
+    renderDailyAgendaSection(state),
+    renderStatusSentenceCard(state),
+    renderPartnerCardIfPresent(state)
+  ];
 
-  const header = document.createElement("h2");
-  header.textContent = `Dzie\u0144 ${state.day} \u2014 ${playerName}`;
-  wrapper.appendChild(header);
+  const scene = createScenePanel({
+    symbol: "🌤️",
+    symbolModifier: "morning",
+    title: `Dzień ${state.day}`,
+    text: "Nowy dzień. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.",
+    extra: extraCards
+  });
 
-  wrapper.appendChild(renderSpoonsMeter(state.resources.spoons));
-  wrapper.appendChild(renderPersistentSpoonsNote());
-
-  const previousEveningSummary = renderPreviousEveningSummary(state);
-  if (previousEveningSummary) {
-    wrapper.appendChild(previousEveningSummary);
-  }
-
-  const morningEvents = renderMorningEvents(state);
-  if (morningEvents) {
-    wrapper.appendChild(morningEvents);
-  }
-
-  wrapper.appendChild(renderDailyAgendaSection(state));
-
-  if (state.player) {
-    const statusSentence = document.createElement("p");
-    statusSentence.className = "status-sentence";
-    statusSentence.textContent = buildStatusSentence(state.player);
-    wrapper.appendChild(statusSentence);
-  }
-
-  if (state.partner) {
-    const npc = state.npcs ? state.npcs[state.partner.id] : undefined;
-    wrapper.appendChild(renderPartnerCard(state.partner, npc));
-  }
+  const side = createPlayerCard(state, `Dzień ${state.day} · Poranek`);
 
   const continueButton = document.createElement("button");
-  continueButton.className = "primary-button";
-  continueButton.textContent = "Wybierz, czym zajmiesz się teraz";
+  continueButton.className = "primary-button vn-choice-button";
+  continueButton.textContent = "Otwórz plan dnia";
   continueButton.addEventListener("click", () => {
     ensureDailyAgenda(state);
     saveGame(state);
     showScreen("agenda");
   });
-  wrapper.appendChild(continueButton);
 
-  container.appendChild(wrapper);
+  const actions = createActionPanel([continueButton]);
+
+  const shell = createVnShell({
+    screenClass: "morning",
+    phaseLabel: "Poranek",
+    scene,
+    side,
+    actions
+  });
+
+  container.appendChild(shell);
 }
 
-function renderSpoonsMeter(spoons) {
-  const meter = document.createElement("div");
-  meter.className = "spoons-meter";
-
-  const label = document.createElement("span");
-  label.className = "spoons-label";
-  label.textContent = `Spoons: ${spoons.current}/${spoons.max}`;
-  meter.appendChild(label);
-
-  const row = document.createElement("div");
-  row.className = "spoons-row";
-
-  for (let i = 0; i < spoons.max; i++) {
-    const spoon = document.createElement("span");
-    spoon.className = i < spoons.current ? "spoon full" : "spoon empty";
-    row.appendChild(spoon);
+function renderStatusSentenceCard(state) {
+  if (!state.player) {
+    return null;
   }
 
-  meter.appendChild(row);
-  return meter;
+  const statusSentence = document.createElement("p");
+  statusSentence.className = "status-sentence";
+  statusSentence.textContent = buildStatusSentence(state.player);
+  return statusSentence;
+}
+
+function renderPartnerCardIfPresent(state) {
+  if (!state.partner) {
+    return null;
+  }
+
+  const npc = state.npcs ? state.npcs[state.partner.id] : undefined;
+  return renderPartnerCard(state.partner, npc);
 }
 
 function renderPersistentSpoonsNote() {
