@@ -109,7 +109,7 @@ export function goToEvent() {
   const state = getState();
   const previousEntry = state.log[state.log.length - 1];
   const previousEventId = previousEntry ? previousEntry.eventId : null;
-  const event = getEventForDay(state.day, previousEventId);
+  const event = getEventForDay(state.day, previousEventId, state);
   state.currentEventId = event.id;
   state.phase = "event";
   return state;

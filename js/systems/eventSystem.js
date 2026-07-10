@@ -26,6 +26,7 @@ import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
+import { getWeightedEventForDay } from "./eventWeightSystem.js";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -50,19 +51,19 @@ function getEligibleEvents(day) {
  *   więcej niż jedną pozycję, to wydarzenie jest wykluczane z losowania,
  *   żeby uniknąć bezpośredniej powtórki dzień po dniu.
  */
-export function getEventForDay(day, previousEventId = null) {
+export function getEventForDay(day, previousEventId = null, state = null) {
   const eligibleEvents = getEligibleEvents(day);
-  // Zabezpieczenie: gdyby filtr minDay z jakiegoś powodu wyciął całą
-  // pulę (np. błąd w danych), wracamy do pełnej puli — gra nigdy nie
-  // powinna utknąć bez żadnego wydarzenia na dany dzień.
   const pool = eligibleEvents.length > 0 ? eligibleEvents : eventPool;
 
+  if (state) {
+    return getWeightedEventForDay(pool, state, previousEventId);
+  }
+
   let candidates = pool;
+
   if (pool.length > 1 && previousEventId) {
     const withoutPrevious = pool.filter((event) => event.id !== previousEventId);
-    // Jeśli po usunięciu poprzedniego eventu nic nie zostało (nie powinno
-    // się zdarzyć przy pool.length > 1, ale zabezpieczamy się i tak),
-    // losujemy z pełnej dostępnej puli zamiast zostać bez kandydatów.
+
     if (withoutPrevious.length > 0) {
       candidates = withoutPrevious;
     }
