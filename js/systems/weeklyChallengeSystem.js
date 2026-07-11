@@ -21,6 +21,14 @@
 // Pula wyzwań
 // --------------------------------------------------------------------
 
+// v0.19.1: Weekly Stakes Expansion. Pula rozbudowana z 6 do 17 wyzwań
+// (min. wymagane: 14), wybranych/zaadaptowanych z
+// assets/content/weekly-stakes/weekly-stakes-content-pack.md pod kątem
+// różnorodności kategorii (poliamoria, relacja, praca, logistyka,
+// masking/public event, self-regulation, metamour/calendar tension).
+// Większość ma warunki MIESZANE (2 statystyki naraz), nie
+// jednowymiarowe — to celowe, żeby "sukces" nie sprowadzał się do
+// pilnowania jednej liczby.
 const CHALLENGE_POOL = [
   {
     id: "family_visit",
@@ -84,6 +92,126 @@ const CHALLENGE_POOL = [
       requirements: [
         { stat: "spoons", operator: ">=", value: 4 },
         { stat: "trust", operator: ">=", value: 45 }
+      ]
+    }
+  },
+  {
+    id: "metamour_coffee",
+    title: "Kawa z metamurem",
+    description: "Spotkanie przy kawie z osobą, z którą dzielisz partnera, wymaga więcej dojrzałości niż kalendarz przewidywał.",
+    condition: {
+      requirements: [
+        { stat: "trust", operator: ">=", value: 55 },
+        { stat: "frustration", operator: "<=", value: 55 }
+      ]
+    }
+  },
+  {
+    id: "calendar_chaos",
+    title: "Kalendarzowy chaos",
+    description: "Zgrać trzy kalendarze, randkę i czas dla siebie to wyzwanie logistyczne godne architekta.",
+    condition: {
+      requirements: [
+        { stat: "spoons", operator: ">=", value: 5 },
+        { stat: "trust", operator: ">=", value: 45 }
+      ]
+    }
+  },
+  {
+    id: "public_masking",
+    title: "Publiczne maskowanie",
+    description: "Na wydarzeniu trzeba będzie wyglądać spokojnie, nawet jeśli w środku system operacyjny prosi o aktualizację.",
+    condition: {
+      requirements: [
+        { stat: "spoons", operator: ">=", value: 6 },
+        { stat: "frustration", operator: "<=", value: 55 }
+      ]
+    }
+  },
+  {
+    id: "budget_week",
+    title: "Budżetowy tydzień",
+    description: "Koniec miesiąca zmusza do radykalnych cięć i kreatywności w planowaniu bliskości.",
+    condition: {
+      requirements: [
+        { stat: "frustration", operator: "<=", value: 50 },
+        { stat: "trust", operator: ">=", value: 45 }
+      ]
+    }
+  },
+  {
+    id: "boundaries_negotiation",
+    title: "Negocjacje granic",
+    description: "Trzeba będzie powiedzieć jasno, gdzie kończy się otwartość, a zaczyna przeciążenie.",
+    condition: {
+      requirements: [
+        { stat: "trust", operator: ">=", value: 60 },
+        { stat: "spoons", operator: ">=", value: 4 }
+      ]
+    }
+  },
+  {
+    id: "relationship_checkin",
+    title: "Check-in relacyjny",
+    description: "Nie ma pożaru. Właśnie dlatego można wreszcie zapytać, co naprawdę działa.",
+    condition: {
+      requirements: [
+        { stat: "trust", operator: ">=", value: 55 },
+        { stat: "frustration", operator: "<=", value: 50 }
+      ]
+    }
+  },
+  {
+    id: "shared_move",
+    title: "Wspólna przeprowadzka",
+    description: "Pakowanie pudeł to test na cierpliwość i umiejętność dzielenia przestrzeni z innymi.",
+    condition: {
+      requirements: [
+        { stat: "spoons", operator: ">=", value: 6 },
+        { stat: "trust", operator: ">=", value: 45 }
+      ]
+    }
+  },
+  {
+    id: "self_distance",
+    title: "Dystans do siebie",
+    description: "Musisz odpuścić ambicje i po prostu przeżyć ten tydzień bez samobiczowania.",
+    condition: {
+      requirements: [
+        { stat: "frustration", operator: "<=", value: 30 },
+        { stat: "spoons", operator: ">=", value: 4 }
+      ]
+    }
+  },
+  {
+    id: "trust_crisis",
+    title: "Kryzys zaufania",
+    description: "Musisz udowodnić swoją szczerość po serii nieporozumień.",
+    condition: {
+      requirements: [
+        { stat: "trust", operator: ">=", value: 80 }
+      ]
+    }
+  },
+  {
+    id: "weekend_recharge",
+    title: "Weekendowy relaks",
+    description: "Zaplanowałeś cały tydzień tak, by mieć czas na regenerację.",
+    condition: {
+      requirements: [
+        { stat: "frustration", operator: "<=", value: 20 },
+        { stat: "spoons", operator: ">=", value: 5 }
+      ]
+    }
+  },
+  {
+    id: "unexpected_encounter",
+    title: "Przypadkowe spotkanie",
+    description: "Spotykasz byłego/ą partnera/kę, co wywołuje falę starych emocji.",
+    condition: {
+      requirements: [
+        { stat: "trust", operator: ">=", value: 40 },
+        { stat: "frustration", operator: "<=", value: 60 }
       ]
     }
   }

@@ -10,6 +10,15 @@
 // "evening-{liczba}", żeby CSS mogło dobrać odpowiednią siatkę (5
 // równych kolumn w jednym rzędzie, jeśli mieszczą się na 1366px, w
 // przeciwnym razie 3+2) BEZ ucinania tytułów.
+//
+// v0.19.1: Choice UX Polish. USUNIĘTE: widoczne "Spoons +3 · Frustracja
+// -1" przed wyborem (dawna funkcja formatEffects). Karty pokazują teraz
+// wyłącznie tytuł i istniejący opis z eveningRecoveryData.js — a te
+// opisy już SĄ napisane jako flavor tekst decyzji (np. "Nie rozwiązuje
+// wszystkiego, ale przynajmniej przestajesz dziś dokładać kolejne
+// warstwy zmęczenia."), więc nie trzeba było niczego dopisywać.
+// Mechaniczne efekty (applyEveningRecovery) nadal działają dokładnie
+// tak samo — po prostu nie są już pokazywane przed kliknięciem.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -64,7 +73,6 @@ function buildEveningCard(option, state) {
   return createDecisionCard({
     title: replacePlaceholders(option.label, state),
     description: replacePlaceholders(option.description, state),
-    metaLines: [formatEffects(option.effects)],
     onClick: () => {
       const currentState = getState();
       const completedDay = currentState.day;
@@ -89,30 +97,4 @@ function replacePlaceholders(text, state) {
 
   const partnerName = state.partner ? state.partner.name : "partner";
   return text.replace(/\{partnerName\}/g, partnerName);
-}
-
-function formatEffects(effects) {
-  const parts = [];
-
-  if (effects.spoonsChange !== 0) {
-    parts.push(`Spoons ${formatSigned(effects.spoonsChange)}`);
-  }
-
-  if (effects.trustChange !== 0) {
-    parts.push(`Zaufanie ${formatSigned(effects.trustChange)}`);
-  }
-
-  if (effects.frustrationChange !== 0) {
-    parts.push(`Frustracja ${formatSigned(effects.frustrationChange)}`);
-  }
-
-  if (parts.length === 0) {
-    return "Bez wyraźnych efektów mechanicznych.";
-  }
-
-  return parts.join(" · ");
-}
-
-function formatSigned(value) {
-  return value > 0 ? `+${value}` : `${value}`;
 }

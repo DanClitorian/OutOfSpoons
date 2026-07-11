@@ -641,11 +641,13 @@ body[data-game-screen="weeklySummary"] #app {
 
 /* Tytuł NIGDY nie może zniknąć w ucięciu bez śladu — dopuszczalne 2
    pełne linie z eleganckim wielokropkiem, nigdy ucięte pół-słowo bez
-   oznaczenia. */
+   oznaczenia. v0.19.1: karty nie pokazują już linii meta (Ryzyko/
+   Napięcie/Koszt/efekty), więc jest więcej pionowego miejsca —
+   line-height podniesiony dla czytelności. */
 .oos-decision-card-title {
   font-weight: 700;
   font-size: clamp(14px, 1.2vw, 18px);
-  line-height: 1.2;
+  line-height: 1.3;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 
@@ -665,7 +667,7 @@ body[data-game-screen="weeklySummary"] #app {
 
 .oos-decision-card-description {
   font-size: clamp(11.5px, 1vw, 13.5px);
-  line-height: 1.3;
+  line-height: 1.35;
   color: var(--oos-muted);
 
   display: -webkit-box;
@@ -694,16 +696,14 @@ body[data-game-screen="weeklySummary"] #app {
   overflow: hidden;
 }
 
-/* Evening cards: mniej pionowego tekstu (opis 1 linia, jedna linia meta),
-   żeby 5 kart w jednym rzędzie zawsze się mieściło bez ucinania tytułu. */
+/* v0.19.1: evening cards nie mają już linii meta (efekty mechaniczne
+   usunięte z widoku) — jest miejsce, żeby opis wrócił do 2 linii
+   zamiast dawnego, bardziej agresywnego 1-liniowego clampu. Tytuł
+   zostaje w normalnym rozmiarze (nie trzeba go już zmniejszać, żeby
+   zrobić miejsce na meta). */
 .oos-actions--evening-5 .oos-decision-card-description,
 .oos-actions--evening-4 .oos-decision-card-description {
-  -webkit-line-clamp: 1;
-}
-
-.oos-actions--evening-5 .oos-decision-card-title,
-.oos-actions--evening-4 .oos-decision-card-title {
-  font-size: clamp(12.5px, 1.05vw, 15px);
+  -webkit-line-clamp: 2;
 }
 
 /* --------------------------------------------------------------------

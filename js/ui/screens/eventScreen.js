@@ -8,16 +8,18 @@
 //   as the final available option,
 // - replaces {partnerName} in title, description and choice labels.
 //
-// v0.16: przed wyborem NIE pokazujemy już dokładnych liczb (np.
-// "− 3 spoons"). Zamiast tego pokazujemy jakościowy poziom (Koszt:
-// niskie/średnie/wysokie, Niepewność: niska/średnia/wysoka). Dokładne
-// liczby gracz widzi dopiero PO decyzji, na ekranie refleksji.
-// choice availability by spoons (blokowanie zbyt drogich wyborów,
-// forced cheapest choice) zostaje bez zmian — zmienia się tylko to,
-// co widać, nie logika dostępności.
-//
 // v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
 // system .oos-* (patrz js/ui/oosLayout.js).
+//
+// v0.19.1: Choice UX Polish. Wcześniej (v0.16-v0.19) karty pokazywały
+// jakościowy "Koszt: niskie/średnie/wysokie · Niepewność: ..." przed
+// wyborem. To USUNIĘTE — wybór ma wyglądać jak decyzja/dialog, nie jak
+// kalkulator mechaniki. Jedyne, co karta może pokazać przed kliknięciem,
+// to dostępność (statusText: "niedostępne teraz" / "ostatnia dostępna
+// opcja") — to nie jest przewidywanie efektu, tylko stan wyboru.
+// choice availability by spoons (blokowanie zbyt drogich wyborów,
+// forced cheapest choice) NADAL działa dokładnie tak samo — zmienia się
+// tylko to, co widać, nie logika dostępności ani mechanika konsekwencji.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -77,10 +79,7 @@ function buildChoiceCard(choice, state, currentSpoons, forcedChoice) {
 
   return createDecisionCard({
     title: replacePlaceholders(choice.label, state),
-    metaLines: [
-      `Koszt: ${buildCostTier(choice.spoonsCost)} · Niepewność: ${buildUncertaintyTier(choice)}`,
-      isDisabled ? "niedostępne teraz" : isForced ? "ostatnia dostępna opcja" : null
-    ],
+    statusText: isDisabled ? "niedostępne teraz" : isForced ? "ostatnia dostępna opcja" : null,
     disabled: isDisabled,
     onClick: () => {
       resolveEvent(choice.id);
@@ -102,39 +101,4 @@ function replacePlaceholders(text, state) {
 
   const partnerName = state.partner ? state.partner.name : "partner";
   return text.replace(/\{partnerName\}/g, partnerName);
-}
-
-// zamiast dokładnej liczby spoons (np. "− 3 spoons"), pokazujemy tylko
-// jakościowy poziom kosztu. Progi dobrane pod realny zakres spoonsCost
-// w eventData.js (0-5).
-function buildCostTier(spoonsCost) {
-  if (spoonsCost <= 0) {
-    return "brak";
-  }
-
-  if (spoonsCost <= 2) {
-    return "niskie";
-  }
-
-  if (spoonsCost <= 4) {
-    return "\u015brednie";
-  }
-
-  return "wysokie";
-}
-
-// "niepewność" to jakościowa miara tego, jak mocno wybór może poruszyć
-// zaufanie/frustrację — bez ujawniania kierunku ani wartości.
-function buildUncertaintyTier(choice) {
-  const magnitude = Math.abs(choice.trustChange || 0) + Math.abs(choice.frustrationChange || 0);
-
-  if (magnitude <= 3) {
-    return "niska";
-  }
-
-  if (magnitude <= 8) {
-    return "\u015brednia";
-  }
-
-  return "wysoka";
 }

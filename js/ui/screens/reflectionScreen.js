@@ -80,15 +80,20 @@ export function renderReflectionScreen(container, data) {
   container.appendChild(shell);
 }
 
+// v0.19.1: Frustracja i Przeciążenie mają ODWROTNĄ semantykę koloru —
+// ich WZROST jest złym efektem (czerwony), a SPADEK dobrym (zielony).
+// Spoons i Zaufanie zachowują domyślną semantykę (wzrost = dobry =
+// zielony) — patrz createResultTile() / resolveResultDirection() w
+// oosLayout.js.
 function buildResultTiles(consequences) {
   const items = [
     { icon: "🥄", label: "Spoons", value: consequences.spoonsChange },
     { icon: "🤝", label: "Zaufanie", value: consequences.trustChange },
-    { icon: "🌡️", label: "Frustracja", value: consequences.frustrationChange }
+    { icon: "🌡️", label: "Frustracja", value: consequences.frustrationChange, desirableDirection: "down" }
   ];
 
   if (typeof consequences.fatigueChange === "number" && consequences.fatigueChange !== 0) {
-    items.push({ icon: "🌀", label: "Przeciążenie", value: consequences.fatigueChange });
+    items.push({ icon: "🌀", label: "Przeciążenie", value: consequences.fatigueChange, desirableDirection: "down" });
   }
 
   return items.map((item) => createResultTile(item));

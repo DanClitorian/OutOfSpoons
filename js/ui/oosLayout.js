@@ -413,8 +413,15 @@ export function createNarrativeStrip(text) {
 /**
  * Buduje klikalną kartę decyzji (agenda slot / event choice / evening
  * option) — ikonka + tytuł + opcjonalny status + opcjonalny opis +
- * opcjonalne linie meta (ryzyko/napięcie/koszt/hint), każda jako
- * osobny element (nigdy sklejone w jeden string).
+ * opcjonalne linie meta, każda jako osobny element (nigdy sklejone w
+ * jeden string).
+ *
+ * v0.19.1: metaLines NIE mają już służyć do ujawniania mechaniki przed
+ * wyborem (Ryzyko/Napięcie/Koszt/Niepewność/Spoons/Zaufanie/Frustracja)
+ * — ekrany (agendaScreen.js, eventScreen.js, eveningScreen.js) przestały
+ * ich w ten sposób używać. Parametr statusText jest OK do pokazywania
+ * dostępności (np. "wybierz" / "ukończone" / "niedostępne teraz"), bo
+ * to nie jest przewidywanie efektu, tylko stan wyboru.
  *
  * @param {object} options
  * @param {string} [options.icon]
@@ -500,10 +507,17 @@ export function createDecisionCard(options) {
  * @param {string} [options.icon]
  * @param {string} options.label
  * @param {number} options.value
+ * @param {"up"|"down"} [options.desirableDirection] - v0.19.1: dla
+ *   większości statystyk WZROST jest dobry (domyślne "up" — Spoons,
+ *   Zaufanie: wartość dodatnia = zielona/pozytywna). Dla statystyk,
+ *   gdzie wzrost jest zły (np. Frustracja, Przeciążenie), przekaż
+ *   "down" — wtedy wartość dodatnia dostaje kolor NEGATYWNY (czerwony),
+ *   a ujemna POZYTYWNY (zielony). Sama liczba (formatSigned) nie
+ *   zmienia się — zmienia się tylko interpretacja koloru.
  */
 export function createResultTile(options) {
-  const { icon, label, value } = options || {};
-  const direction = value > 0 ? "positive" : value < 0 ? "negative" : "neutral";
+  const { icon, label, value, desirableDirection } = options || {};
+  const direction = resolveResultDirection(value, desirableDirection);
 
   const tile = document.createElement("div");
   tile.className = `oos-result-tile oos-result-tile--${direction}`;
@@ -519,6 +533,20 @@ export function createResultTile(options) {
   tile.appendChild(valueEl);
 
   return tile;
+}
+
+function resolveResultDirection(value, desirableDirection) {
+  if (!value) {
+    return "neutral";
+  }
+
+  const isIncrease = value > 0;
+
+  if (desirableDirection === "down") {
+    return isIncrease ? "negative" : "positive";
+  }
+
+  return isIncrease ? "positive" : "negative";
 }
 
 /**
