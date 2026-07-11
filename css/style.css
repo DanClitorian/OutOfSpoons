@@ -3594,3 +3594,242 @@ body {
 }
 /* CLEAN HOTFIX v0.17.4 layout stabilization END */
 
+
+/* CLEAN HOTFIX v0.17.5 professional layout polish START */
+/*
+  Cel: naprawić konkretne, zgłoszone problemy z v0.17.4, nie dokładać
+  kolejnej warstwy przypadkowych reguł. Ten blok jest ostatni w pliku,
+  więc przy równej specyficzności selektorów i takim samym użyciu
+  !important, jego reguły wygrywają z wcześniejszymi hotfixami
+  (v0.17.1-v0.17.4) przez kolejność w źródle — nie trzeba podbijać
+  specyficzności ani duplikować reguł wewnątrz media queries.
+
+  Naprawiane konkretnie:
+  1. Consequence cards (Spoons/Zaufanie/Frustracja na reflection) —
+     wyglądały jak klikalne przyciski. Teraz: cienka ramka, miękki
+     cień, cursor:default, pointer-events:none, brak hover-lift.
+  2. CTA "Wróć do planu dnia" — było krzywo/doklejone. Teraz kafle
+     konsekwencji i CTA są bezpośrednim rodzeństwem w jednym płaskim
+     rzędzie flex (.vn-reflection-row, patrz reflectionScreen.js),
+     więc align-items: stretch wyrównuje je automatycznie.
+  3. Karta relacji była przycięta (mood niewidoczny). Rebalansowany
+     grid sidebaru (karta postaci / karta relacji) + usunięty status
+     z karty postaci, żeby zrobić miejsce.
+  4. "Ryzyko: XNapięcie: Y" sklejone w jedną linię na agendzie — meta
+     agendy była -webkit-box z line-clamp na całym bloku zamiast
+     każda linia osobno. Teraz flex-column, każda linia osobna.
+  5. Evening: karty opcji ucięte (za mała wysokość rzędu akcji na
+     ekranie wieczoru dla 2x2 siatki 4 kart). Rząd akcji dla wieczoru
+     dostaje więcej miejsca, karty dostają mniej tekstu (line-clamp).
+*/
+
+/* --------------------------------------------------------------------
+   1 + 2. Consequence cards jako read-only result tiles + płaski rząd
+   reflection (kafle + CTA jako bezpośrednie rodzeństwo, wspólna oś).
+   -------------------------------------------------------------------- */
+
+.vn-consequence-card {
+  cursor: default !important;
+  pointer-events: none !important;
+  transform: none !important;
+  border: 1.5px solid rgba(93, 123, 144, 0.45) !important;
+  box-shadow: 0 1px 2px rgba(74, 69, 60, 0.12) !important;
+}
+
+.vn-consequence-card:hover {
+  transform: none !important;
+  border-color: rgba(93, 123, 144, 0.45) !important;
+  box-shadow: 0 1px 2px rgba(74, 69, 60, 0.12) !important;
+}
+
+.vn-reflection-row {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 12px !important;
+  width: min(100%, 1040px) !important;
+  max-width: 1040px !important;
+  height: 100% !important;
+  margin: 0 auto !important;
+  position: relative !important;
+  z-index: 31 !important;
+}
+
+.vn-reflection-row .vn-consequence-card {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  align-self: stretch !important;
+}
+
+.vn-reflection-row .primary-button.vn-choice-button {
+  flex: 0 0 clamp(160px, 20%, 220px) !important;
+  width: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  align-self: stretch !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+@media (max-width: 900px) {
+  .vn-reflection-row {
+    flex-wrap: wrap !important;
+  }
+
+  .vn-reflection-row .vn-consequence-card {
+    flex: 1 1 28% !important;
+  }
+
+  .vn-reflection-row .primary-button.vn-choice-button {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+}
+
+/* --------------------------------------------------------------------
+   3. Sidebar: rebalans karta postaci / karta relacji, żeby relacja
+   zawsze mieściła się w całości (imię, etykieta, 2 mierniki, mood).
+   -------------------------------------------------------------------- */
+
+.vn-sidebar-stack {
+  grid-template-rows: minmax(190px, 1.08fr) minmax(215px, 1fr) !important;
+  gap: 10px !important;
+}
+
+/* "jeśli trzeba: usuń niepotrzebne opisy statusowe z karty postaci" —
+   status jest nadal liczony w JS (bez zmiany danych/mechaniki), tylko
+   nie zajmuje już miejsca w wąskiej karcie, żeby zrobić przestrzeń
+   dla w pełni widocznej karty relacji. */
+.vn-player-status {
+  display: none !important;
+}
+
+.vn-player-card-inner {
+  justify-content: flex-start !important;
+  gap: 4px !important;
+}
+
+.vn-player-name {
+  margin: 0 0 4px !important;
+}
+
+.vn-player-meta {
+  margin: 0 0 10px !important;
+}
+
+.vn-player-stat {
+  margin: 8px 0 !important;
+}
+
+.vn-relationship-card {
+  overflow: visible !important;
+}
+
+@media (max-height: 790px) {
+  .vn-sidebar-stack {
+    grid-template-rows: minmax(170px, 1.05fr) minmax(190px, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* --------------------------------------------------------------------
+   4. Agenda meta: każda linia (Ryzyko / Napięcie / hint) osobno,
+   zamiast sklejonych w jeden -webkit-box.
+   -------------------------------------------------------------------- */
+
+.agenda-choice-card-meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+  overflow: visible !important;
+}
+
+.agenda-choice-risk,
+.agenda-choice-pressure {
+  display: block !important;
+  white-space: normal !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.agenda-choice-hint {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  margin-top: 2px !important;
+  padding-top: 3px !important;
+  border-top: 1px solid rgba(74, 69, 60, 0.14) !important;
+  font-style: italic !important;
+}
+
+/* --------------------------------------------------------------------
+   5. Evening: więcej miejsca na 2x2 siatkę kart opcji, krótszy tekst
+   w każdej karcie, żeby nic nie było ucinane.
+   -------------------------------------------------------------------- */
+
+.vn-screen--evening {
+  grid-template-rows: 52px minmax(0, 1fr) clamp(215px, 30vh, 275px) !important;
+}
+
+/* v0.17.4 ustawiało tu siatkę 2 kolumny — przy 5 opcjach wieczornych
+   (a nie 4) to 3 rzędy (2+2+1), za wysokie na dostępny budżet. 3
+   kolumny dają 2 rzędy (3+2), które mieszczą się bez ucinania. */
+.vn-screen--evening .vn-action-stack,
+.vn-screen--evening .evening-options {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-auto-rows: 1fr !important;
+  gap: 10px 12px !important;
+  width: min(100%, 980px) !important;
+  max-width: 980px !important;
+}
+
+.vn-screen--evening .evening-option-button {
+  min-height: 96px !important;
+  max-height: none !important;
+  height: 100% !important;
+  padding: 9px 10px !important;
+  gap: 3px !important;
+  overflow: hidden !important;
+}
+
+.vn-screen--evening .evening-option-label {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  font-size: clamp(12px, 1.05vw, 16px) !important;
+  line-height: 1.15 !important;
+}
+
+.vn-screen--evening .evening-option-description,
+.vn-screen--evening .evening-option-effects {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+@media (max-width: 900px) {
+  .vn-screen--evening .vn-action-stack,
+  .vn-screen--evening .evening-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-height: 790px) {
+  .vn-screen--evening {
+    grid-template-rows: 46px minmax(0, 1fr) clamp(190px, 28vh, 230px) !important;
+  }
+
+  .vn-screen--evening .evening-option-button {
+    min-height: 82px !important;
+  }
+}
+/* CLEAN HOTFIX v0.17.5 professional layout polish END */

@@ -10,8 +10,21 @@
 // kaflami (vn-consequence-*), a nie cichą listą tekstu.
 //
 // v0.17: Asset-Based VN UI Implementation — scena używa teraz tła
-// assets/scenes/scene-reflection.png, a tekst wyniku decyzji trafia do
-// osobnego narrative-strip. Kafle konsekwencji dostały ikony (🥄🤝🌡️).
+// assets/scenes/scene-reflection.png.
+//
+// v0.17.5: Professional Layout Polish Pass.
+// - Usunięto zagnieżdżony ".reflection-impact-panel": kafle konsekwencji
+//   i przycisk CTA są teraz BEZPOŚREDNIM rodzeństwem w jednym płaskim
+//   rzędzie (.vn-reflection-row), więc CSS Grid/Flex wyrównuje je do
+//   tej samej osi automatycznie — koniec z "doklejonym" przyciskiem.
+// - Kafle konsekwencji są teraz wyraźnie NIE-klikalne wizualnie (patrz
+//   .vn-consequence-card w CSS: cursor:default, pointer-events:none,
+//   bez hover-lift) — to czytelne read-only result tiles, nie przyciski.
+// - Interpretacja tekstowa skutku dołączona do narrative strip (to nadal
+//   "główny tekst refleksji", tylko rozszerzony o jedno zdanie), a
+//   "Zostało Ci X spoons" i "Postęp dnia" zdjęte z dolnego rzędu — to
+//   drugie przeniesione do top bara (już i tak pokazuje fazę dnia), żeby
+//   nic nie zaśmiecało rzędu kafli+CTA.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -24,7 +37,7 @@ import {
   createNarrativeStrip,
   createPlayerCard,
   createActionPanel,
-  createConsequencePanel
+  createConsequenceCards
 } from "../vnLayout.js";
 
 export function renderReflectionScreen(container, data) {
@@ -33,7 +46,12 @@ export function renderReflectionScreen(container, data) {
   const resultText = (data && data.resultText) || (lastEntry ? lastEntry.resultText : "");
   const consequences = lastEntry ? lastEntry.consequences : null;
 
-  const topbar = createTopBar(state, "reflection");
+  const dayProgressText = buildDayProgressText(state);
+  const topbar = createTopBar(
+    state,
+    "reflection",
+    dayProgressText ? `Refleksja · ${dayProgressText}` : undefined
+  );
   const side = createPlayerCard(state, "reflection");
 
   const scene = createScenePanel({
@@ -41,12 +59,7 @@ export function renderReflectionScreen(container, data) {
     title: "Skutek decyzji"
   });
 
-  const narrative = createNarrativeStrip(resultText);
-
-  const panelChildren = [];
-  if (consequences) {
-    panelChildren.push(renderImpactPanel(consequences, state));
-  }
+  const narrative = createNarrativeStrip(buildNarrativeText(resultText, consequences));
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
@@ -67,9 +80,11 @@ export function renderReflectionScreen(container, data) {
     }
   });
 
-  panelChildren.push(endDayButton);
+  const rowChildren = consequences
+    ? [...createConsequenceCards(buildConsequenceItems(consequences)), endDayButton]
+    : [endDayButton];
 
-  const actions = createActionPanel(panelChildren, "stack");
+  const actions = createActionPanel(rowChildren, "reflection");
 
   const shell = createVnShell({
     screenClass: "reflection",
@@ -83,17 +98,7 @@ export function renderReflectionScreen(container, data) {
   container.appendChild(shell);
 }
 
-// CLEAN v0.16 reflection impact panel START
-// konsekwencje jako duże kafle (vn-consequence-grid) z ikonami.
-function renderImpactPanel(consequences, state) {
-  const panel = document.createElement("div");
-  panel.className = "reflection-impact-panel";
-
-  const title = document.createElement("p");
-  title.className = "reflection-impact-title";
-  title.textContent = "Skutek decyzji";
-  panel.appendChild(title);
-
+function buildConsequenceItems(consequences) {
   const items = [
     { icon: "🥄", label: "Spoons", value: consequences.spoonsChange },
     { icon: "🤝", label: "Zaufanie", value: consequences.trustChange },
@@ -104,43 +109,28 @@ function renderImpactPanel(consequences, state) {
     items.push({ icon: "🌀", label: "Przeciążenie", value: consequences.fatigueChange });
   }
 
-  panel.appendChild(createConsequencePanel(items));
-
-  const interpretation = buildInterpretation(consequences);
-  if (interpretation) {
-    const interpretationText = document.createElement("p");
-    interpretationText.className = "consequences-interpretation";
-    interpretationText.textContent = interpretation;
-    panel.appendChild(interpretationText);
-  }
-
-  const spoonsSummary = document.createElement("p");
-  spoonsSummary.className = "spoons-summary";
-  spoonsSummary.textContent = `Zostało Ci ${state.resources.spoons.current} z ${state.resources.spoons.max} spoons na dziś.`;
-  panel.appendChild(spoonsSummary);
-
-  const dayProgress = buildDayProgressLine(state);
-  if (dayProgress) {
-    panel.appendChild(dayProgress);
-  }
-
-  return panel;
+  return items;
 }
 
-function buildDayProgressLine(state) {
+function buildNarrativeText(resultText, consequences) {
+  const interpretation = consequences ? buildInterpretation(consequences) : null;
+
+  if (!interpretation) {
+    return resultText;
+  }
+
+  return resultText ? `${resultText} ${interpretation}` : interpretation;
+}
+
+function buildDayProgressText(state) {
   if (!state.dailyAgenda || !Array.isArray(state.dailyAgenda.slots)) {
     return null;
   }
 
   const total = state.dailyAgenda.slots.length;
   const completed = state.dailyAgenda.slots.filter((item) => item.completed).length;
-
-  const line = document.createElement("p");
-  line.className = "reflection-day-progress";
-  line.textContent = `Postęp dnia: ${completed}/${total}`;
-  return line;
+  return `${completed}/${total}`;
 }
-// CLEAN v0.16 reflection impact panel END
 
 function buildInterpretation(consequences) {
   const sentences = [];

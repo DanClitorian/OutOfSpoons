@@ -336,7 +336,7 @@ function buildRelationshipCard(state) {
 
   const mood = document.createElement("p");
   mood.className = "vn-relationship-mood";
-  mood.textContent = buildRelationshipMoodLabel(npc);
+  mood.textContent = `Mood: ${buildRelationshipMoodLabel(npc)}`;
   card.appendChild(mood);
 
   return card;
@@ -461,12 +461,21 @@ function clampPercent(value) {
  * kontener treści dolnego panelu.
  *
  * @param {Array<HTMLElement|null>} children
- * @param {string} [layout] - "grid" (domyślnie, np. 3 karty agendy) albo
- *   "stack" (pojedyncza kolumna, np. lista wyborów eventu)
+ * @param {string} [layout] - "grid" (domyślnie, np. 3 karty agendy),
+ *   "stack" (pojedyncza kolumna/rząd, np. lista wyborów eventu) albo
+ *   "reflection" (v0.17.5: płaski jeden rząd — kafle konsekwencji +
+ *   CTA obok siebie, ta sama oś pionowa, patrz .vn-reflection-row)
  */
 export function createActionPanel(children, layout) {
   const panel = document.createElement("div");
-  panel.className = layout === "stack" ? "vn-action-stack" : "vn-action-grid";
+
+  if (layout === "stack") {
+    panel.className = "vn-action-stack";
+  } else if (layout === "reflection") {
+    panel.className = "vn-reflection-row";
+  } else {
+    panel.className = "vn-action-grid";
+  }
 
   (children || []).forEach((child) => {
     if (child) {
@@ -479,6 +488,7 @@ export function createActionPanel(children, layout) {
 
 /**
  * Buduje siatkę dużych "kafli" konsekwencji (np. Spoons -2, Zaufanie +1).
+ * Używane tam, gdzie kafle mają być w OSOBNYM, samodzielnym kontenerze.
  *
  * @param {Array<{icon?: string, label: string, value: number}>} items
  */
@@ -491,6 +501,20 @@ export function createConsequencePanel(items) {
   });
 
   return grid;
+}
+
+/**
+ * v0.17.5: jak createConsequencePanel, ale zwraca TABLICĘ pojedynczych
+ * kafli (bez wspólnego kontenera-gridu) — potrzebne, żeby kafle mogły
+ * być bezpośrednim rodzeństwem przycisku CTA w jednym płaskim rzędzie
+ * (.vn-reflection-row), zamiast być zagnieżdżone w osobnym gridzie
+ * obok osobno wyrównywanego przycisku. To naprawia niewspółosiowość
+ * CTA względem kafli na ekranie refleksji.
+ *
+ * @param {Array<{icon?: string, label: string, value: number}>} items
+ */
+export function createConsequenceCards(items) {
+  return (items || []).map((item) => buildConsequenceCard(item.icon, item.label, item.value));
 }
 
 function buildConsequenceCard(icon, label, value) {

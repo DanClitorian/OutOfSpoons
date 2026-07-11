@@ -32,10 +32,6 @@ import {
 export function renderEveningScreen(container) {
   const state = getState();
 
-  const resourceSummary = document.createElement("p");
-  resourceSummary.className = "evening-resource-summary";
-  resourceSummary.textContent = `Spoons: ${state.resources.spoons.current}/${state.resources.spoons.max}`;
-
   const topbar = createTopBar(state, "evening");
   const side = createPlayerCard(state, "evening");
 
@@ -45,8 +41,7 @@ export function renderEveningScreen(container) {
   });
 
   const narrative = createNarrativeStrip(
-    "Dzień się domyka. To, co zostało w zasobach, przechodzi na jutro. Dzień już się wydarzył — teraz zostaje pytanie, co robisz z resztką siebie.",
-    [resourceSummary]
+    "Dzień się domyka. To, co zostało w zasobach, przechodzi na jutro. Dzień już się wydarzył — teraz zostaje pytanie, co robisz z resztką siebie."
   );
 
   const options = document.createElement("div");
