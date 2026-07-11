@@ -1,48 +1,133 @@
 // vnLayout.js
 //
 // v0.16: Visual Novel RPG Layout Redesign.
+// v0.17: Asset-Based VN UI Implementation.
 //
-// Wspólny "shell" layoutu dla ekranów gameplayowych (poranek, agenda,
-// event, refleksja, wieczór), żeby nie kopiować tej samej struktury
-// (górny pasek / karta gracza / scena / panel akcji) w pięciu różnych
-// plikach ekranów. Każdy ekran buduje własną zawartość (scenę, kartę
-// gracza, panel akcji) i składa ją w jedną całość przez createVnShell().
+// Wspólny "shell" layoutu dla ekranów gameplayowych, teraz oparty o
+// realne assety graficzne z assets/ (sceny tła, ramka karty gracza) —
+// patrz assets/ASSET_MANIFEST_v0_17.md. Struktura zgodna z
+// assets/references/mockup-flow.png:
+//
+// <div class="vn-screen vn-screen--{screenClass}">
+//   <header class="vn-topbar">...</header>            (jedyny HUD)
+//   <div class="vn-main">
+//     <aside class="vn-side"><div class="vn-player-card">...</div></aside>
+//     <section class="vn-stage">
+//       <div class="vn-scene-panel">                   (tło = scene asset)
+//         <div class="vn-scene-title-tab">...</div>
+//       </div>
+//       <div class="vn-narrative-strip">...</div>       (osobny pasek tekstu)
+//     </section>
+//   </div>
+//   <section class="vn-actions">...</section>           (karty decyzji/konsekwencji)
+// </div>
 //
 // Ten moduł NIE zawiera żadnej logiki gry — tylko buduje DOM. Nie wie
 // nic o spoons, eventach, agendzie itd. poza tym, co dostanie w opcjach.
 
+const SCREEN_PHASE_LABELS = {
+  game: "Poranek",
+  morning: "Poranek",
+  agenda: "Plan dnia",
+  event: "Wydarzenie",
+  reflection: "Refleksja",
+  evening: "Wieczór",
+  weeklySummary: "Podsumowanie tygodnia"
+};
+
+// Ścieżki do assetów scen — patrz assets/ASSET_MANIFEST_v0_17.md.
+// Ścieżki są względne do index.html (root repo), tak jak istniejące
+// <link rel="stylesheet" href="css/style.css">.
+const SCENE_ASSET_PATHS = {
+  morning: "assets/scenes/scene-morning.png",
+  agenda: "assets/scenes/scene-agenda.jpg",
+  event: "assets/scenes/scene-event.png",
+  reflection: "assets/scenes/scene-reflection.png",
+  evening: "assets/scenes/scene-evening.png"
+};
+
 /**
- * Buduje pełną strukturę ekranu visual novel:
+ * Zamienia nazwę ekranu (jak w uiManager.js "screens") na etykietę fazy
+ * dnia czytelną dla gracza.
+ */
+export function getPhaseLabel(screenName) {
+  return SCREEN_PHASE_LABELS[screenName] || "";
+}
+
+/**
+ * Buduje górny pasek — JEDYNY HUD w grze: dzień, faza, spoons, zaufanie.
+ * Zastępuje wcześniejszy osobny globalny panel (gameHud.js), żeby
+ * uniknąć podwójnego HUD-u (patrz komentarz w uiManager.js).
  *
- * <div class="vn-screen vn-screen--{screenClass}">
- *   <div class="vn-topline">{phaseLabel}</div>
- *   <div class="vn-main">
- *     <aside class="vn-side">{side}</aside>
- *     <section class="vn-stage">{scene}</section>
- *   </div>
- *   <section class="vn-actions">{actions}</section>
- * </div>
+ * @param {object} state - aktualny stan gry (getState())
+ * @param {string} screenName - nazwa ekranu (jak w uiManager.js "screens")
+ * @param {string} [overridePhaseText] - dokładniejszy tekst fazy (np.
+ *   "Wydarzenie 2/3 — Relacja") zamiast domyślnej etykiety ekranu
+ */
+export function createTopBar(state, screenName, overridePhaseText) {
+  const bar = document.createElement("header");
+  bar.className = "vn-topbar";
+
+  const dayPhase = document.createElement("span");
+  dayPhase.className = "vn-topbar-daylabel";
+  dayPhase.textContent = `Dzień ${state.day} · ${overridePhaseText || getPhaseLabel(screenName)}`;
+  bar.appendChild(dayPhase);
+
+  const statsRow = document.createElement("div");
+  statsRow.className = "vn-topbar-stats";
+
+  const spoons = state.resources ? state.resources.spoons : null;
+  if (spoons) {
+    statsRow.appendChild(buildTopBarStat("🥄", `${spoons.current}/${spoons.max}`, "spoons"));
+  }
+
+  const npc = getPartnerNpc(state);
+  if (npc) {
+    statsRow.appendChild(buildTopBarStat("🤝", `${clampPercent(npc.trust)}`, "trust"));
+  }
+
+  bar.appendChild(statsRow);
+
+  return bar;
+}
+
+function buildTopBarStat(icon, valueText, modifier) {
+  const stat = document.createElement("span");
+  stat.className = `vn-topbar-stat vn-topbar-stat--${modifier}`;
+
+  const iconEl = document.createElement("span");
+  iconEl.className = "vn-topbar-stat-icon";
+  iconEl.setAttribute("aria-hidden", "true");
+  iconEl.textContent = icon;
+  stat.appendChild(iconEl);
+
+  const valueEl = document.createElement("span");
+  valueEl.className = "vn-topbar-stat-value";
+  valueEl.textContent = valueText;
+  stat.appendChild(valueEl);
+
+  return stat;
+}
+
+/**
+ * Buduje pełną strukturę ekranu visual novel z gotowych elementów DOM.
  *
  * @param {object} options
- * @param {string} options.screenClass - np. "morning", "agenda", "event",
- *   "reflection", "evening" (dołączany jako "vn-screen--{screenClass}")
- * @param {string} [options.phaseLabel] - krótka etykieta pokazywana w
- *   górnym pasku (np. "Poranek", "Wydarzenie 2/3 — Relacja")
- * @param {HTMLElement} [options.scene] - zawartość centralnej sceny
- * @param {HTMLElement} [options.side] - zawartość bocznego panelu (karta gracza)
+ * @param {string} options.screenClass - np. "morning", "agenda"...
+ * @param {HTMLElement} options.topbar - wynik createTopBar()
+ * @param {HTMLElement} [options.side] - wynik createPlayerCard()
+ * @param {HTMLElement} [options.scene] - wynik createScenePanel()
+ * @param {HTMLElement} [options.narrative] - wynik createNarrativeStrip()
  * @param {HTMLElement} [options.actions] - zawartość dolnego panelu akcji
  */
 export function createVnShell(options) {
-  const { screenClass, phaseLabel, scene, side, actions } = options || {};
+  const { screenClass, topbar, side, scene, narrative, actions } = options || {};
 
   const shell = document.createElement("div");
   shell.className = `vn-screen vn-screen--${screenClass || "default"}`;
 
-  if (phaseLabel) {
-    const topline = document.createElement("div");
-    topline.className = "vn-topline";
-    topline.textContent = phaseLabel;
-    shell.appendChild(topline);
+  if (topbar) {
+    shell.appendChild(topbar);
   }
 
   const main = document.createElement("div");
@@ -60,6 +145,9 @@ export function createVnShell(options) {
   if (scene) {
     stage.appendChild(scene);
   }
+  if (narrative) {
+    stage.appendChild(narrative);
+  }
   main.appendChild(stage);
 
   shell.appendChild(main);
@@ -75,53 +163,61 @@ export function createVnShell(options) {
 }
 
 /**
- * Buduje kartę centralnej sceny: duży symbol/emoji + tytuł + tekst,
- * z opcjonalnymi dodatkowymi kompaktowymi kartami (np. previous evening
- * summary, morning events) dołączanymi pod tekstem sceny.
+ * Buduje centralny panel sceny: tło = asset graficzny danej fazy
+ * (assets/scenes/...) + tab z tytułem w rogu. Tekst NIE jest tu już
+ * renderowany — patrz createNarrativeStrip(), osobny pasek pod sceną,
+ * żeby duże tło zawsze zostawało czytelne i "dominujące" (zgodnie z
+ * mockup-flow.png), a nie zasłonięte ścianą tekstu.
  *
  * @param {object} options
- * @param {string} [options.symbol] - duży symbol/emoji sceny
- * @param {string} [options.symbolModifier] - modyfikator klasy, np. "morning"
- * @param {string} [options.title] - tytuł sceny
- * @param {string|HTMLElement} [options.text] - tekst albo gotowy element
- * @param {Array<HTMLElement|null>} [options.extra] - dodatkowe kompaktowe
- *   karty doklejane pod tekstem sceny (np. istniejące sekcje z v0.10-v0.15,
- *   przeniesione tu bez przepisywania ich wewnętrznej logiki)
+ * @param {string} options.symbolModifier - "morning" | "agenda" |
+ *   "event" | "reflection" | "evening" — wybiera asset tła i klasę CSS
+ * @param {string} [options.title] - tytuł pokazywany w tabie
  */
 export function createScenePanel(options) {
-  const { symbol, symbolModifier, title, text, extra } = options || {};
+  const { symbolModifier, title } = options || {};
 
-  const card = document.createElement("div");
-  card.className = "vn-scene-card";
+  const panel = document.createElement("div");
+  panel.className = `vn-scene-panel vn-scene-panel--${symbolModifier || "default"}`;
 
-  if (symbol) {
-    const symbolEl = document.createElement("div");
-    symbolEl.className = `vn-scene-symbol vn-scene-symbol--${symbolModifier || "default"}`;
-    symbolEl.textContent = symbol;
-    symbolEl.setAttribute("aria-hidden", "true");
-    card.appendChild(symbolEl);
+  const assetPath = SCENE_ASSET_PATHS[symbolModifier];
+  if (assetPath) {
+    panel.style.backgroundImage = `url("${assetPath}")`;
   }
 
   if (title) {
-    const titleEl = document.createElement("h2");
-    titleEl.className = "vn-scene-title";
-    titleEl.textContent = title;
-    card.appendChild(titleEl);
+    const tab = document.createElement("div");
+    tab.className = "vn-scene-title-tab";
+    tab.textContent = title;
+    panel.appendChild(tab);
   }
 
-  if (text) {
-    const textEl = document.createElement("div");
-    textEl.className = "vn-scene-text";
+  return panel;
+}
 
+/**
+ * Buduje wąski pasek tekstu narracyjnego pod sceną (opis eventu, echo
+ * decyzji, wstęp poranka itd.), z opcjonalnymi dodatkowymi kompaktowymi
+ * kartami (np. skrót poprzedniego wieczoru, wydarzenia poranne) —
+ * każda owinięta w .vn-compact-card z własnym wewnętrznym scrollem,
+ * żeby długość treści nigdy nie wymusiła scrolla całej strony.
+ *
+ * @param {string|HTMLElement} text
+ * @param {Array<HTMLElement|null>} [extra]
+ */
+export function createNarrativeStrip(text, extra) {
+  const strip = document.createElement("div");
+  strip.className = "vn-narrative-strip";
+
+  if (text) {
     if (typeof text === "string") {
       const paragraph = document.createElement("p");
+      paragraph.className = "vn-narrative-text";
       paragraph.textContent = text;
-      textEl.appendChild(paragraph);
+      strip.appendChild(paragraph);
     } else {
-      textEl.appendChild(text);
+      strip.appendChild(text);
     }
-
-    card.appendChild(textEl);
   }
 
   if (Array.isArray(extra)) {
@@ -130,70 +226,202 @@ export function createScenePanel(options) {
         const compact = document.createElement("div");
         compact.className = "vn-compact-card";
         compact.appendChild(element);
-        card.appendChild(compact);
+        strip.appendChild(compact);
       }
     });
   }
 
-  return card;
+  return strip;
 }
 
 /**
- * Buduje symboliczną kartę gracza: imię, mały tekst fazy, spoons,
- * zaufanie. Celowo pokazuje tylko priorytetowe dane (spoons + zaufanie)
- * — reszta (frustracja, pełny opis relacji) zostaje w globalnym HUD-zie
- * (gameHud.js) i w istniejącej karcie partnera, żeby ta karta nie
- * dublowała tych samych informacji i nie zajmowała za dużo miejsca.
+ * Buduje symboliczną kartę postaci w lewym sidebarze, stylizowaną na
+ * ramkę z assets/ui/player-card-frame.png (patrz .vn-player-card w
+ * CSS): imię, etykieta "Twoja postać", spoons, zaufanie, opcjonalny
+ * jednowierszowy status. CELOWO nie pokazuje partnera jako portretu.
  *
  * @param {object} state - aktualny stan gry (getState())
- * @param {string} [phaseText] - mały tekst, np. "Dzień 4 · Poranek"
+ * @param {string} screenName - nazwa ekranu, do etykiety fazy
+ * @param {string} [statusLine] - opcjonalne 1 krótkie zdanie profilu
  */
-export function createPlayerCard(state, phaseText) {
+export function createPlayerCard(state, screenName, statusLine) {
   const card = document.createElement("div");
   card.className = "vn-player-card";
+
+  const inner = document.createElement("div");
+  inner.className = "vn-player-card-inner";
+
+  const badge = document.createElement("p");
+  badge.className = "vn-player-badge";
+  badge.textContent = "Twoja postać";
+  inner.appendChild(badge);
 
   const name = document.createElement("p");
   name.className = "vn-player-name";
   name.textContent = state && state.player ? state.player.name : "Ty";
-  card.appendChild(name);
+  inner.appendChild(name);
 
-  if (phaseText) {
-    const meta = document.createElement("p");
-    meta.className = "vn-player-meta";
-    meta.textContent = phaseText;
-    card.appendChild(meta);
-  }
+  const meta = document.createElement("p");
+  meta.className = "vn-player-meta";
+  meta.textContent = `Dzień ${state.day} · ${getPhaseLabel(screenName)}`;
+  inner.appendChild(meta);
 
   const spoons = state && state.resources ? state.resources.spoons : null;
   if (spoons) {
-    card.appendChild(
+    inner.appendChild(
       buildPlayerStat("🥄 Spoons", `${spoons.current}/${spoons.max}`, percent(spoons.current, spoons.max), "spoons")
     );
   }
 
   const npc = getPartnerNpc(state);
   if (npc) {
-    card.appendChild(
+    inner.appendChild(
       buildPlayerStat("🤝 Zaufanie", `${clampPercent(npc.trust)}`, clampPercent(npc.trust), "trust")
     );
   }
 
+  if (statusLine) {
+    const status = document.createElement("p");
+    status.className = "vn-player-status";
+    status.textContent = statusLine;
+    inner.appendChild(status);
+  }
+
+  card.appendChild(inner);
+
+  return buildSidebarStack(state, card);
+}
+
+function buildSidebarStack(state, playerCard) {
+  const stack = document.createElement("div");
+  stack.className = "vn-sidebar-stack";
+  stack.appendChild(playerCard);
+
+  const relationshipCard = buildRelationshipCard(state);
+  if (relationshipCard) {
+    stack.appendChild(relationshipCard);
+  }
+
+  return stack;
+}
+
+function buildRelationshipCard(state) {
+  const npc = getPartnerNpc(state);
+  const partner = state && state.partner ? state.partner : null;
+
+  if (!npc || !partner) {
+    return null;
+  }
+
+  const card = document.createElement("div");
+  card.className = "vn-relationship-card";
+
+  const heading = document.createElement("p");
+  heading.className = "vn-relationship-heading";
+  heading.textContent = "Relacja";
+  card.appendChild(heading);
+
+  const name = document.createElement("p");
+  name.className = "vn-relationship-name";
+  name.textContent = partner.name;
+  card.appendChild(name);
+
+  const label = document.createElement("p");
+  label.className = "vn-relationship-label";
+  label.textContent = partner.relationshipLabel || "Osoba partnerska";
+  card.appendChild(label);
+
+  card.appendChild(buildRelationshipMiniMeter("🤝 Zaufanie", npc.trust, "trust"));
+  card.appendChild(buildRelationshipMiniMeter("🌡️ Frustracja", npc.frustration, "frustration"));
+
+  const mood = document.createElement("p");
+  mood.className = "vn-relationship-mood";
+  mood.textContent = buildRelationshipMoodLabel(npc);
+  card.appendChild(mood);
+
   return card;
+}
+
+function buildRelationshipMiniMeter(label, value, modifier) {
+  const safeValue = clampPercent(value);
+
+  const meter = document.createElement("div");
+  meter.className = "vn-relationship-meter";
+
+  const labelRow = document.createElement("div");
+  labelRow.className = "vn-relationship-meter-label";
+
+  const labelText = document.createElement("span");
+  labelText.textContent = label;
+  labelRow.appendChild(labelText);
+
+  const valueText = document.createElement("span");
+  valueText.textContent = `${safeValue}/100`;
+  labelRow.appendChild(valueText);
+
+  meter.appendChild(labelRow);
+
+  const bar = document.createElement("div");
+  bar.className = "vn-relationship-bar";
+
+  const fill = document.createElement("div");
+  fill.className = `vn-relationship-bar-fill vn-relationship-bar-fill--${modifier}`;
+  fill.style.width = `${safeValue}%`;
+  bar.appendChild(fill);
+
+  meter.appendChild(bar);
+
+  return meter;
+}
+
+function buildRelationshipMoodLabel(npc) {
+  const trust = clampPercent(npc.trust);
+  const frustration = clampPercent(npc.frustration);
+
+  if (trust >= 70 && frustration <= 25) {
+    return "Bezpiecznie";
+  }
+
+  if (trust >= 50 && frustration <= 45) {
+    return "Stabilnie";
+  }
+
+  if (frustration >= 70 && trust >= 40) {
+    return "Napięcie";
+  }
+
+  if (trust < 35 && frustration >= 55) {
+    return "Krucho";
+  }
+
+  if (trust < 35) {
+    return "Niepewnie";
+  }
+
+  if (frustration >= 55) {
+    return "Przeciążenie";
+  }
+
+  return "Niejasno";
 }
 
 function buildPlayerStat(label, valueText, percentValue, modifier) {
   const stat = document.createElement("div");
   stat.className = "vn-player-stat";
 
-  const labelEl = document.createElement("span");
-  labelEl.className = "vn-player-stat-label";
-  labelEl.textContent = label;
-  stat.appendChild(labelEl);
+  const labelRow = document.createElement("div");
+  labelRow.className = "vn-player-stat-label";
+
+  const labelText = document.createElement("span");
+  labelText.textContent = label;
+  labelRow.appendChild(labelText);
 
   const valueEl = document.createElement("span");
   valueEl.className = "vn-player-stat-value";
   valueEl.textContent = valueText;
-  stat.appendChild(valueEl);
+  labelRow.appendChild(valueEl);
+
+  stat.appendChild(labelRow);
 
   const bar = document.createElement("div");
   bar.className = "vn-player-bar";
@@ -229,14 +457,16 @@ function clampPercent(value) {
 }
 
 /**
- * Opakowuje przekazane elementy (przyciski, karty wyboru) we wspólny
- * kontener panelu akcji na dole ekranu.
+ * Opakowuje przekazane elementy (karty akcji, przyciski) we wspólny
+ * kontener treści dolnego panelu.
  *
  * @param {Array<HTMLElement|null>} children
+ * @param {string} [layout] - "grid" (domyślnie, np. 3 karty agendy) albo
+ *   "stack" (pojedyncza kolumna, np. lista wyborów eventu)
  */
-export function createActionPanel(children) {
+export function createActionPanel(children, layout) {
   const panel = document.createElement("div");
-  panel.className = "vn-action-grid";
+  panel.className = layout === "stack" ? "vn-action-stack" : "vn-action-grid";
 
   (children || []).forEach((child) => {
     if (child) {
@@ -249,23 +479,21 @@ export function createActionPanel(children) {
 
 /**
  * Buduje siatkę dużych "kafli" konsekwencji (np. Spoons -2, Zaufanie +1).
- * Kafle mają dodatkową klasę modyfikatora w zależności od znaku wartości,
- * żeby dało się je pokolorować (poprawa / pogorszenie / bez zmian).
  *
- * @param {Array<{label: string, value: number}>} items
+ * @param {Array<{icon?: string, label: string, value: number}>} items
  */
 export function createConsequencePanel(items) {
   const grid = document.createElement("div");
   grid.className = "vn-consequence-grid";
 
   (items || []).forEach((item) => {
-    grid.appendChild(buildConsequenceCard(item.label, item.value));
+    grid.appendChild(buildConsequenceCard(item.icon, item.label, item.value));
   });
 
   return grid;
 }
 
-function buildConsequenceCard(label, value) {
+function buildConsequenceCard(icon, label, value) {
   const direction = value > 0 ? "positive" : value < 0 ? "negative" : "neutral";
 
   const card = document.createElement("div");
@@ -273,7 +501,7 @@ function buildConsequenceCard(label, value) {
 
   const labelEl = document.createElement("span");
   labelEl.className = "vn-consequence-label";
-  labelEl.textContent = label;
+  labelEl.textContent = icon ? `${icon} ${label}` : label;
   card.appendChild(labelEl);
 
   const valueEl = document.createElement("span");

@@ -4,10 +4,12 @@
 // Flow:
 //   morning -> event -> reflection -> evening -> next morning
 //
-// v0.16: Visual Novel RPG Layout Redesign. Wieczór ma teraz wyraźnie
-// inny, ciemniejszy nastrój (patrz body[data-game-screen="evening"] w
-// CSS) i tę samą strukturę VN co reszta ekranów gameplayowych. Logika
-// evening recovery i weekly summary flow są nietknięte.
+// v0.16: Wieczór ma wyraźnie inny, ciemniejszy nastrój i tę samą
+// strukturę VN co reszta ekranów gameplayowych. Logika evening recovery
+// i weekly summary flow są nietknięte.
+//
+// v0.17: Asset-Based VN UI Implementation — scena używa teraz tła
+// assets/scenes/scene-evening.png.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -18,7 +20,14 @@ import {
   applyEveningRecovery
 } from "../../systems/eveningRecoverySystem.js";
 import { shouldShowWeeklySummary } from "../../systems/weeklySummarySystem.js";
-import { createVnShell, createScenePanel, createPlayerCard, createActionPanel } from "../vnLayout.js";
+import {
+  createVnShell,
+  createTopBar,
+  createScenePanel,
+  createNarrativeStrip,
+  createPlayerCard,
+  createActionPanel
+} from "../vnLayout.js";
 
 export function renderEveningScreen(container) {
   const state = getState();
@@ -27,15 +36,18 @@ export function renderEveningScreen(container) {
   resourceSummary.className = "evening-resource-summary";
   resourceSummary.textContent = `Spoons: ${state.resources.spoons.current}/${state.resources.spoons.max}`;
 
+  const topbar = createTopBar(state, "evening");
+  const side = createPlayerCard(state, "evening");
+
   const scene = createScenePanel({
-    symbol: "🌙",
     symbolModifier: "evening",
-    title: "Koniec dnia",
-    text: "Dzień się domyka. To, co zostało w zasobach, przechodzi na jutro. Dzień już się wydarzył — teraz zostaje pytanie, co robisz z resztką siebie.",
-    extra: [resourceSummary]
+    title: "Koniec dnia"
   });
 
-  const side = createPlayerCard(state, `Dzień ${state.day} · Wieczór`);
+  const narrative = createNarrativeStrip(
+    "Dzień się domyka. To, co zostało w zasobach, przechodzi na jutro. Dzień już się wydarzył — teraz zostaje pytanie, co robisz z resztką siebie.",
+    [resourceSummary]
+  );
 
   const options = document.createElement("div");
   options.className = "evening-options";
@@ -44,13 +56,14 @@ export function renderEveningScreen(container) {
     options.appendChild(renderEveningOptionButton(option, state));
   });
 
-  const actions = createActionPanel([options]);
+  const actions = createActionPanel([options], "stack");
 
   const shell = createVnShell({
     screenClass: "evening",
-    phaseLabel: "Wieczór",
-    scene,
+    topbar,
     side,
+    scene,
+    narrative,
     actions
   });
 
@@ -76,7 +89,7 @@ function renderEveningOptionButton(option, state) {
   effects.textContent = formatEffects(option.effects);
   button.appendChild(effects);
 
-    button.addEventListener("click", () => {
+  button.addEventListener("click", () => {
     const currentState = getState();
     const completedDay = currentState.day;
 

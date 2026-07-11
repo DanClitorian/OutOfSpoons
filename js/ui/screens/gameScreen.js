@@ -1,20 +1,28 @@
 // gameScreen.js
 //
 // Morning screen.
-// v0.16: Visual Novel RPG Layout Redesign. Zamiast długiej pionowej
-// kolumny statusów, poranek jest teraz sceną VN (symbol + krótki tekst)
-// z boczną kartą gracza i jednym przyciskiem akcji. Istniejące sekcje
-// (previous evening summary, morning events, agenda dnia, status
-// zdania, karta partnera) NIE zostały usunięte — są teraz kompaktowymi
-// kartami wewnątrz sceny (patrz vn-compact-card w CSS), żeby zmieściły
-// się bez przewijania całej strony.
+// v0.16: Visual Novel RPG Layout Redesign — poranek jako scena VN.
+// v0.17: Asset-Based VN UI Implementation. Scena używa teraz realnego
+// tła assets/scenes/scene-morning.png zamiast samego emoji, a tekst
+// (poprzedni wieczór, wydarzenia poranne, agenda dnia, karta partnera)
+// przeniósł się do osobnego narrative-strip pod sceną, żeby duże tło
+// zostało dominującym elementem ekranu (assets/references/mockup-flow.png).
+// Funkcje budujące te sekcje są nietknięte od v0.13/v0.10 — zmienia się
+// tylko to, GDZIE ich wynik trafia w layoucie.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { buildStatusSentence } from "../../systems/characterSystem.js";
 import { ensureDailyAgenda, getAgendaSlotLabel } from "../../systems/dayAgendaSystem.js";
 import { saveGame } from "../../state/saveManager.js";
-import { createVnShell, createScenePanel, createPlayerCard, createActionPanel } from "../vnLayout.js";
+import {
+  createVnShell,
+  createTopBar,
+  createScenePanel,
+  createNarrativeStrip,
+  createPlayerCard,
+  createActionPanel
+} from "../vnLayout.js";
 
 export function renderGameScreen(container) {
   const state = getState();
@@ -24,19 +32,21 @@ export function renderGameScreen(container) {
     renderPreviousEveningSummary(state),
     renderMorningEvents(state),
     renderDailyAgendaSection(state),
-    renderStatusSentenceCard(state),
     renderPartnerCardIfPresent(state)
   ];
 
+  const topbar = createTopBar(state, "game");
+  const side = createPlayerCard(state, "game", state.player ? buildStatusSentence(state.player) : null);
+
   const scene = createScenePanel({
-    symbol: "🌤️",
     symbolModifier: "morning",
-    title: `Dzień ${state.day}`,
-    text: "Nowy dzień. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.",
-    extra: extraCards
+    title: `Dzień ${state.day}`
   });
 
-  const side = createPlayerCard(state, `Dzień ${state.day} · Poranek`);
+  const narrative = createNarrativeStrip(
+    "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.",
+    extraCards
+  );
 
   const continueButton = document.createElement("button");
   continueButton.className = "primary-button vn-choice-button";
@@ -47,28 +57,18 @@ export function renderGameScreen(container) {
     showScreen("agenda");
   });
 
-  const actions = createActionPanel([continueButton]);
+  const actions = createActionPanel([continueButton], "stack");
 
   const shell = createVnShell({
     screenClass: "morning",
-    phaseLabel: "Poranek",
-    scene,
+    topbar,
     side,
+    scene,
+    narrative,
     actions
   });
 
   container.appendChild(shell);
-}
-
-function renderStatusSentenceCard(state) {
-  if (!state.player) {
-    return null;
-  }
-
-  const statusSentence = document.createElement("p");
-  statusSentence.className = "status-sentence";
-  statusSentence.textContent = buildStatusSentence(state.player);
-  return statusSentence;
 }
 
 function renderPartnerCardIfPresent(state) {

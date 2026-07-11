@@ -1541,3 +1541,2056 @@ body[data-game-screen="weeklySummary"] {
   color: var(--color-muted);
 }
 /* END CLEAN v0.16 visual novel RPG layout */
+
+/* CLEAN v0.17 asset-based VN UI */
+
+/* --------------------------------------------------------------------
+   Prawdziwy brak scrolla body na gameplay screens: body dostaje stałą
+   wysokość 100vh + overflow:hidden, #app wypełnia ją flexem, a
+   .vn-screen wypełnia #app gridem. weeklySummary NIE dostaje tego
+   traktowania — zostaje normalnym, przewijalnym ekranem.
+   -------------------------------------------------------------------- */
+
+body[data-game-screen="game"],
+body[data-game-screen="morning"],
+body[data-game-screen="agenda"],
+body[data-game-screen="event"],
+body[data-game-screen="reflection"],
+body[data-game-screen="evening"] {
+  height: 100vh;
+  overflow: hidden;
+  align-items: stretch;
+  padding: 0.65rem 1rem;
+}
+
+body[data-game-screen="game"] #app,
+body[data-game-screen="morning"] #app,
+body[data-game-screen="agenda"] #app,
+body[data-game-screen="event"] #app,
+body[data-game-screen="reflection"] #app,
+body[data-game-screen="evening"] #app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 1100px;
+}
+
+body[data-game-screen="game"] .version-badge,
+body[data-game-screen="morning"] .version-badge,
+body[data-game-screen="agenda"] .version-badge,
+body[data-game-screen="event"] .version-badge,
+body[data-game-screen="reflection"] .version-badge,
+body[data-game-screen="evening"] .version-badge {
+  position: fixed;
+  bottom: 4px;
+  right: 8px;
+  margin: 0;
+  z-index: 5;
+}
+
+@media (max-width: 780px) {
+  body[data-game-screen="game"],
+  body[data-game-screen="morning"],
+  body[data-game-screen="agenda"],
+  body[data-game-screen="event"],
+  body[data-game-screen="reflection"],
+  body[data-game-screen="evening"] {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+}
+
+/* --------------------------------------------------------------------
+   vn-screen jako CSS grid z nazwanymi obszarami — dokładnie struktura
+   z assets/references/mockup-flow.png: topbar na górze na całą
+   szerokość, sidebar + scena obok siebie, actions na dole na całą
+   szerokość.
+   -------------------------------------------------------------------- */
+
+.vn-screen {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  grid-template-rows: 52px minmax(0, 1fr) 230px;
+  grid-template-areas:
+    "topbar  topbar"
+    "side    stage"
+    "actions actions";
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+@media (max-width: 780px) {
+  .vn-screen {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+  }
+}
+
+/* --------------------------------------------------------------------
+   Top bar — JEDYNY HUD (dzień / faza / spoons / zaufanie)
+   -------------------------------------------------------------------- */
+
+.vn-topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(43, 42, 40, 0.08);
+}
+
+.vn-topbar-daylabel {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+.vn-topbar-stats {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vn-topbar-stat {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.vn-topbar-stat-icon {
+  font-size: 1rem;
+}
+
+.vn-topbar-stat--spoons .vn-topbar-stat-value {
+  color: var(--color-gold);
+}
+
+.vn-topbar-stat--trust .vn-topbar-stat-value {
+  color: var(--color-sage);
+}
+
+/* --------------------------------------------------------------------
+   Left player card — oparta o assets/ui/player-card-frame.png jako
+   tło; półprzezroczysta "pergaminowa" nakładka nad nim gwarantuje
+   czytelność tekstu niezależnie od dokładnej treści assetu.
+   -------------------------------------------------------------------- */
+
+.vn-side {
+  grid-area: side;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.vn-player-card {
+  position: relative;
+  height: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background-image: url("../assets/ui/player-card-frame.png");
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 5px rgba(43, 42, 40, 0.18);
+  border: 1px solid var(--color-line);
+}
+
+.vn-player-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(244, 239, 230, 0.62), rgba(244, 239, 230, 0.8));
+}
+
+.vn-player-card-inner {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 0.85rem;
+  overflow-y: auto;
+}
+
+.vn-player-badge {
+  margin: 0;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.vn-player-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.vn-player-meta {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.vn-player-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vn-player-stat-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.vn-player-stat-value {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.vn-player-bar {
+  height: 8px;
+  background-color: var(--color-line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vn-player-bar-fill {
+  height: 100%;
+}
+
+.vn-player-bar-fill--spoons {
+  background-color: var(--color-gold);
+}
+
+.vn-player-bar-fill--trust {
+  background-color: var(--color-sage);
+}
+
+.vn-player-status {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--color-line);
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--color-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------
+   Stage: duży panel sceny (tło = asset danej fazy) + tab z tytułem +
+   osobny pasek narracji pod spodem.
+   -------------------------------------------------------------------- */
+
+.vn-stage {
+  grid-area: stage;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.vn-scene-panel {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: 12px;
+  border: 1px solid var(--color-line);
+  box-shadow: 0 2px 8px rgba(43, 42, 40, 0.18);
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-panel);
+  overflow: hidden;
+}
+
+.vn-scene-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(43, 42, 40, 0) 60%, rgba(43, 42, 40, 0.28) 100%);
+  pointer-events: none;
+}
+
+.vn-scene-title-tab {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  padding: 0.4rem 1rem;
+  background-color: rgba(244, 239, 230, 0.92);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--color-ink);
+  box-shadow: 0 2px 4px rgba(43, 42, 40, 0.2);
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vn-narrative-strip {
+  flex-shrink: 0;
+  max-height: 34%;
+  overflow-y: auto;
+  padding: 0.6rem 0.9rem;
+  background-color: var(--color-paper);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--color-ink);
+}
+
+.vn-narrative-text {
+  margin: 0 0 0.4rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.vn-compact-card {
+  max-height: 110px;
+  overflow-y: auto;
+  padding: 0.5rem 0.6rem;
+  margin-top: 0.4rem;
+  background-color: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+/* --------------------------------------------------------------------
+   Bottom action panel — decision cards w stylu "tactile", nie zwykłe
+   przyciski formularza (assets/references/component-sheet.jpg).
+   -------------------------------------------------------------------- */
+
+.vn-actions {
+  grid-area: actions;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.vn-action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  height: 100%;
+}
+
+.vn-action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  justify-content: center;
+  height: 100%;
+}
+
+@media (max-width: 780px) {
+  .vn-action-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .vn-actions {
+    max-height: none;
+  }
+}
+
+.vn-action-card,
+.choice-button,
+.evening-option-button {
+  background: linear-gradient(180deg, #FBF7EE 0%, #F0E6D2 100%);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  box-shadow: 0 2px 0 rgba(67, 53, 46, 0.14), 0 4px 10px rgba(67, 53, 46, 0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.vn-action-card:not(:disabled):hover,
+.choice-button:not(:disabled):hover,
+.evening-option-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 0 rgba(67, 53, 46, 0.18), 0 7px 14px rgba(67, 53, 46, 0.16);
+}
+
+.vn-action-card--completed,
+.choice-button--disabled {
+  background: var(--color-panel);
+  box-shadow: none;
+  transform: none;
+  opacity: 0.6;
+}
+
+.vn-action-card-meta {
+  font-size: 0.75rem;
+}
+
+.agenda-choice-description {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.agenda-choice-hint {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.choices {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.consequences-interpretation,
+.spoons-summary {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------
+   Konsekwencje jako duże, wyraźne kafle z ikonami (reflection screen)
+   -------------------------------------------------------------------- */
+
+.vn-consequence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.6rem;
+  margin: 0.5rem 0;
+}
+
+.vn-consequence-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0.6rem;
+  background: linear-gradient(180deg, #FBF7EE 0%, #F0E6D2 100%);
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  box-shadow: 0 2px 0 rgba(67, 53, 46, 0.1), 0 3px 8px rgba(67, 53, 46, 0.1);
+  text-align: center;
+}
+
+.vn-consequence-label {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+}
+
+.vn-consequence-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  color: var(--color-ink);
+}
+
+.vn-consequence-card--positive .vn-consequence-value {
+  color: var(--color-sage);
+}
+
+.vn-consequence-card--negative .vn-consequence-value {
+  color: var(--color-rose);
+}
+
+.vn-consequence-card--neutral .vn-consequence-value {
+  color: var(--color-muted);
+}
+/* END CLEAN v0.17 asset-based VN UI */
+
+
+/* CLEAN HOTFIX v0.17.1 force mockup layout START */
+/*
+  This block intentionally overrides previous v0.16/v0.17 layout rules.
+  The first asset-based updater wired the images correctly, but old/global
+  layout rules still collapsed the scene into a tiny vertical strip.
+*/
+
+html,
+body {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(245, 240, 230, 0.95), rgba(222, 212, 194, 0.95)) !important;
+}
+
+#app {
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  display: block !important;
+}
+
+/* Main parchment board */
+.vn-screen {
+  width: min(1360px, calc(100vw - 20px)) !important;
+  height: calc(100vh - 20px) !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: 16px 20px 18px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+
+  display: grid !important;
+  grid-template-columns: clamp(210px, 19vw, 270px) minmax(0, 1fr) !important;
+  grid-template-rows: 54px minmax(0, 1fr) clamp(150px, 23vh, 210px) !important;
+  grid-template-areas:
+    "topbar topbar"
+    "side stage"
+    "actions actions" !important;
+  gap: 14px 18px !important;
+
+  border: 1px solid rgba(74, 69, 60, 0.22) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 92% 88%, rgba(214, 166, 105, 0.16), transparent 22%),
+    linear-gradient(135deg, rgba(255,255,255,0.55), rgba(237,229,215,0.94)),
+    #f5f0e6 !important;
+  box-shadow:
+    0 18px 50px rgba(74, 69, 60, 0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.45) !important;
+}
+
+.vn-topbar {
+  grid-area: topbar !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+
+  padding: 0 18px !important;
+  border: 1px solid rgba(74, 69, 60, 0.20) !important;
+  border-radius: 10px !important;
+  background: rgba(237, 229, 215, 0.82) !important;
+  color: #4A453C !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em !important;
+}
+
+.vn-topbar-daylabel {
+  font-size: clamp(15px, 1.4vw, 20px) !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.vn-topbar-stats {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  white-space: nowrap !important;
+}
+
+.vn-topbar-stat {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: clamp(14px, 1.25vw, 18px) !important;
+  color: #8C5F2F !important;
+}
+
+.vn-main {
+  display: contents !important;
+}
+
+/* Left player card */
+.vn-side {
+  grid-area: side !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+  padding-top: 8px !important;
+}
+
+.vn-player-card {
+  width: min(100%, 245px) !important;
+  min-width: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
+  min-height: 330px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+
+  padding: 22px 18px 18px !important;
+  border-radius: 16px !important;
+  border: 2px solid rgba(93, 123, 144, 0.78) !important;
+  background:
+    linear-gradient(rgba(245, 240, 230, 0.88), rgba(237, 229, 215, 0.93)),
+    url("../assets/ui/player-card-frame.png") center / cover no-repeat,
+    #EDE5D7 !important;
+  box-shadow:
+    0 12px 22px rgba(74, 69, 60, 0.22),
+    inset 0 0 0 1px rgba(255,255,255,0.45) !important;
+  transform: rotate(-1.1deg) !important;
+}
+
+.vn-player-card-inner {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.vn-player-badge,
+.vn-player-name,
+.vn-player-meta,
+.vn-player-status {
+  color: #4A453C !important;
+  text-align: center !important;
+}
+
+.vn-player-badge {
+  margin: 0 0 8px !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #8C7B6D !important;
+}
+
+.vn-player-name {
+  margin: 0 0 8px !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(18px, 1.8vw, 25px) !important;
+  font-weight: 800 !important;
+}
+
+.vn-player-meta {
+  margin: 0 0 16px !important;
+  font-size: 12px !important;
+  color: #8C7B6D !important;
+}
+
+.vn-player-stat {
+  display: block !important;
+  margin: 13px 0 !important;
+}
+
+.vn-player-stat-label {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #4A453C !important;
+}
+
+.vn-player-stat-value {
+  color: #8C5F2F !important;
+}
+
+.vn-player-bar {
+  height: 9px !important;
+  margin-top: 6px !important;
+  border-radius: 999px !important;
+  background: rgba(74, 69, 60, 0.22) !important;
+  overflow: hidden !important;
+}
+
+.vn-player-bar-fill {
+  height: 100% !important;
+  border-radius: 999px !important;
+}
+
+.vn-player-bar-fill--spoons {
+  background: #8EA7C2 !important;
+}
+
+.vn-player-bar-fill--trust {
+  background: #D6A669 !important;
+}
+
+.vn-player-status {
+  margin: 14px 0 0 !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  color: #5e554b !important;
+}
+
+/* Stage: large illustration + narrative strip */
+.vn-stage {
+  grid-area: stage !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+}
+
+.vn-scene-panel {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 260px !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: hidden !important;
+
+  border: 2px solid rgba(93, 123, 144, 0.68) !important;
+  border-radius: 16px !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  box-shadow:
+    0 12px 26px rgba(74, 69, 60, 0.20),
+    inset 0 0 0 1px rgba(255,255,255,0.3) !important;
+}
+
+.vn-scene-panel::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(74,69,60,0.04)),
+    radial-gradient(circle at 50% 100%, rgba(245,240,230,0.18), transparent 40%) !important;
+}
+
+.vn-scene-title-tab {
+  position: absolute !important;
+  top: 10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2 !important;
+
+  max-width: min(80%, 520px) !important;
+  padding: 8px 24px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(74, 69, 60, 0.25) !important;
+  background:
+    linear-gradient(180deg, #9B6846, #6F442E) !important;
+  color: #F5F0E6 !important;
+  box-shadow:
+    0 7px 13px rgba(74, 69, 60, 0.25),
+    inset 0 0 0 1px rgba(255,255,255,0.18) !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(18px, 2vw, 30px) !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.035em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.vn-narrative-strip {
+  width: min(92%, 820px) !important;
+  max-height: 112px !important;
+  margin: -22px auto 0 !important;
+  z-index: 3 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+
+  padding: 14px 22px !important;
+  border-radius: 13px !important;
+  border: 1px solid rgba(74, 69, 60, 0.18) !important;
+  background:
+    linear-gradient(180deg, rgba(250, 246, 235, 0.96), rgba(231, 220, 200, 0.98)) !important;
+  box-shadow:
+    0 8px 18px rgba(74, 69, 60, 0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.52) !important;
+  color: #4A453C !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+}
+
+.vn-narrative-text,
+.vn-narrative-strip > p {
+  margin: 0 !important;
+  max-width: 100% !important;
+  font-size: clamp(14px, 1.35vw, 19px) !important;
+  line-height: 1.28 !important;
+  text-align: center !important;
+  color: #4A453C !important;
+
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.vn-compact-card {
+  max-height: 80px !important;
+  overflow: auto !important;
+  padding: 7px 9px !important;
+  border-radius: 9px !important;
+  background: rgba(245, 240, 230, 0.78) !important;
+  border: 1px solid rgba(74, 69, 60, 0.13) !important;
+  font-size: 11px !important;
+  line-height: 1.25 !important;
+}
+
+/* Bottom action area */
+.vn-actions {
+  grid-area: actions !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 4px 18px 2px !important;
+}
+
+.vn-action-grid,
+.vn-action-stack,
+.choices,
+.vn-consequence-grid {
+  width: 100% !important;
+  max-width: 1000px !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.vn-action-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+.vn-action-stack {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+}
+
+.choices {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+/* Tactile cards */
+.vn-action-card,
+.choice-button,
+.vn-choice-button,
+.agenda-choice-button,
+.evening-option-button {
+  min-width: 0 !important;
+  min-height: 116px !important;
+  height: auto !important;
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 7px !important;
+
+  padding: 14px 16px !important;
+  border: 3px solid #5D7B90 !important;
+  border-radius: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(250,246,235,0.98), rgba(231,220,200,0.96)) !important;
+  color: #4A453C !important;
+  box-shadow:
+    0 8px 0 rgba(54, 74, 88, 0.58),
+    0 14px 24px rgba(74, 69, 60, 0.18),
+    inset 0 0 0 1px rgba(255,255,255,0.55) !important;
+
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  text-align: center !important;
+  cursor: pointer !important;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    border-color 120ms ease !important;
+}
+
+.vn-action-card:hover,
+.choice-button:hover,
+.vn-choice-button:hover,
+.agenda-choice-button:hover,
+.evening-option-button:hover {
+  transform: translateY(-3px) !important;
+  border-color: #D6A669 !important;
+  box-shadow:
+    0 10px 0 rgba(54, 74, 88, 0.52),
+    0 18px 28px rgba(74, 69, 60, 0.22),
+    inset 0 0 0 1px rgba(255,255,255,0.62) !important;
+}
+
+.vn-action-card:disabled,
+.choice-button:disabled,
+.agenda-choice-button:disabled,
+.evening-option-button:disabled,
+.vn-action-card--completed,
+.agenda-choice-button--completed {
+  cursor: default !important;
+  opacity: 0.55 !important;
+  filter: grayscale(0.45) !important;
+  transform: none !important;
+}
+
+.primary-button.vn-choice-button {
+  width: min(520px, 90%) !important;
+  min-height: 76px !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, #9B6846, #6F442E) !important;
+  color: #F5F0E6 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(18px, 1.8vw, 26px) !important;
+  font-weight: 800 !important;
+  box-shadow:
+    0 8px 0 rgba(74, 45, 31, 0.8),
+    0 18px 28px rgba(74, 69, 60, 0.24) !important;
+}
+
+.choice-label,
+.agenda-choice-label,
+.evening-option-label {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(15px, 1.35vw, 20px) !important;
+  font-weight: 800 !important;
+  color: #4A453C !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.025em !important;
+}
+
+.choice-cost,
+.agenda-choice-card-meta,
+.evening-option-effects,
+.agenda-choice-description,
+.choice-unavailable-note {
+  font-size: clamp(11px, 1vw, 13px) !important;
+  line-height: 1.25 !important;
+  color: #6A5B4F !important;
+}
+
+/* Consequences */
+.vn-consequence-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.vn-consequence-card {
+  min-height: 120px !important;
+  padding: 14px 16px !important;
+  border-radius: 14px !important;
+  border: 3px solid #5D7B90 !important;
+  box-shadow:
+    0 8px 0 rgba(54, 74, 88, 0.58),
+    0 14px 24px rgba(74, 69, 60, 0.18) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  gap: 8px !important;
+}
+
+.vn-consequence-card--positive {
+  background: linear-gradient(180deg, rgba(214, 230, 205, 0.98), rgba(175, 205, 165, 0.98)) !important;
+}
+
+.vn-consequence-card--negative {
+  background: linear-gradient(180deg, rgba(226, 191, 181, 0.98), rgba(194, 126, 113, 0.98)) !important;
+}
+
+.vn-consequence-card--neutral {
+  background: linear-gradient(180deg, rgba(231, 220, 200, 0.98), rgba(206, 195, 179, 0.98)) !important;
+}
+
+.vn-consequence-label {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 800 !important;
+  font-size: clamp(14px, 1.25vw, 18px) !important;
+}
+
+.vn-consequence-value {
+  font-size: clamp(22px, 2.4vw, 34px) !important;
+  font-weight: 900 !important;
+}
+
+/* Evening atmosphere */
+.vn-screen--evening {
+  background:
+    radial-gradient(circle at 82% 18%, rgba(214, 166, 105, 0.18), transparent 24%),
+    linear-gradient(135deg, rgba(58,63,82,0.92), rgba(46,49,64,0.98)) !important;
+}
+
+.vn-screen--evening .vn-topbar,
+.vn-screen--evening .vn-narrative-strip {
+  background: rgba(58, 63, 82, 0.78) !important;
+  color: #F1EBDD !important;
+  border-color: rgba(241, 235, 221, 0.22) !important;
+}
+
+.vn-screen--evening .vn-narrative-text,
+.vn-screen--evening .vn-narrative-strip > p {
+  color: #F1EBDD !important;
+}
+
+/* Preserve version badge but keep it subtle */
+.version-badge {
+  position: fixed !important;
+  right: 14px !important;
+  bottom: 10px !important;
+  z-index: 50 !important;
+  opacity: 0.65 !important;
+  font-size: 11px !important;
+}
+
+/* Laptop safeguards */
+@media (max-height: 790px) {
+  .vn-screen {
+    padding: 10px 14px 12px !important;
+    grid-template-rows: 48px minmax(0, 1fr) 145px !important;
+    gap: 10px 14px !important;
+  }
+
+  .vn-scene-panel {
+    min-height: 220px !important;
+  }
+
+  .vn-narrative-strip {
+    max-height: 86px !important;
+    padding: 10px 16px !important;
+  }
+
+  .vn-action-card,
+  .choice-button,
+  .vn-choice-button,
+  .agenda-choice-button,
+  .evening-option-button {
+    min-height: 102px !important;
+    padding: 10px 12px !important;
+    gap: 5px !important;
+  }
+
+  .vn-player-card {
+    min-height: 285px !important;
+    padding: 16px 14px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .vn-screen {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 48px minmax(0, 1fr) 170px !important;
+    grid-template-areas:
+      "topbar"
+      "stage"
+      "actions" !important;
+  }
+
+  .vn-side {
+    display: none !important;
+  }
+
+  .vn-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+/* CLEAN HOTFIX v0.17.1 force mockup layout END */
+
+
+
+/* CLEAN HOTFIX v0.17.2 restore non-game scroll START */
+/*
+  v0.17.1 accidentally made the whole app non-scrollable.
+  Character creator and menus need normal page scrolling.
+  Only gameplay screens (.vn-screen) should behave like fixed full-screen boards.
+*/
+
+html,
+body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+#app {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Fullscreen lock only for VN gameplay screens. Firefox/Chrome support :has(). */
+#app:has(.vn-screen) {
+  width: 100vw !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  overflow: hidden !important;
+}
+
+/* Keep VN board inside the viewport even though body scroll is restored globally. */
+#app:has(.vn-screen) .vn-screen {
+  height: calc(100vh - 20px) !important;
+  max-height: calc(100vh - 20px) !important;
+}
+
+/* Non-game screens must remain usable. */
+.screen:not(.vn-screen),
+.character-creator-screen,
+.main-menu-screen,
+.settings-screen {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Make forms usable if previous global rules touched them. */
+.character-creator-screen input,
+.character-creator-screen button,
+.character-creator-screen label {
+  position: relative !important;
+}
+
+/* CLEAN HOTFIX v0.17.2 restore non-game scroll END */
+
+
+
+/* CLEAN HOTFIX v0.17.3 clean layout interactions START */
+/*
+  v0.17.1/0.17.2 fixed the broad VN direction, but left three issues:
+  1) non-game screens became too wide,
+  2) old content was squeezed into narrative strip as scroll-boxes,
+  3) narrative/action layers could overlap and block clicks.
+
+  This block is intentionally later in CSS and overrides previous rules.
+*/
+
+/* --------------------------------------------------------------------
+   1. Non-game screens: restore old narrow app layout
+   -------------------------------------------------------------------- */
+
+#app:not(:has(.vn-screen)) {
+  width: 100% !important;
+  max-width: 560px !important;
+  min-height: auto !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  padding: 24px 16px 96px !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+  display: block !important;
+}
+
+#app:not(:has(.vn-screen)) .screen {
+  width: 100% !important;
+  max-width: 560px !important;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+#app:not(:has(.vn-screen)) .character-creator-screen,
+#app:not(:has(.vn-screen)) .main-menu-screen {
+  max-width: 560px !important;
+}
+
+/* Inputs/check rows should not stretch to the whole viewport anymore. */
+#app:not(:has(.vn-screen)) input[type="text"],
+#app:not(:has(.vn-screen)) input:not([type]),
+#app:not(:has(.vn-screen)) .trait-option,
+#app:not(:has(.vn-screen)) label {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* --------------------------------------------------------------------
+   2. Gameplay board sizing: keep it game-like but safer
+   -------------------------------------------------------------------- */
+
+#app:has(.vn-screen) {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 10px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+#app:has(.vn-screen) .vn-screen {
+  width: min(1360px, calc(100vw - 20px)) !important;
+  height: calc(100vh - 20px) !important;
+  max-height: calc(100vh - 20px) !important;
+  margin: 0 auto !important;
+  overflow: hidden !important;
+
+  grid-template-columns: clamp(210px, 19vw, 270px) minmax(0, 1fr) !important;
+  grid-template-rows: 52px minmax(0, 1fr) clamp(170px, 25vh, 220px) !important;
+  grid-template-areas:
+    "topbar topbar"
+    "side stage"
+    "actions actions" !important;
+}
+
+/* --------------------------------------------------------------------
+   3. Stage: scene + narrative strip, no overlap with actions
+   -------------------------------------------------------------------- */
+
+.vn-stage {
+  position: relative !important;
+  z-index: 1 !important;
+  grid-template-rows: minmax(0, 1fr) minmax(58px, auto) !important;
+  gap: 8px !important;
+  overflow: hidden !important;
+}
+
+.vn-scene-panel {
+  min-height: 0 !important;
+  height: 100% !important;
+  z-index: 1 !important;
+}
+
+/* Remove the previous "floating over the scene" negative margin.
+   It looked nice once, but it caused overlap and click problems. */
+.vn-narrative-strip {
+  position: relative !important;
+  z-index: 2 !important;
+  width: min(88%, 820px) !important;
+  max-height: 88px !important;
+  margin: 0 auto !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Main narration only. Old sections inside narrative strip caused ugly
+   horizontal scroll boxes and clipped partner/agenda cards. Hide them. */
+.vn-narrative-strip .vn-compact-card {
+  display: none !important;
+}
+
+.vn-narrative-text,
+.vn-narrative-strip > p {
+  max-width: 100% !important;
+  -webkit-line-clamp: 3 !important;
+  overflow: hidden !important;
+}
+
+/* --------------------------------------------------------------------
+   4. Actions: always clickable, above decorative strips
+   -------------------------------------------------------------------- */
+
+.vn-actions {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  overflow: visible !important;
+  padding: 4px 18px 8px !important;
+}
+
+.vn-actions *,
+.vn-action-grid *,
+.vn-action-stack *,
+.choices *,
+.evening-options * {
+  pointer-events: auto !important;
+}
+
+.vn-action-grid,
+.vn-action-stack,
+.choices,
+.evening-options,
+.vn-consequence-grid {
+  position: relative !important;
+  z-index: 11 !important;
+}
+
+/* Event/agenda/evening cards should fit the bottom row. */
+.vn-action-card,
+.choice-button,
+.vn-choice-button,
+.agenda-choice-button,
+.evening-option-button {
+  min-height: 98px !important;
+  max-height: 156px !important;
+  overflow: hidden !important;
+  padding: 11px 14px !important;
+  gap: 5px !important;
+}
+
+/* For buttons with lots of description, clamp text instead of overflowing. */
+.choice-cost,
+.choice-unavailable-note,
+.agenda-choice-description,
+.agenda-choice-card-meta,
+.agenda-choice-hint,
+.evening-option-description,
+.evening-option-effects {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* --------------------------------------------------------------------
+   5. Reflection: compact consequences + visible CTA
+   -------------------------------------------------------------------- */
+
+.vn-screen--reflection .vn-action-stack {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 280px) !important;
+  gap: 14px !important;
+  align-items: center !important;
+  max-width: 1040px !important;
+}
+
+.vn-screen--reflection .reflection-impact-panel {
+  height: 100% !important;
+  max-height: 160px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.vn-screen--reflection .reflection-impact-title {
+  display: none !important;
+}
+
+.vn-screen--reflection .vn-consequence-grid {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 0 !important;
+}
+
+.vn-screen--reflection .vn-consequence-card {
+  min-height: 92px !important;
+  max-height: 128px !important;
+  padding: 10px !important;
+}
+
+.vn-screen--reflection .consequences-interpretation,
+.vn-screen--reflection .spoons-summary {
+  display: none !important;
+}
+
+.vn-screen--reflection .reflection-day-progress {
+  position: absolute !important;
+  right: 10px !important;
+  bottom: 4px !important;
+  margin: 0 !important;
+  font-size: 11px !important;
+}
+
+.vn-screen--reflection .primary-button.vn-choice-button {
+  width: 100% !important;
+  min-height: 82px !important;
+  max-height: 120px !important;
+  align-self: center !important;
+}
+
+/* --------------------------------------------------------------------
+   6. Morning: hide old partner/agenda blocks in narrative strip completely
+   -------------------------------------------------------------------- */
+
+.vn-screen--morning .vn-narrative-strip {
+  max-height: 82px !important;
+}
+
+.vn-screen--morning .vn-narrative-strip .partner-card,
+.vn-screen--morning .vn-narrative-strip .daily-agenda,
+.vn-screen--morning .vn-narrative-strip .morning-events,
+.vn-screen--morning .vn-narrative-strip .previous-evening-summary,
+.vn-screen--morning .vn-narrative-strip .persistent-spoons-note {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------
+   7. Laptop safeguards
+   -------------------------------------------------------------------- */
+
+@media (max-height: 790px) {
+  #app:has(.vn-screen) .vn-screen {
+    grid-template-rows: 48px minmax(0, 1fr) 165px !important;
+    padding: 9px 13px 11px !important;
+    gap: 9px 13px !important;
+  }
+
+  .vn-player-card {
+    min-height: 270px !important;
+  }
+
+  .vn-scene-title-tab {
+    font-size: clamp(16px, 1.6vw, 24px) !important;
+    padding: 6px 18px !important;
+  }
+
+  .vn-narrative-strip {
+    max-height: 70px !important;
+    padding: 9px 14px !important;
+  }
+
+  .vn-action-card,
+  .choice-button,
+  .vn-choice-button,
+  .agenda-choice-button,
+  .evening-option-button {
+    min-height: 86px !important;
+    max-height: 132px !important;
+    padding: 8px 10px !important;
+  }
+
+  .vn-screen--reflection .reflection-impact-panel {
+    max-height: 136px !important;
+  }
+
+  .vn-screen--reflection .vn-consequence-card {
+    min-height: 80px !important;
+    max-height: 110px !important;
+  }
+}
+
+/* CLEAN HOTFIX v0.17.3 clean layout interactions END */
+
+
+
+/* CLEAN HOTFIX v0.17.4 layout stabilization START */
+/*
+  Proper layout stabilization after asset-based v0.17.
+  This pass treats gameplay UI as a fixed game board with:
+  - top HUD,
+  - left sidebar stack: player card + relationship card,
+  - large stage,
+  - readable narrative strip,
+  - separate bottom action panel.
+*/
+
+/* Non-game screens stay old-school and usable. */
+#app:not(:has(.vn-screen)) {
+  width: 100% !important;
+  max-width: 620px !important;
+  min-height: auto !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  padding: 24px 16px 96px !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+#app:not(:has(.vn-screen)) .screen,
+#app:not(:has(.vn-screen)) .character-creator-screen,
+#app:not(:has(.vn-screen)) .main-menu-screen {
+  width: 100% !important;
+  max-width: 620px !important;
+  margin: 0 auto !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* Gameplay app shell */
+#app:has(.vn-screen) {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 8px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+/* Board */
+#app:has(.vn-screen) .vn-screen {
+  width: min(1480px, calc(100vw - 16px)) !important;
+  height: calc(100vh - 16px) !important;
+  max-height: calc(100vh - 16px) !important;
+  margin: 0 auto !important;
+  padding: 12px 14px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+
+  display: grid !important;
+  grid-template-columns: clamp(220px, 18vw, 285px) minmax(0, 1fr) !important;
+  grid-template-rows: 50px minmax(0, 1fr) clamp(160px, 23vh, 215px) !important;
+  grid-template-areas:
+    "topbar topbar"
+    "side stage"
+    "actions actions" !important;
+  column-gap: 18px !important;
+  row-gap: 10px !important;
+}
+
+/* Topbar */
+.vn-topbar {
+  grid-area: topbar !important;
+  position: relative !important;
+  z-index: 20 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Main uses display: contents, sidebar and stage become grid items. */
+.vn-main {
+  display: contents !important;
+}
+
+/* Sidebar: card stack */
+.vn-side {
+  grid-area: side !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  padding: 4px 0 0 !important;
+}
+
+.vn-sidebar-stack {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-rows: minmax(230px, 1fr) minmax(128px, 0.58fr) !important;
+  gap: 10px !important;
+}
+
+/* Player card — less oversized, more useful. */
+.vn-player-card {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 16px 15px !important;
+  box-sizing: border-box !important;
+  transform: rotate(-0.6deg) !important;
+}
+
+.vn-player-card-inner {
+  height: 100% !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.vn-player-badge {
+  margin: 0 0 6px !important;
+}
+
+.vn-player-name {
+  margin: 0 0 8px !important;
+  font-size: clamp(22px, 2vw, 30px) !important;
+  line-height: 1.15 !important;
+}
+
+.vn-player-meta {
+  margin: 0 0 12px !important;
+}
+
+.vn-player-stat {
+  margin: 10px 0 !important;
+}
+
+.vn-player-status {
+  margin-top: 12px !important;
+  font-size: 12px !important;
+  line-height: 1.32 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 4 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* Relationship card */
+.vn-relationship-card {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+
+  padding: 12px 14px !important;
+  border-radius: 16px !important;
+  border: 2px solid rgba(214, 166, 105, 0.72) !important;
+  background:
+    linear-gradient(180deg, rgba(250,246,235,0.94), rgba(231,220,200,0.92)) !important;
+  box-shadow:
+    0 9px 20px rgba(74, 69, 60, 0.14),
+    inset 0 0 0 1px rgba(255,255,255,0.42) !important;
+}
+
+.vn-relationship-heading {
+  margin: 0 0 5px !important;
+  font-size: 10px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.095em !important;
+  color: #8C7B6D !important;
+  text-align: center !important;
+}
+
+.vn-relationship-name {
+  margin: 0 0 3px !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(16px, 1.5vw, 22px) !important;
+  font-weight: 800 !important;
+  color: #4A453C !important;
+  text-align: center !important;
+  line-height: 1.15 !important;
+}
+
+.vn-relationship-label {
+  margin: 0 0 8px !important;
+  font-size: 11px !important;
+  color: #8C7B6D !important;
+  text-align: center !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.vn-relationship-meter {
+  margin: 7px 0 !important;
+}
+
+.vn-relationship-meter-label {
+  display: flex !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #4A453C !important;
+}
+
+.vn-relationship-bar {
+  height: 7px !important;
+  margin-top: 4px !important;
+  border-radius: 999px !important;
+  background: rgba(74, 69, 60, 0.18) !important;
+  overflow: hidden !important;
+}
+
+.vn-relationship-bar-fill {
+  height: 100% !important;
+  border-radius: 999px !important;
+}
+
+.vn-relationship-bar-fill--trust {
+  background: #D6A669 !important;
+}
+
+.vn-relationship-bar-fill--frustration {
+  background: #B86B5F !important;
+}
+
+.vn-relationship-mood {
+  margin: 7px 0 0 !important;
+  padding: 5px 7px !important;
+  border-radius: 999px !important;
+  background: rgba(93, 123, 144, 0.14) !important;
+  color: #4A453C !important;
+  text-align: center !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+/* Stage */
+.vn-stage {
+  grid-area: stage !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+
+  display: grid !important;
+  grid-template-rows: minmax(0, 1fr) clamp(84px, 13vh, 132px) !important;
+  gap: 9px !important;
+}
+
+.vn-scene-panel {
+  min-height: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-size: cover !important;
+  background-position: center center !important;
+}
+
+/* Bigger, more readable day/event description */
+.vn-narrative-strip {
+  width: min(92%, 940px) !important;
+  height: 100% !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  padding: 14px 24px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.vn-narrative-strip .vn-compact-card {
+  display: none !important;
+}
+
+.vn-narrative-text,
+.vn-narrative-strip > p {
+  margin: 0 !important;
+  max-width: 880px !important;
+  color: #3F382F !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(19px, 1.8vw, 28px) !important;
+  line-height: 1.24 !important;
+  font-weight: 500 !important;
+  text-align: center !important;
+
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* Actions panel: separate, always clickable */
+.vn-actions {
+  grid-area: actions !important;
+  position: relative !important;
+  z-index: 30 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  padding: 8px 28px 6px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+  border-top: 1px solid rgba(74, 69, 60, 0.15) !important;
+}
+
+.vn-action-grid,
+.vn-action-stack,
+.choices,
+.evening-options,
+.vn-consequence-grid {
+  width: min(100%, 1040px) !important;
+  max-width: 1040px !important;
+  min-height: 0 !important;
+  position: relative !important;
+  z-index: 31 !important;
+  pointer-events: auto !important;
+}
+
+.vn-action-grid,
+.choices {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+/* Single-button screens */
+.vn-action-stack {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 14px !important;
+}
+
+/* Evening must use 2x2 grid, not a vertical stack. */
+.vn-screen--evening .vn-action-stack,
+.vn-screen--evening .evening-options {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+  gap: 12px 14px !important;
+  width: min(100%, 940px) !important;
+  max-width: 940px !important;
+}
+
+/* Reflection: consequence cards + button, compact and stable */
+.vn-screen--reflection .vn-action-stack {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 300px) !important;
+  gap: 14px !important;
+  align-items: center !important;
+}
+
+.vn-screen--reflection .reflection-impact-panel {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.vn-screen--reflection .vn-consequence-grid {
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.vn-screen--reflection .primary-button.vn-choice-button {
+  width: 100% !important;
+  min-height: 96px !important;
+  max-height: 140px !important;
+}
+
+/* Tactile action cards */
+.vn-action-card,
+.choice-button,
+.vn-choice-button,
+.agenda-choice-button,
+.evening-option-button {
+  min-height: 118px !important;
+  max-height: none !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  pointer-events: auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 7px !important;
+}
+
+.vn-screen--evening .evening-option-button {
+  min-height: 84px !important;
+  max-height: 98px !important;
+  padding: 9px 12px !important;
+  gap: 4px !important;
+}
+
+.choice-label,
+.agenda-choice-label,
+.evening-option-label {
+  font-size: clamp(15px, 1.25vw, 20px) !important;
+  line-height: 1.08 !important;
+}
+
+.choice-cost,
+.choice-unavailable-note,
+.agenda-choice-description,
+.agenda-choice-card-meta,
+.agenda-choice-hint,
+.evening-option-description,
+.evening-option-effects {
+  max-width: 100% !important;
+  font-size: clamp(11px, 0.95vw, 13px) !important;
+  line-height: 1.2 !important;
+
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.primary-button.vn-choice-button {
+  height: auto !important;
+  min-height: 82px !important;
+  max-height: 120px !important;
+}
+
+/* Evening title/narrative readable against dark board */
+.vn-screen--evening .vn-narrative-text,
+.vn-screen--evening .vn-narrative-strip > p {
+  color: #F1EBDD !important;
+}
+
+/* Version badge remains unobtrusive */
+.version-badge {
+  opacity: 0.55 !important;
+  pointer-events: none !important;
+}
+
+/* Laptop 768px high — priority: all actions visible, no board scroll */
+@media (max-height: 790px) {
+  #app:has(.vn-screen) .vn-screen {
+    grid-template-rows: 46px minmax(0, 1fr) 162px !important;
+    padding: 8px 11px !important;
+    row-gap: 8px !important;
+  }
+
+  .vn-sidebar-stack {
+    grid-template-rows: minmax(190px, 1fr) minmax(112px, 0.48fr) !important;
+    gap: 8px !important;
+  }
+
+  .vn-player-card {
+    padding: 12px 13px !important;
+  }
+
+  .vn-player-name {
+    font-size: clamp(18px, 1.7vw, 25px) !important;
+  }
+
+  .vn-player-status {
+    -webkit-line-clamp: 3 !important;
+  }
+
+  .vn-relationship-card {
+    padding: 9px 11px !important;
+  }
+
+  .vn-relationship-name {
+    font-size: clamp(14px, 1.3vw, 18px) !important;
+  }
+
+  .vn-stage {
+    grid-template-rows: minmax(0, 1fr) 76px !important;
+  }
+
+  .vn-narrative-strip {
+    padding: 10px 18px !important;
+  }
+
+  .vn-narrative-text,
+  .vn-narrative-strip > p {
+    font-size: clamp(16px, 1.55vw, 22px) !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .vn-actions {
+    padding: 6px 20px 4px !important;
+  }
+
+  .vn-action-card,
+  .choice-button,
+  .vn-choice-button,
+  .agenda-choice-button,
+  .evening-option-button {
+    min-height: 94px !important;
+    padding: 8px 10px !important;
+    gap: 4px !important;
+  }
+
+  .vn-screen--evening .evening-option-button {
+    min-height: 70px !important;
+    max-height: 76px !important;
+  }
+
+  .vn-screen--evening .vn-action-stack,
+  .vn-screen--evening .evening-options {
+    grid-template-columns: repeat(2, minmax(230px, 1fr)) !important;
+    gap: 8px 10px !important;
+  }
+
+  .vn-screen--reflection .vn-consequence-card {
+    min-height: 78px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  #app:has(.vn-screen) .vn-screen {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 46px minmax(0, 1fr) 180px !important;
+    grid-template-areas:
+      "topbar"
+      "stage"
+      "actions" !important;
+  }
+
+  .vn-side {
+    display: none !important;
+  }
+
+  .vn-action-grid,
+  .choices {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+/* CLEAN HOTFIX v0.17.4 layout stabilization END */
+

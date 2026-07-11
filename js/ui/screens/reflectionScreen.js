@@ -4,11 +4,14 @@
 // v0.9: this screen no longer advances to the next day.
 // It leads to the evening recovery screen instead.
 //
-// v0.16: Visual Novel RPG Layout Redesign. To jest ekran, na którym
-// gracz PIERWSZY RAZ widzi dokładne liczby dla swojej decyzji (event
-// screen celowo ich już nie pokazuje — patrz eventScreen.js). Dlatego
-// konsekwencje są tu teraz dużymi, wyraźnymi kaflami (vn-consequence-*),
-// a nie cichą listą tekstu.
+// v0.16: to jest ekran, na którym gracz PIERWSZY RAZ widzi dokładne
+// liczby dla swojej decyzji (event screen celowo ich już nie pokazuje —
+// patrz eventScreen.js). Dlatego konsekwencje są tu dużymi, wyraźnymi
+// kaflami (vn-consequence-*), a nie cichą listą tekstu.
+//
+// v0.17: Asset-Based VN UI Implementation — scena używa teraz tła
+// assets/scenes/scene-reflection.png, a tekst wyniku decyzji trafia do
+// osobnego narrative-strip. Kafle konsekwencji dostały ikony (🥄🤝🌡️).
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -16,7 +19,9 @@ import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
 import {
   createVnShell,
+  createTopBar,
   createScenePanel,
+  createNarrativeStrip,
   createPlayerCard,
   createActionPanel,
   createConsequencePanel
@@ -28,28 +33,28 @@ export function renderReflectionScreen(container, data) {
   const resultText = (data && data.resultText) || (lastEntry ? lastEntry.resultText : "");
   const consequences = lastEntry ? lastEntry.consequences : null;
 
-  const sceneExtra = [];
-  if (consequences) {
-    sceneExtra.push(renderImpactPanel(consequences, state));
-  }
+  const topbar = createTopBar(state, "reflection");
+  const side = createPlayerCard(state, "reflection");
 
   const scene = createScenePanel({
-    symbol: "✍️",
     symbolModifier: "reflection",
-    title: "Skutek decyzji",
-    text: resultText,
-    extra: sceneExtra
+    title: "Skutek decyzji"
   });
 
-  const side = createPlayerCard(state, `Dzień ${state.day} · Refleksja`);
+  const narrative = createNarrativeStrip(resultText);
+
+  const panelChildren = [];
+  if (consequences) {
+    panelChildren.push(renderImpactPanel(consequences, state));
+  }
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
   const endDayButton = document.createElement("button");
   endDayButton.className = "primary-button vn-choice-button";
   endDayButton.textContent = goesBackToAgenda
-    ? "Wróć do agendy dnia"
-    : "Zakończ dzień";
+    ? "Wróć do planu dnia"
+    : "Zamknij dzień";
 
   endDayButton.addEventListener("click", () => {
     if (goesBackToAgenda) {
@@ -62,13 +67,16 @@ export function renderReflectionScreen(container, data) {
     }
   });
 
-  const actions = createActionPanel([endDayButton]);
+  panelChildren.push(endDayButton);
+
+  const actions = createActionPanel(panelChildren, "stack");
 
   const shell = createVnShell({
     screenClass: "reflection",
-    phaseLabel: "Refleksja",
-    scene,
+    topbar,
     side,
+    scene,
+    narrative,
     actions
   });
 
@@ -76,9 +84,7 @@ export function renderReflectionScreen(container, data) {
 }
 
 // CLEAN v0.16 reflection impact panel START
-// v0.16: konsekwencje jako duże kafle (vn-consequence-grid) zamiast
-// cichej listy <ul>. Dane i interpretacja tekstowa są dokładnie te
-// same co w v0.15 — zmienia się tylko prezentacja.
+// konsekwencje jako duże kafle (vn-consequence-grid) z ikonami.
 function renderImpactPanel(consequences, state) {
   const panel = document.createElement("div");
   panel.className = "reflection-impact-panel";
@@ -89,13 +95,13 @@ function renderImpactPanel(consequences, state) {
   panel.appendChild(title);
 
   const items = [
-    { label: "Spoons", value: consequences.spoonsChange },
-    { label: "Zaufanie", value: consequences.trustChange },
-    { label: "Frustracja", value: consequences.frustrationChange }
+    { icon: "🥄", label: "Spoons", value: consequences.spoonsChange },
+    { icon: "🤝", label: "Zaufanie", value: consequences.trustChange },
+    { icon: "🌡️", label: "Frustracja", value: consequences.frustrationChange }
   ];
 
   if (typeof consequences.fatigueChange === "number" && consequences.fatigueChange !== 0) {
-    items.push({ label: "Przeciążenie", value: consequences.fatigueChange });
+    items.push({ icon: "🌀", label: "Przeciążenie", value: consequences.fatigueChange });
   }
 
   panel.appendChild(createConsequencePanel(items));

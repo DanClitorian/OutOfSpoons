@@ -8,23 +8,31 @@
 //   as the final available option,
 // - replaces {partnerName} in title, description and choice labels.
 //
-// v0.16: Visual Novel RPG Layout Redesign.
-// - event screen jest teraz sceną VN (duży symbol + tytuł + opis) z
-//   panelem decyzji na dole,
-// - WAŻNA ZMIANA ZASADY: przed wyborem NIE pokazujemy już dokładnych
-//   liczb (np. "− 3 spoons"). Zamiast tego pokazujemy jakościowy
-//   poziom (Koszt: niskie/średnie/wysokie, Niepewność: niska/średnia/
-//   wysoka). Dokładne liczby gracz widzi dopiero PO decyzji, na ekranie
-//   refleksji — to się nie zmienia.
-// - choice availability by spoons (blokowanie zbyt drogich wyborów,
-//   forced cheapest choice) zostaje bez zmian — zmienia się tylko to,
-//   co widać, nie logika dostępności.
+// v0.16: przed wyborem NIE pokazujemy już dokładnych liczb (np.
+// "− 3 spoons"). Zamiast tego pokazujemy jakościowy poziom (Koszt:
+// niskie/średnie/wysokie, Niepewność: niska/średnia/wysoka). Dokładne
+// liczby gracz widzi dopiero PO decyzji, na ekranie refleksji.
+// choice availability by spoons (blokowanie zbyt drogich wyborów,
+// forced cheapest choice) zostaje bez zmian — zmienia się tylko to,
+// co widać, nie logika dostępności.
+//
+// v0.17: Asset-Based VN UI Implementation — scena używa teraz tła
+// assets/scenes/scene-event.png, opis eventu trafia do osobnego
+// narrative-strip pod sceną, a wybory wyglądają jak decision cards
+// (assets/references/component-sheet.jpg), nie zwykłe przyciski.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js";
 import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js";
-import { createVnShell, createScenePanel, createPlayerCard, createActionPanel } from "../vnLayout.js";
+import {
+  createVnShell,
+  createTopBar,
+  createScenePanel,
+  createNarrativeStrip,
+  createPlayerCard,
+  createActionPanel
+} from "../vnLayout.js";
 
 export function renderEventScreen(container) {
   const event = getCurrentEvent();
@@ -32,14 +40,15 @@ export function renderEventScreen(container) {
   const currentSpoons = state.resources.spoons.current;
   const progress = getCurrentAgendaProgress(state);
 
+  const topbar = createTopBar(state, "event", `Wydarzenie ${progress.current}/${progress.total} — ${progress.label}`);
+  const side = createPlayerCard(state, "event");
+
   const scene = createScenePanel({
-    symbol: "💬",
     symbolModifier: "event",
-    title: replacePlaceholders(event.title, state),
-    text: replacePlaceholders(event.description, state)
+    title: replacePlaceholders(event.title, state)
   });
 
-  const side = createPlayerCard(state, `Dzień ${state.day} · Wydarzenie ${progress.current}/${progress.total}`);
+  const narrative = createNarrativeStrip(replacePlaceholders(event.description, state));
 
   const choicesList = document.createElement("div");
   choicesList.className = "choices";
@@ -52,13 +61,14 @@ export function renderEventScreen(container) {
     choicesList.appendChild(renderChoiceButton(choice, state, currentSpoons, isForced));
   });
 
-  const actions = createActionPanel([choicesList]);
+  const actions = createActionPanel([choicesList], "stack");
 
   const shell = createVnShell({
     screenClass: "event",
-    phaseLabel: `Wydarzenie ${progress.current}/${progress.total} — ${progress.label}`,
-    scene,
+    topbar,
     side,
+    scene,
+    narrative,
     actions
   });
 
@@ -137,9 +147,9 @@ function renderChoiceCost(choice, currentSpoons, isDisabled, isForced) {
   return cost;
 }
 
-// v0.16: zamiast dokładnej liczby spoons (np. "− 3 spoons"), pokazujemy
-// tylko jakościowy poziom kosztu. Progi dobrane pod realny zakres
-// spoonsCost w eventData.js (0-5).
+// zamiast dokładnej liczby spoons (np. "− 3 spoons"), pokazujemy tylko
+// jakościowy poziom kosztu. Progi dobrane pod realny zakres spoonsCost
+// w eventData.js (0-5).
 function buildCostTier(spoonsCost) {
   if (spoonsCost <= 0) {
     return "brak";
@@ -156,8 +166,8 @@ function buildCostTier(spoonsCost) {
   return "wysokie";
 }
 
-// v0.16: "niepewność" to jakościowa miara tego, jak mocno wybór może
-// poruszyć zaufanie/frustrację — bez ujawniania kierunku ani wartości.
+// "niepewność" to jakościowa miara tego, jak mocno wybór może poruszyć
+// zaufanie/frustrację — bez ujawniania kierunku ani wartości.
 function buildUncertaintyTier(choice) {
   const magnitude = Math.abs(choice.trustChange || 0) + Math.abs(choice.frustrationChange || 0);
 

@@ -17,7 +17,6 @@ import { renderEveningScreen } from "./screens/eveningScreen.js";
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js";
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js";
-import { appendGameHud } from "./gameHud.js";
 let appContainer = null;
 
 const screens = {
@@ -87,6 +86,10 @@ export function showScreen(screenName, data = null) {
   appContainer.innerHTML = "";
   document.body.dataset.gameScreen = screenName;
   render(appContainer, data);
-  appendGameHud(appContainer, screenName);
+  // v0.17: appendGameHud() (osobny globalny panel nad ekranem) zostało
+  // usunięte stąd celowo — powodowało "podwójny HUD" razem z nowym
+  // vn-topbar w vnLayout.js. Dzień/faza/spoons/zaufanie pokazuje teraz
+  // wyłącznie vn-topbar, budowany przez każdy ekran gameplayowy z
+  // osobna (patrz js/ui/vnLayout.js#createTopBar).
   appendVersionBadge(appContainer);
 }

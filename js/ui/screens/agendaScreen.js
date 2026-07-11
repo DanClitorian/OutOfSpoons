@@ -1,9 +1,11 @@
 // agendaScreen.js
 //
 // v0.14: Choose Agenda Order.
-// v0.16: Visual Novel RPG Layout Redesign — agenda jest teraz planszą
-// wyboru akcji (trzy duże karty) w panelu akcji wspólnego VN shellu,
-// zamiast pionowej listy przycisków.
+// v0.16: Visual Novel RPG Layout Redesign — agenda jako plansza wyboru akcji.
+// v0.17: Asset-Based VN UI Implementation. Scena używa teraz tła
+// assets/scenes/scene-agenda.jpg. Karty slotów dostały ikonę i krótki
+// opis (zgodnie z assets/references/component-sheet.jpg — decision
+// card jako "tactile" karta, nie zwykły przycisk formularza).
 //
 // The player chooses which remaining daily agenda slot to handle next.
 
@@ -16,7 +18,26 @@ import {
   selectAgendaItem,
   getAgendaSlotLabel
 } from "../../systems/dayAgendaSystem.js";
-import { createVnShell, createScenePanel, createPlayerCard, createActionPanel } from "../vnLayout.js";
+import {
+  createVnShell,
+  createTopBar,
+  createScenePanel,
+  createNarrativeStrip,
+  createPlayerCard,
+  createActionPanel
+} from "../vnLayout.js";
+
+const SLOT_ICONS = {
+  obligation: "📌",
+  relationship: "💬",
+  inner: "🧠"
+};
+
+const SLOT_DESCRIPTIONS = {
+  obligation: "Sprawy, które i tak trzeba załatwić.",
+  relationship: "Bliskość i napięcie między Tobą a partnerem.",
+  inner: "To, jak się dziś czujesz i ile jeszcze masz w sobie."
+};
 
 export function renderAgendaScreen(container) {
   const state = getState();
@@ -30,23 +51,25 @@ export function renderAgendaScreen(container) {
     return;
   }
 
+  const topbar = createTopBar(state, "agenda");
+  const side = createPlayerCard(state, "agenda");
+
   const scene = createScenePanel({
-    symbol: "🗒️",
     symbolModifier: "agenda",
-    title: "Agenda dnia",
-    text: "Wybierz, czym zajmiesz się teraz."
+    title: "Plan dnia"
   });
 
-  const side = createPlayerCard(state, `Dzień ${state.day} · Plan dnia`);
+  const narrative = createNarrativeStrip("Wybierz, czym zajmiesz się teraz. Kolejność ma znaczenie.");
 
   const cards = agenda.slots.map((item, index) => renderAgendaChoiceButton(item, index, state));
   const actions = createActionPanel(cards);
 
   const shell = createVnShell({
     screenClass: "agenda",
-    phaseLabel: "Plan dnia",
-    scene,
+    topbar,
     side,
+    scene,
+    narrative,
     actions
   });
 
@@ -69,7 +92,7 @@ function renderAgendaChoiceButton(item, index, state) {
 
   const marker = document.createElement("span");
   marker.className = "agenda-choice-marker";
-  marker.textContent = item.completed ? "[✓]" : "[ ]";
+  marker.textContent = item.completed ? "✓" : SLOT_ICONS[item.slot] || "•";
   header.appendChild(marker);
 
   const label = document.createElement("span");
@@ -83,6 +106,12 @@ function renderAgendaChoiceButton(item, index, state) {
   header.appendChild(status);
 
   button.appendChild(header);
+
+  const description = document.createElement("span");
+  description.className = "agenda-choice-description";
+  description.textContent = SLOT_DESCRIPTIONS[item.slot] || "";
+  button.appendChild(description);
+
   button.appendChild(buildSlotMeta(item, state));
 
   if (!item.completed) {
@@ -98,7 +127,7 @@ function renderAgendaChoiceButton(item, index, state) {
 
 // CLEAN v0.15 agenda choice cards START
 // v0.15: RPG Gameplay Shell. Karty agendy mają teraz komunikować stawkę
-// decyzji (obciążenie / ryzyko / hint), zamiast wyglądać jak lista pytań
+// decyzji (napięcie / ryzyko / hint), zamiast wyglądać jak lista pytań
 // quizu. Te wartości są na razie czysto informacyjne — nie wpływają
 // jeszcze na mechanikę wyboru ani na losowanie eventów.
 function buildSlotMeta(item, state) {
@@ -112,7 +141,7 @@ function buildSlotMeta(item, state) {
 
   const pressure = document.createElement("span");
   pressure.className = "agenda-choice-pressure";
-  pressure.textContent = `Obciążenie: ${buildSlotPressure(item, state)}`;
+  pressure.textContent = `Napięcie: ${buildSlotPressure(item, state)}`;
   meta.appendChild(pressure);
 
   const hint = document.createElement("span");
