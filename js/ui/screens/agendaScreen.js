@@ -1,11 +1,10 @@
 // agendaScreen.js
 //
 // v0.14: Choose Agenda Order.
-// v0.16: Visual Novel RPG Layout Redesign — agenda jako plansza wyboru akcji.
-// v0.17: Asset-Based VN UI Implementation. Scena używa teraz tła
-// assets/scenes/scene-agenda.jpg. Karty slotów dostały ikonę i krótki
-// opis (zgodnie z assets/references/component-sheet.jpg — decision
-// card jako "tactile" karta, nie zwykły przycisk formularza).
+// v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
+// system .oos-* (patrz js/ui/oosLayout.js). Karty slotów mają pełne,
+// nieucinane tytuły i czytelne linie ryzyka/napięcia/hintu, każda
+// osobno (nie sklejone w jeden string, jak to się zdarzało w v0.17.x).
 //
 // The player chooses which remaining daily agenda slot to handle next.
 
@@ -19,13 +18,13 @@ import {
   getAgendaSlotLabel
 } from "../../systems/dayAgendaSystem.js";
 import {
-  createVnShell,
+  createGameShell,
   createTopBar,
+  createSidebar,
   createScenePanel,
   createNarrativeStrip,
-  createPlayerCard,
-  createActionPanel
-} from "../vnLayout.js";
+  createDecisionCard
+} from "../oosLayout.js";
 
 const SLOT_ICONS = {
   obligation: "📌",
@@ -52,106 +51,53 @@ export function renderAgendaScreen(container) {
   }
 
   const topbar = createTopBar(state, "agenda");
-  const side = createPlayerCard(state, "agenda");
+  const sidebar = createSidebar(state, "agenda");
 
   const scene = createScenePanel({
-    symbolModifier: "agenda",
+    modifier: "agenda",
     title: "Plan dnia"
   });
 
   const narrative = createNarrativeStrip("Wybierz, czym zajmiesz się teraz. Kolejność ma znaczenie.");
 
-  const cards = agenda.slots.map((item, index) => renderAgendaChoiceButton(item, index, state));
-  const actions = createActionPanel(cards);
+  const cards = agenda.slots.map((item, index) => buildAgendaCard(item, index, state));
 
-  const shell = createVnShell({
+  const shell = createGameShell({
     screenClass: "agenda",
     topbar,
-    side,
+    sidebar,
     scene,
     narrative,
-    actions
+    actions: cards,
+    actionsVariant: "triple"
   });
 
   container.appendChild(shell);
 }
 
-function renderAgendaChoiceButton(item, index, state) {
-  const button = document.createElement("button");
-  const classes = ["agenda-choice-button", "vn-action-card"];
-
-  if (item.completed) {
-    classes.push("agenda-choice-button--completed", "vn-action-card--completed");
-  }
-
-  button.className = classes.join(" ");
-  button.disabled = item.completed;
-
-  const header = document.createElement("span");
-  header.className = "agenda-choice-header";
-
-  const marker = document.createElement("span");
-  marker.className = "agenda-choice-marker";
-  marker.textContent = item.completed ? "✓" : SLOT_ICONS[item.slot] || "•";
-  header.appendChild(marker);
-
-  const label = document.createElement("span");
-  label.className = "agenda-choice-label";
-  label.textContent = getAgendaSlotLabel(item.slot);
-  header.appendChild(label);
-
-  const status = document.createElement("span");
-  status.className = "agenda-choice-status";
-  status.textContent = item.completed ? "ukończone" : "wybierz";
-  header.appendChild(status);
-
-  button.appendChild(header);
-
-  const description = document.createElement("span");
-  description.className = "agenda-choice-description";
-  description.textContent = SLOT_DESCRIPTIONS[item.slot] || "";
-  button.appendChild(description);
-
-  button.appendChild(buildSlotMeta(item, state));
-
-  if (!item.completed) {
-    button.addEventListener("click", () => {
+function buildAgendaCard(item, index, state) {
+  return createDecisionCard({
+    icon: item.completed ? "✓" : SLOT_ICONS[item.slot] || "•",
+    title: getAgendaSlotLabel(item.slot),
+    statusText: item.completed ? "ukończone" : "wybierz",
+    description: SLOT_DESCRIPTIONS[item.slot] || "",
+    metaLines: [
+      `Ryzyko: ${buildSlotRiskLabel(item)}`,
+      `Napięcie: ${buildSlotPressure(item, state)}`,
+      buildSlotOrderHint(item)
+    ],
+    disabled: item.completed,
+    onClick: () => {
       selectAgendaItem(state, index);
       saveGame(state);
       showScreen("event");
-    });
-  }
-
-  return button;
+    }
+  });
 }
 
-// CLEAN v0.15 agenda choice cards START
-// v0.15: RPG Gameplay Shell. Karty agendy mają teraz komunikować stawkę
-// decyzji (napięcie / ryzyko / hint), zamiast wyglądać jak lista pytań
-// quizu. Te wartości są na razie czysto informacyjne — nie wpływają
-// jeszcze na mechanikę wyboru ani na losowanie eventów.
-function buildSlotMeta(item, state) {
-  const meta = document.createElement("span");
-  meta.className = "agenda-choice-card-meta vn-action-card-meta";
-
-  const risk = document.createElement("span");
-  risk.className = "agenda-choice-risk";
-  risk.textContent = `Ryzyko: ${buildSlotRiskLabel(item)}`;
-  meta.appendChild(risk);
-
-  const pressure = document.createElement("span");
-  pressure.className = "agenda-choice-pressure";
-  pressure.textContent = `Napięcie: ${buildSlotPressure(item, state)}`;
-  meta.appendChild(pressure);
-
-  const hint = document.createElement("span");
-  hint.className = "agenda-choice-hint";
-  hint.textContent = buildSlotOrderHint(item, state);
-  meta.appendChild(hint);
-
-  return meta;
-}
-
+// v0.15: RPG Gameplay Shell. Karty agendy komunikują stawkę decyzji
+// (napięcie / ryzyko / hint) — czysto informacyjnie, bez wpływu na
+// mechanikę wyboru ani na losowanie eventów.
 function buildSlotPressure(item, state) {
   const spoons = state.resources.spoons.current;
   let pressure = "niskie";
@@ -192,7 +138,7 @@ function buildSlotRiskLabel(item) {
   return "nieznane";
 }
 
-function buildSlotOrderHint(item, state) {
+function buildSlotOrderHint(item) {
   if (item.slot === "relationship") {
     return "Rozmowa później może być trudniejsza, jeśli wcześniej spadną Ci spoons.";
   }
@@ -215,4 +161,3 @@ function getPartnerNpc(state) {
 
   return state.npcs[state.partner.id] || null;
 }
-// CLEAN v0.15 agenda choice cards END

@@ -5,40 +5,28 @@
 // It leads to the evening recovery screen instead.
 //
 // v0.16: to jest ekran, na którym gracz PIERWSZY RAZ widzi dokładne
-// liczby dla swojej decyzji (event screen celowo ich już nie pokazuje —
-// patrz eventScreen.js). Dlatego konsekwencje są tu dużymi, wyraźnymi
-// kaflami (vn-consequence-*), a nie cichą listą tekstu.
+// liczby dla swojej decyzji (event screen celowo ich już nie pokazuje).
 //
-// v0.17: Asset-Based VN UI Implementation — scena używa teraz tła
-// assets/scenes/scene-reflection.png.
-//
-// v0.17.5: Professional Layout Polish Pass.
-// - Usunięto zagnieżdżony ".reflection-impact-panel": kafle konsekwencji
-//   i przycisk CTA są teraz BEZPOŚREDNIM rodzeństwem w jednym płaskim
-//   rzędzie (.vn-reflection-row), więc CSS Grid/Flex wyrównuje je do
-//   tej samej osi automatycznie — koniec z "doklejonym" przyciskiem.
-// - Kafle konsekwencji są teraz wyraźnie NIE-klikalne wizualnie (patrz
-//   .vn-consequence-card w CSS: cursor:default, pointer-events:none,
-//   bez hover-lift) — to czytelne read-only result tiles, nie przyciski.
-// - Interpretacja tekstowa skutku dołączona do narrative strip (to nadal
-//   "główny tekst refleksji", tylko rozszerzony o jedno zdanie), a
-//   "Zostało Ci X spoons" i "Postęp dnia" zdjęte z dolnego rzędu — to
-//   drugie przeniesione do top bara (już i tak pokazuje fazę dnia), żeby
-//   nic nie zaśmiecało rzędu kafli+CTA.
+// v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
+// system .oos-* (patrz js/ui/oosLayout.js). Kafle wyników (Spoons/
+// Zaufanie/Frustracja) używają teraz oos-result-tile — jawnie
+// NIEKLIKALNEGO komponentu (cursor:default, pointer-events:none, brak
+// hover) — i są bezpośrednim rodzeństwem przycisku CTA w jednym rzędzie
+// panelu akcji, więc są zawsze na tej samej osi.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
 import {
-  createVnShell,
+  createGameShell,
   createTopBar,
+  createSidebar,
   createScenePanel,
   createNarrativeStrip,
-  createPlayerCard,
-  createActionPanel,
-  createConsequenceCards
-} from "../vnLayout.js";
+  createResultTile,
+  createCtaButton
+} from "../oosLayout.js";
 
 export function renderReflectionScreen(container, data) {
   const state = getState();
@@ -52,10 +40,10 @@ export function renderReflectionScreen(container, data) {
     "reflection",
     dayProgressText ? `Refleksja · ${dayProgressText}` : undefined
   );
-  const side = createPlayerCard(state, "reflection");
+  const sidebar = createSidebar(state, "reflection");
 
   const scene = createScenePanel({
-    symbolModifier: "reflection",
+    modifier: "reflection",
     title: "Skutek decyzji"
   });
 
@@ -63,42 +51,36 @@ export function renderReflectionScreen(container, data) {
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
-  const endDayButton = document.createElement("button");
-  endDayButton.className = "primary-button vn-choice-button";
-  endDayButton.textContent = goesBackToAgenda
-    ? "Wróć do planu dnia"
-    : "Zamknij dzień";
-
-  endDayButton.addEventListener("click", () => {
-    if (goesBackToAgenda) {
-      saveGame(state);
-      showScreen("agenda");
-    } else {
-      state.phase = "evening";
-      saveGame(state);
-      showScreen("evening");
+  const cta = createCtaButton(
+    goesBackToAgenda ? "Wróć do planu dnia" : "Zamknij dzień",
+    () => {
+      if (goesBackToAgenda) {
+        saveGame(state);
+        showScreen("agenda");
+      } else {
+        state.phase = "evening";
+        saveGame(state);
+        showScreen("evening");
+      }
     }
-  });
+  );
 
-  const rowChildren = consequences
-    ? [...createConsequenceCards(buildConsequenceItems(consequences)), endDayButton]
-    : [endDayButton];
+  const tiles = consequences ? buildResultTiles(consequences) : [];
 
-  const actions = createActionPanel(rowChildren, "reflection");
-
-  const shell = createVnShell({
+  const shell = createGameShell({
     screenClass: "reflection",
     topbar,
-    side,
+    sidebar,
     scene,
     narrative,
-    actions
+    actions: [...tiles, cta],
+    actionsVariant: "reflection"
   });
 
   container.appendChild(shell);
 }
 
-function buildConsequenceItems(consequences) {
+function buildResultTiles(consequences) {
   const items = [
     { icon: "🥄", label: "Spoons", value: consequences.spoonsChange },
     { icon: "🤝", label: "Zaufanie", value: consequences.trustChange },
@@ -109,7 +91,7 @@ function buildConsequenceItems(consequences) {
     items.push({ icon: "🌀", label: "Przeciążenie", value: consequences.fatigueChange });
   }
 
-  return items;
+  return items.map((item) => createResultTile(item));
 }
 
 function buildNarrativeText(resultText, consequences) {

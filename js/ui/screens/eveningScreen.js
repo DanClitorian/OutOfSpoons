@@ -4,12 +4,12 @@
 // Flow:
 //   morning -> event -> reflection -> evening -> next morning
 //
-// v0.16: Wieczór ma wyraźnie inny, ciemniejszy nastrój i tę samą
-// strukturę VN co reszta ekranów gameplayowych. Logika evening recovery
-// i weekly summary flow są nietknięte.
-//
-// v0.17: Asset-Based VN UI Implementation — scena używa teraz tła
-// assets/scenes/scene-evening.png.
+// v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
+// system .oos-* (patrz js/ui/oosLayout.js). Jest 5 opcji wieczornych
+// (eveningRecoveryData.js) — panel akcji dostaje wariant
+// "evening-{liczba}", żeby CSS mogło dobrać odpowiednią siatkę (5
+// równych kolumn w jednym rzędzie, jeśli mieszczą się na 1366px, w
+// przeciwnym razie 3+2) BEZ ucinania tytułów.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -21,22 +21,22 @@ import {
 } from "../../systems/eveningRecoverySystem.js";
 import { shouldShowWeeklySummary } from "../../systems/weeklySummarySystem.js";
 import {
-  createVnShell,
+  createGameShell,
   createTopBar,
+  createSidebar,
   createScenePanel,
   createNarrativeStrip,
-  createPlayerCard,
-  createActionPanel
-} from "../vnLayout.js";
+  createDecisionCard
+} from "../oosLayout.js";
 
 export function renderEveningScreen(container) {
   const state = getState();
 
   const topbar = createTopBar(state, "evening");
-  const side = createPlayerCard(state, "evening");
+  const sidebar = createSidebar(state, "evening");
 
   const scene = createScenePanel({
-    symbolModifier: "evening",
+    modifier: "evening",
     title: "Koniec dnia"
   });
 
@@ -44,62 +44,42 @@ export function renderEveningScreen(container) {
     "Dzień się domyka. To, co zostało w zasobach, przechodzi na jutro. Dzień już się wydarzył — teraz zostaje pytanie, co robisz z resztką siebie."
   );
 
-  const options = document.createElement("div");
-  options.className = "evening-options";
+  const options = getEveningRecoveryOptions(state);
+  const cards = options.map((option) => buildEveningCard(option, state));
 
-  getEveningRecoveryOptions(state).forEach((option) => {
-    options.appendChild(renderEveningOptionButton(option, state));
-  });
-
-  const actions = createActionPanel([options], "stack");
-
-  const shell = createVnShell({
+  const shell = createGameShell({
     screenClass: "evening",
     topbar,
-    side,
+    sidebar,
     scene,
     narrative,
-    actions
+    actions: cards,
+    actionsVariant: `evening-${cards.length}`
   });
 
   container.appendChild(shell);
 }
 
-function renderEveningOptionButton(option, state) {
-  const button = document.createElement("button");
-  button.className = "evening-option-button vn-choice-button";
+function buildEveningCard(option, state) {
+  return createDecisionCard({
+    title: replacePlaceholders(option.label, state),
+    description: replacePlaceholders(option.description, state),
+    metaLines: [formatEffects(option.effects)],
+    onClick: () => {
+      const currentState = getState();
+      const completedDay = currentState.day;
 
-  const label = document.createElement("span");
-  label.className = "evening-option-label";
-  label.textContent = replacePlaceholders(option.label, state);
-  button.appendChild(label);
+      applyEveningRecovery(option.id, currentState);
+      advanceToNextDay();
+      saveGame(currentState);
 
-  const description = document.createElement("span");
-  description.className = "evening-option-description";
-  description.textContent = replacePlaceholders(option.description, state);
-  button.appendChild(description);
-
-  const effects = document.createElement("span");
-  effects.className = "evening-option-effects";
-  effects.textContent = formatEffects(option.effects);
-  button.appendChild(effects);
-
-  button.addEventListener("click", () => {
-    const currentState = getState();
-    const completedDay = currentState.day;
-
-    applyEveningRecovery(option.id, currentState);
-    advanceToNextDay();
-    saveGame(currentState);
-
-    if (shouldShowWeeklySummary(completedDay)) {
-      showScreen("weeklySummary");
-    } else {
-      showScreen("game");
+      if (shouldShowWeeklySummary(completedDay)) {
+        showScreen("weeklySummary");
+      } else {
+        showScreen("game");
+      }
     }
   });
-
-  return button;
 }
 
 function replacePlaceholders(text, state) {

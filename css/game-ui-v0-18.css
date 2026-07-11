@@ -1,0 +1,860 @@
+/* game-ui-v0-18.css
+ *
+ * v0.18: Gameplay UI Layout Reset.
+ *
+ * Ten plik jest ładowany w index.html PO css/style.css, więc jest
+ * ostatnim źródłem stylu — ale to nie jest jego mechanizm izolacji.
+ * Izolacja działa przez NAMESPACE: wszystko tu jest spięte przez klasę
+ * ".oos-game" i jej potomków (.oos-*). Stare klasy z css/style.css
+ * (.vn-*, .choice-button, .primary-button, .agenda-choice-*, itd.)
+ * zostają w tamtym pliku nieużywane przez gameplay screens — nic w tym
+ * pliku ich nie rozszerza ani nie nadpisuje pojedynczo. To jest reset,
+ * nie kolejna warstwa hotfixów.
+ *
+ * Sekcje:
+ *   0. Body/#app: przywrócenie poprawnego zachowania scrolla —
+ *      niezależnie od starych reguł ":has(.vn-screen)" w style.css
+ *      (które teraz nigdy nie trafiają, bo gameplay screens nie mają
+ *      już klasy .vn-screen). Ta sekcja jest w pełni samodzielna: nie
+ *      polega na żadnym mechanizmie z css/style.css.
+ *   1. .oos-game — plansza gry (CSS grid, topbar/sidebar/stage/actions)
+ *   2. .oos-topbar — jedyny HUD
+ *   3. .oos-sidebar — karta postaci + karta relacji
+ *   4. .oos-stage — scena (tło = asset) + pasek narracji
+ *   5. .oos-actions + warianty (single/triple/flow/reflection/evening-N)
+ *   6. .oos-decision-card — klikalne karty wyboru
+ *   7. .oos-result-tile — nieklikalne kafle wyników
+ *   8. .oos-cta-button — jedyny "prawdziwy przycisk" w panelu akcji
+ *   9. Noc (.oos-game--evening) — inny nastrój przez zmienne CSS
+ *  10. Responsywność / bezpieczniki wysokości
+ */
+
+/* --------------------------------------------------------------------
+   0. Body / #app — poprawne zachowanie scrolla, w pełni samodzielne
+   -------------------------------------------------------------------- */
+
+body[data-game-screen="game"],
+body[data-game-screen="morning"],
+body[data-game-screen="agenda"],
+body[data-game-screen="event"],
+body[data-game-screen="reflection"],
+body[data-game-screen="evening"] {
+  height: 100vh !important;
+  min-height: 100vh !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+}
+
+body[data-game-screen="game"] #app,
+body[data-game-screen="morning"] #app,
+body[data-game-screen="agenda"] #app,
+body[data-game-screen="event"] #app,
+body[data-game-screen="reflection"] #app,
+body[data-game-screen="evening"] #app {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+
+body[data-game-screen="game"] .version-badge,
+body[data-game-screen="morning"] .version-badge,
+body[data-game-screen="agenda"] .version-badge,
+body[data-game-screen="event"] .version-badge,
+body[data-game-screen="reflection"] .version-badge,
+body[data-game-screen="evening"] .version-badge {
+  position: fixed !important;
+  right: 10px !important;
+  bottom: 6px !important;
+  margin: 0 !important;
+  opacity: 0.6 !important;
+  z-index: 5 !important;
+}
+
+/* Non-gameplay screens (menu, character creator, weekly summary):
+   klasyczny, wąski, przewijalny layout — w pełni samodzielna reguła,
+   nie polega na tym, czy .vn-screen istnieje. */
+body[data-game-screen="mainMenu"],
+body[data-game-screen="menu"],
+body[data-game-screen="characterCreator"],
+body[data-game-screen="character-creator"],
+body[data-game-screen="weeklySummary"] {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+body[data-game-screen="mainMenu"] #app,
+body[data-game-screen="menu"] #app,
+body[data-game-screen="characterCreator"] #app,
+body[data-game-screen="character-creator"] #app,
+body[data-game-screen="weeklySummary"] #app {
+  width: 100% !important;
+  max-width: 640px !important;
+  min-height: auto !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  padding: 24px 16px 96px !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
+
+@media (max-width: 780px) {
+  body[data-game-screen="game"],
+  body[data-game-screen="morning"],
+  body[data-game-screen="agenda"],
+  body[data-game-screen="event"],
+  body[data-game-screen="reflection"],
+  body[data-game-screen="evening"] {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+  }
+
+  body[data-game-screen="game"] #app,
+  body[data-game-screen="morning"] #app,
+  body[data-game-screen="agenda"] #app,
+  body[data-game-screen="event"] #app,
+  body[data-game-screen="reflection"] #app,
+  body[data-game-screen="evening"] #app {
+    height: auto !important;
+    overflow: visible !important;
+  }
+}
+
+/* --------------------------------------------------------------------
+   1. .oos-game — plansza gry
+   -------------------------------------------------------------------- */
+
+.oos-game {
+  --oos-paper: #F7F1E4;
+  --oos-panel: #EEE3CE;
+  --oos-ink: #3E362C;
+  --oos-muted: #8A7A67;
+  --oos-line: #C8B48C;
+  --oos-blue: #5D7B90;
+  --oos-gold: #C08A3E;
+  --oos-sage: #74915E;
+  --oos-rose: #B5624F;
+  --oos-shadow: rgba(62, 54, 44, 0.22);
+
+  box-sizing: border-box;
+  width: min(1440px, calc(100vw - 24px));
+  height: calc(100vh - 24px);
+  margin: 12px auto;
+  padding: 14px;
+
+  display: grid;
+  grid-template-columns: 262px minmax(0, 1fr);
+  grid-template-rows: 56px minmax(0, 1fr) 210px;
+  grid-template-areas:
+    "topbar topbar"
+    "sidebar stage"
+    "actions actions";
+  gap: 14px;
+
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--oos-line);
+  background:
+    radial-gradient(circle at 90% 90%, rgba(192, 138, 62, 0.14), transparent 26%),
+    linear-gradient(135deg, #FBF7EC, var(--oos-paper));
+  box-shadow: 0 16px 40px var(--oos-shadow);
+  color: var(--oos-ink);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.oos-game * {
+  box-sizing: border-box;
+}
+
+@media (max-width: 780px) {
+  .oos-game {
+    width: 100%;
+    height: auto;
+    min-height: calc(100vh - 24px);
+    margin: 12px auto;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+}
+
+/* --------------------------------------------------------------------
+   2. Topbar — jedyny HUD
+   -------------------------------------------------------------------- */
+
+.oos-topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+
+  padding: 0 18px;
+  border-radius: 10px;
+  border: 1px solid var(--oos-line);
+  background: rgba(255, 255, 255, 0.5);
+
+  font-weight: 700;
+}
+
+.oos-topbar-daylabel {
+  font-size: clamp(15px, 1.4vw, 19px);
+  white-space: nowrap;
+}
+
+.oos-topbar-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.oos-topbar-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(14px, 1.2vw, 17px);
+  white-space: nowrap;
+}
+
+.oos-topbar-stat--spoons .oos-topbar-stat-value {
+  color: var(--oos-gold);
+}
+
+.oos-topbar-stat--trust .oos-topbar-stat-value {
+  color: var(--oos-sage);
+}
+
+/* --------------------------------------------------------------------
+   3. Sidebar — karta postaci + karta relacji
+   -------------------------------------------------------------------- */
+
+.oos-sidebar {
+  grid-area: sidebar;
+  min-height: 0;
+  min-width: 0;
+
+  display: grid;
+  grid-template-rows: minmax(190px, 1.05fr) minmax(215px, 1fr);
+  gap: 12px;
+}
+
+.oos-player-card,
+.oos-relationship-card {
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px 15px;
+  border-radius: 14px;
+  border: 1px solid var(--oos-line);
+  background: linear-gradient(180deg, #FDFAF2, var(--oos-panel));
+  box-shadow: 0 6px 14px var(--oos-shadow);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.oos-player-card-badge,
+.oos-relationship-card-heading {
+  margin: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--oos-muted);
+  text-align: center;
+}
+
+.oos-player-card-name,
+.oos-relationship-card-name {
+  margin: 0;
+  font-size: clamp(19px, 1.9vw, 25px);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+}
+
+.oos-player-card-meta,
+.oos-relationship-card-label {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--oos-muted);
+  text-align: center;
+}
+
+.oos-stat-bar {
+  margin: 6px 0;
+}
+
+.oos-stat-bar-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.oos-stat-bar-value {
+  color: var(--oos-blue);
+}
+
+.oos-stat-bar-track {
+  height: 8px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background: rgba(62, 54, 44, 0.16);
+  overflow: hidden;
+}
+
+.oos-stat-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.oos-stat-bar-fill--spoons {
+  background: var(--oos-gold);
+}
+
+.oos-stat-bar-fill--trust {
+  background: var(--oos-sage);
+}
+
+.oos-stat-bar-fill--frustration {
+  background: var(--oos-rose);
+}
+
+.oos-relationship-card-mood {
+  margin: 6px 0 0;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(93, 123, 144, 0.14);
+  color: var(--oos-ink);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+@media (max-height: 800px) {
+  .oos-sidebar {
+    grid-template-rows: minmax(175px, 1.05fr) minmax(195px, 1fr);
+    gap: 9px;
+  }
+
+  .oos-player-card,
+  .oos-relationship-card {
+    padding: 12px 13px;
+  }
+}
+
+@media (max-width: 780px) {
+  .oos-sidebar {
+    grid-template-rows: none;
+    gap: 10px;
+  }
+}
+
+/* --------------------------------------------------------------------
+   4. Stage — scena (tło = asset) + pasek narracji
+   -------------------------------------------------------------------- */
+
+.oos-stage {
+  grid-area: stage;
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) minmax(78px, auto);
+  gap: 10px;
+}
+
+.oos-scene {
+  position: relative;
+  min-height: 0;
+  border-radius: 14px;
+  border: 1px solid var(--oos-line);
+  box-shadow: 0 10px 24px var(--oos-shadow);
+  background-color: var(--oos-panel);
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.oos-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 65%, rgba(0, 0, 0, 0.22) 100%);
+}
+
+.oos-scene-title {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  max-width: min(85%, 560px);
+
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: linear-gradient(180deg, #9B6846, #6F442E);
+  color: #F7F1E4;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+
+  font-size: clamp(17px, 1.9vw, 27px);
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oos-narrative {
+  min-height: 0;
+  padding: 14px 26px;
+  border-radius: 12px;
+  border: 1px solid var(--oos-line);
+  background: linear-gradient(180deg, #FDFAF2, rgba(238, 227, 206, 0.96));
+  box-shadow: 0 4px 10px var(--oos-shadow);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oos-narrative-text {
+  margin: 0;
+  max-width: 900px;
+  font-size: clamp(18px, 1.7vw, 25px);
+  line-height: 1.32;
+  text-align: center;
+  font-weight: 500;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-height: 800px) {
+  .oos-narrative-text {
+    font-size: clamp(16px, 1.5vw, 21px);
+    -webkit-line-clamp: 2;
+  }
+}
+
+/* --------------------------------------------------------------------
+   5. Actions — panel dolny + warianty per ekran
+   -------------------------------------------------------------------- */
+
+.oos-actions {
+  grid-area: actions;
+  min-height: 0;
+  min-width: 0;
+
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+/* Morning: jeden duży, wyśrodkowany CTA. */
+.oos-actions--single {
+  align-items: center;
+}
+
+.oos-actions--single .oos-cta-button {
+  width: min(520px, 90%);
+  height: auto;
+  min-height: 74px;
+}
+
+/* Agenda: dokładnie 3 równe karty. */
+.oos-actions--triple {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  width: 100%;
+}
+
+/* Event: 2-4 karty, elastyczna siatka. */
+.oos-actions--flow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Reflection: result tiles + CTA w jednym płaskim rzędzie flex —
+   align-items:stretch wyrównuje je automatycznie na tej samej osi. */
+.oos-actions--reflection {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+}
+
+.oos-actions--reflection .oos-result-tile {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.oos-actions--reflection .oos-cta-button {
+  flex: 0 0 clamp(170px, 20%, 230px);
+  height: auto;
+}
+
+@media (max-width: 900px) {
+  .oos-actions--reflection {
+    flex-wrap: wrap;
+  }
+
+  .oos-actions--reflection .oos-result-tile {
+    flex: 1 1 28%;
+  }
+
+  .oos-actions--reflection .oos-cta-button {
+    flex: 1 1 100%;
+  }
+}
+
+/* Evening: preferowane 5 równych kolumn w jednym rzędzie (mieszczą się
+   na 1366px+); poniżej progu przechodzi na 3 kolumny (3+2, 2 rzędy). */
+.oos-actions--evening-5,
+.oos-actions--evening-4,
+.oos-actions--evening-3 {
+  display: grid;
+  gap: 10px 12px;
+  width: 100%;
+}
+
+.oos-actions--evening-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.oos-actions--evening-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.oos-actions--evening-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1180px) {
+  .oos-actions--evening-5,
+  .oos-actions--evening-4 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .oos-actions--triple,
+  .oos-actions--flow,
+  .oos-actions--evening-5,
+  .oos-actions--evening-4,
+  .oos-actions--evening-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------
+   6. Decision cards — klikalne karty wyboru
+   -------------------------------------------------------------------- */
+
+.oos-decision-card {
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  padding: 14px 14px;
+  border: 2px solid var(--oos-blue);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #FBF7EC, #EFE2C6);
+  box-shadow:
+    0 6px 0 rgba(54, 74, 88, 0.45),
+    0 10px 18px var(--oos-shadow);
+
+  color: var(--oos-ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.oos-decision-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  border-color: var(--oos-gold);
+  box-shadow:
+    0 8px 0 rgba(54, 74, 88, 0.4),
+    0 14px 22px var(--oos-shadow);
+}
+
+.oos-decision-card:focus-visible {
+  outline: 2px solid var(--oos-gold);
+  outline-offset: 2px;
+}
+
+.oos-decision-card--disabled,
+.oos-decision-card:disabled {
+  cursor: default;
+  opacity: 0.55;
+  filter: grayscale(0.4);
+  transform: none;
+  box-shadow: 0 3px 8px var(--oos-shadow);
+}
+
+.oos-decision-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.oos-decision-card-icon {
+  font-size: clamp(16px, 1.6vw, 22px);
+  flex-shrink: 0;
+}
+
+/* Tytuł NIGDY nie może zniknąć w ucięciu bez śladu — dopuszczalne 2
+   pełne linie z eleganckim wielokropkiem, nigdy ucięte pół-słowo bez
+   oznaczenia. */
+.oos-decision-card-title {
+  font-weight: 700;
+  font-size: clamp(14px, 1.2vw, 18px);
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oos-decision-card-status {
+  flex-shrink: 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--oos-muted);
+}
+
+.oos-decision-card-description {
+  font-size: clamp(11.5px, 1vw, 13.5px);
+  line-height: 1.3;
+  color: var(--oos-muted);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oos-decision-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding-top: 5px;
+  border-top: 1px solid rgba(62, 54, 44, 0.14);
+}
+
+.oos-decision-card-meta-line {
+  font-size: clamp(10.5px, 0.9vw, 12.5px);
+  line-height: 1.25;
+  color: var(--oos-muted);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Evening cards: mniej pionowego tekstu (opis 1 linia, jedna linia meta),
+   żeby 5 kart w jednym rzędzie zawsze się mieściło bez ucinania tytułu. */
+.oos-actions--evening-5 .oos-decision-card-description,
+.oos-actions--evening-4 .oos-decision-card-description {
+  -webkit-line-clamp: 1;
+}
+
+.oos-actions--evening-5 .oos-decision-card-title,
+.oos-actions--evening-4 .oos-decision-card-title {
+  font-size: clamp(12.5px, 1.05vw, 15px);
+}
+
+/* --------------------------------------------------------------------
+   7. Result tiles — NIEKLIKALNE kafle wyników
+   -------------------------------------------------------------------- */
+
+.oos-result-tile {
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  padding: 10px 12px;
+  border: 1.5px solid rgba(93, 123, 144, 0.4);
+  border-radius: 12px;
+  background: var(--oos-panel);
+  box-shadow: 0 2px 4px var(--oos-shadow);
+
+  text-align: center;
+  cursor: default;
+  pointer-events: none;
+  transform: none;
+}
+
+.oos-result-tile:hover {
+  transform: none;
+  box-shadow: 0 2px 4px var(--oos-shadow);
+}
+
+.oos-result-tile-label {
+  font-size: clamp(11px, 1vw, 13px);
+  color: var(--oos-muted);
+}
+
+.oos-result-tile-value {
+  font-size: clamp(22px, 2.2vw, 32px);
+  font-weight: 700;
+}
+
+.oos-result-tile--positive {
+  background: linear-gradient(180deg, #E4EFDD, #CFE2C4);
+}
+
+.oos-result-tile--positive .oos-result-tile-value {
+  color: var(--oos-sage);
+}
+
+.oos-result-tile--negative {
+  background: linear-gradient(180deg, #F1DCD5, #E3BCB0);
+}
+
+.oos-result-tile--negative .oos-result-tile-value {
+  color: var(--oos-rose);
+}
+
+.oos-result-tile--neutral {
+  background: linear-gradient(180deg, #EFE6D3, #E1D5B9);
+}
+
+.oos-result-tile--neutral .oos-result-tile-value {
+  color: var(--oos-muted);
+}
+
+/* --------------------------------------------------------------------
+   8. CTA button — jedyny "prawdziwy przycisk" w panelu akcji
+   -------------------------------------------------------------------- */
+
+.oos-cta-button {
+  min-height: 64px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #9B6846, #6F442E);
+  color: #F7F1E4;
+
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(16px, 1.5vw, 21px);
+  font-weight: 700;
+
+  box-shadow: 0 6px 0 rgba(74, 45, 31, 0.75), 0 12px 20px var(--oos-shadow);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.oos-cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 rgba(74, 45, 31, 0.7), 0 16px 24px var(--oos-shadow);
+}
+
+.oos-cta-button:focus-visible {
+  outline: 2px solid var(--oos-gold);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------
+   9. Noc — inny nastrój tylko przez przedefiniowanie zmiennych,
+   scoped do .oos-game--evening. Cały poddrzewo re-tematyzuje się samo,
+   bo wszystko powyżej używa var(--oos-*), nie surowych hexów.
+   -------------------------------------------------------------------- */
+
+.oos-game--evening {
+  --oos-paper: #262A3B;
+  --oos-panel: #333750;
+  --oos-ink: #F1EBDD;
+  --oos-muted: #B7AFC4;
+  --oos-line: #4B5068;
+  --oos-shadow: rgba(0, 0, 0, 0.38);
+
+  background:
+    radial-gradient(circle at 85% 15%, rgba(192, 138, 62, 0.14), transparent 26%),
+    linear-gradient(135deg, #2B2F42, var(--oos-paper));
+}
+
+.oos-game--evening .oos-topbar {
+  background: rgba(38, 42, 59, 0.55);
+}
+
+.oos-game--evening .oos-decision-card {
+  background: linear-gradient(180deg, #3A3F58, #2E3247);
+  color: var(--oos-ink);
+}
+
+/* --------------------------------------------------------------------
+   10. Bezpiecznik na niskie okna (typowy laptop 1366x768 z paskami
+   przeglądarki potrafi mieć realnie mniej niż 768px wysokości).
+   -------------------------------------------------------------------- */
+
+@media (max-height: 800px) {
+  .oos-game {
+    grid-template-rows: 48px minmax(0, 1fr) 178px;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .oos-decision-card {
+    padding: 10px 11px;
+    gap: 4px;
+  }
+
+  .oos-cta-button {
+    min-height: 56px;
+  }
+}
+
+@media (min-width: 1700px) {
+  .oos-game {
+    width: min(1700px, calc(100vw - 24px));
+  }
+}

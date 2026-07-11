@@ -16,23 +16,21 @@
 // forced cheapest choice) zostaje bez zmian — zmienia się tylko to,
 // co widać, nie logika dostępności.
 //
-// v0.17: Asset-Based VN UI Implementation — scena używa teraz tła
-// assets/scenes/scene-event.png, opis eventu trafia do osobnego
-// narrative-strip pod sceną, a wybory wyglądają jak decision cards
-// (assets/references/component-sheet.jpg), nie zwykłe przyciski.
+// v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
+// system .oos-* (patrz js/ui/oosLayout.js).
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js";
 import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js";
 import {
-  createVnShell,
+  createGameShell,
   createTopBar,
+  createSidebar,
   createScenePanel,
   createNarrativeStrip,
-  createPlayerCard,
-  createActionPanel
-} from "../vnLayout.js";
+  createDecisionCard
+} from "../oosLayout.js";
 
 export function renderEventScreen(container) {
   const event = getCurrentEvent();
@@ -40,39 +38,55 @@ export function renderEventScreen(container) {
   const currentSpoons = state.resources.spoons.current;
   const progress = getCurrentAgendaProgress(state);
 
-  const topbar = createTopBar(state, "event", `Wydarzenie ${progress.current}/${progress.total} — ${progress.label}`);
-  const side = createPlayerCard(state, "event");
+  const topbar = createTopBar(
+    state,
+    "event",
+    `Wydarzenie ${progress.current}/${progress.total} — ${progress.label}`
+  );
+  const sidebar = createSidebar(state, "event");
 
   const scene = createScenePanel({
-    symbolModifier: "event",
+    modifier: "event",
     title: replacePlaceholders(event.title, state)
   });
 
   const narrative = createNarrativeStrip(replacePlaceholders(event.description, state));
 
-  const choicesList = document.createElement("div");
-  choicesList.className = "choices";
-
   const anyAffordable = event.choices.some((choice) => choice.spoonsCost <= currentSpoons);
   const forcedChoice = anyAffordable ? null : getCheapestChoice(event.choices);
 
-  event.choices.forEach((choice) => {
-    const isForced = forcedChoice !== null && choice.id === forcedChoice.id;
-    choicesList.appendChild(renderChoiceButton(choice, state, currentSpoons, isForced));
-  });
+  const cards = event.choices.map((choice) => buildChoiceCard(choice, state, currentSpoons, forcedChoice));
 
-  const actions = createActionPanel([choicesList], "stack");
-
-  const shell = createVnShell({
+  const shell = createGameShell({
     screenClass: "event",
     topbar,
-    side,
+    sidebar,
     scene,
     narrative,
-    actions
+    actions: cards,
+    actionsVariant: "flow"
   });
 
   container.appendChild(shell);
+}
+
+function buildChoiceCard(choice, state, currentSpoons, forcedChoice) {
+  const isForced = forcedChoice !== null && choice.id === forcedChoice.id;
+  const canAfford = choice.spoonsCost <= currentSpoons;
+  const isDisabled = !canAfford && !isForced;
+
+  return createDecisionCard({
+    title: replacePlaceholders(choice.label, state),
+    metaLines: [
+      `Koszt: ${buildCostTier(choice.spoonsCost)} · Niepewność: ${buildUncertaintyTier(choice)}`,
+      isDisabled ? "niedostępne teraz" : isForced ? "ostatnia dostępna opcja" : null
+    ],
+    disabled: isDisabled,
+    onClick: () => {
+      resolveEvent(choice.id);
+      showScreen("reflection");
+    }
+  });
 }
 
 function getCheapestChoice(choices) {
@@ -88,63 +102,6 @@ function replacePlaceholders(text, state) {
 
   const partnerName = state.partner ? state.partner.name : "partner";
   return text.replace(/\{partnerName\}/g, partnerName);
-}
-
-function renderChoiceButton(choice, state, currentSpoons, isForced) {
-  const button = document.createElement("button");
-  const canAfford = choice.spoonsCost <= currentSpoons;
-  const isDisabled = !canAfford && !isForced;
-
-  button.className = `${buildChoiceButtonClass(isDisabled, isForced)} vn-choice-button`;
-
-  const label = document.createElement("span");
-  label.className = "choice-label";
-  label.textContent = replacePlaceholders(choice.label, state);
-  button.appendChild(label);
-
-  const cost = renderChoiceCost(choice, currentSpoons, isDisabled, isForced);
-  if (cost) {
-    button.appendChild(cost);
-  }
-
-  button.disabled = isDisabled;
-
-  if (!isDisabled) {
-    button.addEventListener("click", () => {
-      resolveEvent(choice.id);
-      showScreen("reflection");
-    });
-  }
-
-  return button;
-}
-
-function buildChoiceButtonClass(isDisabled, isForced) {
-  const classes = ["choice-button"];
-
-  if (isDisabled) {
-    classes.push("choice-button--disabled");
-  }
-
-  if (isForced) {
-    classes.push("choice-button--forced");
-  }
-
-  return classes.join(" ");
-}
-
-function renderChoiceCost(choice, currentSpoons, isDisabled, isForced) {
-  const cost = document.createElement("span");
-  cost.className = "choice-cost";
-  cost.textContent = `Koszt: ${buildCostTier(choice.spoonsCost)} · Niepewność: ${buildUncertaintyTier(choice)}`;
-
-  if (isDisabled) {
-    cost.appendChild(renderChoiceNote(" · niedostępne teraz"));
-  } else if (isForced) {
-    cost.appendChild(renderChoiceNote(" · ostatnia dost\u0119pna opcja"));
-  }
-
-  return cost;
 }
 
 // zamiast dokładnej liczby spoons (np. "− 3 spoons"), pokazujemy tylko
@@ -180,11 +137,4 @@ function buildUncertaintyTier(choice) {
   }
 
   return "wysoka";
-}
-
-function renderChoiceNote(text) {
-  const note = document.createElement("span");
-  note.className = "choice-unavailable-note";
-  note.textContent = text;
-  return note;
 }
