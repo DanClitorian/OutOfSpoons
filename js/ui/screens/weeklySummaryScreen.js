@@ -8,9 +8,26 @@ import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
 import { buildWeeklySummary } from "../../systems/weeklySummarySystem.js";
+import {
+  ensureWeeklyChallengeState,
+  evaluateWeeklyChallenge,
+  generateNextWeekChallenge,
+  buildWeeklyChallengeSummary
+} from "../../systems/weeklyChallengeSystem.js";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
+
+  // v0.19: oceń poprzednie wyzwanie (jeśli jego termin minął) i od razu
+  // wygeneruj kolejne na nadchodzący tydzień, ZANIM zbudujemy podsumowanie
+  // — dzięki temu "Aktualny stan" niżej pokazuje spoons już po ewentualnej
+  // nagrodzie/karze. Obie funkcje są idempotentne (patrz
+  // weeklyChallengeSystem.js), więc bezpieczne nawet przy wielokrotnym
+  // renderze tego ekranu.
+  ensureWeeklyChallengeState(state);
+  evaluateWeeklyChallenge(state);
+  generateNextWeekChallenge(state);
+
   const summary = buildWeeklySummary(state);
 
   const wrapper = document.createElement("div");
@@ -32,6 +49,7 @@ export function renderWeeklySummaryScreen(container) {
 
   wrapper.appendChild(renderEffectsPanel(summary));
   wrapper.appendChild(renderCurrentStatePanel(summary));
+  wrapper.appendChild(renderWeeklyChallengeSection(state));
 
   const continueButton = document.createElement("button");
   continueButton.className = "primary-button";
@@ -44,6 +62,82 @@ export function renderWeeklySummaryScreen(container) {
 
   container.appendChild(wrapper);
 }
+
+// CLEAN v0.19 weekly challenge section START
+// v0.19: Weekly Stakes. Sekcja reużywa istniejące klasy CSS
+// (.weekly-summary-panel / .weekly-summary-heading) — celowo bez
+// nowego CSS, zgodnie z wymogiem "nie musi być jeszcze pięknie
+// stylizowana jak gameplay UI".
+function renderWeeklyChallengeSection(state) {
+  const panel = document.createElement("div");
+  panel.className = "weekly-summary-panel";
+
+  const heading = document.createElement("p");
+  heading.className = "weekly-summary-heading";
+  heading.textContent = "Stawka tygodnia";
+  panel.appendChild(heading);
+
+  const challengeSummary = buildWeeklyChallengeSummary(state);
+
+  if (challengeSummary.lastResult) {
+    panel.appendChild(renderChallengeResult(challengeSummary.lastResult));
+  }
+
+  if (challengeSummary.upcoming) {
+    panel.appendChild(renderUpcomingChallenge(challengeSummary));
+  }
+
+  return panel;
+}
+
+function renderChallengeResult(result) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "weekly-challenge-result";
+
+  const title = document.createElement("p");
+  title.textContent = result.success
+    ? `Udało się: ${result.title}`
+    : `Nie udało się: ${result.title}`;
+  wrapper.appendChild(title);
+
+  const detail = document.createElement("p");
+  detail.textContent = result.success
+    ? "Relacja wytrzymała próbę."
+    : "Wchodzisz w kolejny tydzień z większym napięciem.";
+  wrapper.appendChild(detail);
+
+  const effect = document.createElement("p");
+  effect.textContent = result.success
+    ? "Nagroda: +1 do maksymalnych spoons."
+    : "Kara: -2 spoons na start tygodnia.";
+  wrapper.appendChild(effect);
+
+  return wrapper;
+}
+
+function renderUpcomingChallenge(challengeSummary) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "weekly-challenge-upcoming";
+
+  const heading = document.createElement("p");
+  heading.textContent = "Stawka nadchodzącego tygodnia";
+  wrapper.appendChild(heading);
+
+  const title = document.createElement("p");
+  title.textContent = challengeSummary.upcoming.title;
+  wrapper.appendChild(title);
+
+  const condition = document.createElement("p");
+  condition.textContent = `Warunek: ${challengeSummary.upcomingConditionText}`;
+  wrapper.appendChild(condition);
+
+  const countdown = document.createElement("p");
+  countdown.textContent = `Pozostało: ${challengeSummary.upcomingDaysLeft} dni`;
+  wrapper.appendChild(countdown);
+
+  return wrapper;
+}
+// CLEAN v0.19 weekly challenge section END
 
 function renderEffectsPanel(summary) {
   const panel = document.createElement("div");

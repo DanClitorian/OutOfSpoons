@@ -18,6 +18,11 @@ import {
   getAgendaSlotLabel
 } from "../../systems/dayAgendaSystem.js";
 import {
+  ensureWeeklyChallengeState,
+  getCurrentWeeklyChallenge,
+  formatWeeklyChallengeCondition
+} from "../../systems/weeklyChallengeSystem.js";
+import {
   createGameShell,
   createTopBar,
   createSidebar,
@@ -58,7 +63,7 @@ export function renderAgendaScreen(container) {
     title: "Plan dnia"
   });
 
-  const narrative = createNarrativeStrip("Wybierz, czym zajmiesz się teraz. Kolejność ma znaczenie.");
+  const narrative = createNarrativeStrip(buildAgendaNarrative(state));
 
   const cards = agenda.slots.map((item, index) => buildAgendaCard(item, index, state));
 
@@ -73,6 +78,23 @@ export function renderAgendaScreen(container) {
   });
 
   container.appendChild(shell);
+}
+
+// v0.19: Weekly Stakes. Krótki teaser aktywnego wyzwania — jak w
+// gameScreen.js, drugie zdanie w tym samym akapicie narracji, bez
+// nowych elementów DOM ani zmian w layoucie v0.18.
+function buildAgendaNarrative(state) {
+  const base = "Wybierz, czym zajmiesz się teraz. Kolejność ma znaczenie.";
+
+  ensureWeeklyChallengeState(state);
+  const challenge = getCurrentWeeklyChallenge(state);
+
+  if (!challenge) {
+    return base;
+  }
+
+  const condition = formatWeeklyChallengeCondition(challenge);
+  return `${base} W tle wisi: ${challenge.title}. Warunek: ${condition}.`;
 }
 
 function buildAgendaCard(item, index, state) {
