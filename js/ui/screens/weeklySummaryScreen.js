@@ -14,6 +14,12 @@ import {
   generateNextWeekChallenge,
   buildWeeklyChallengeSummary
 } from "../../systems/weeklyChallengeSystem.js";
+import {
+  ensureCriticalEventState,
+  evaluateCriticalEvent,
+  generateNextCriticalEvent,
+  buildCriticalEventSummary
+} from "../../systems/criticalEventSystem.js";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -27,6 +33,15 @@ export function renderWeeklySummaryScreen(container) {
   ensureWeeklyChallengeState(state);
   evaluateWeeklyChallenge(state);
   generateNextWeekChallenge(state);
+
+  // v0.20: Monthly Critical Event Foundation. Ta sama idempotentna
+  // logika co Weekly Stakes powyżej, ale z 28-dniowym cyklem i innymi
+  // efektami (trust/frustration/current spoons, BEZ max spoons — patrz
+  // criticalEventSystem.js). To DRUGI, niezależny system — nie zastępuje
+  // ani nie dubluje Weekly Stakes.
+  ensureCriticalEventState(state);
+  evaluateCriticalEvent(state);
+  generateNextCriticalEvent(state);
 
   const summary = buildWeeklySummary(state);
 
@@ -50,6 +65,7 @@ export function renderWeeklySummaryScreen(container) {
   wrapper.appendChild(renderEffectsPanel(summary));
   wrapper.appendChild(renderCurrentStatePanel(summary));
   wrapper.appendChild(renderWeeklyChallengeSection(state));
+  wrapper.appendChild(renderCriticalEventSection(state));
 
   const continueButton = document.createElement("button");
   continueButton.className = "primary-button";
@@ -138,6 +154,90 @@ function renderUpcomingChallenge(challengeSummary) {
   return wrapper;
 }
 // CLEAN v0.19 weekly challenge section END
+
+// CLEAN v0.20 critical event section START
+// v0.20: Monthly Critical Event Foundation. Ta sama zasada co sekcja
+// Weekly Stakes powyżej: reużywa istniejące klasy CSS
+// (.weekly-summary-panel / .weekly-summary-heading / .weekly-challenge-*)
+// — zero nowego CSS, żeby nie ruszać layoutu v0.18/v0.19.
+function renderCriticalEventSection(state) {
+  const panel = document.createElement("div");
+  panel.className = "weekly-summary-panel";
+
+  const heading = document.createElement("p");
+  heading.className = "weekly-summary-heading";
+  heading.textContent = "Wielki Test";
+  panel.appendChild(heading);
+
+  const eventSummary = buildCriticalEventSummary(state);
+
+  if (eventSummary.lastResult) {
+    panel.appendChild(renderCriticalEventResult(eventSummary.lastResult));
+  }
+
+  if (eventSummary.upcoming) {
+    panel.appendChild(renderUpcomingCriticalEvent(eventSummary));
+  }
+
+  return panel;
+}
+
+function renderCriticalEventResult(result) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "weekly-challenge-result";
+
+  const title = document.createElement("p");
+  title.textContent = result.success
+    ? `Wielki Test zaliczony: ${result.title}`
+    : `Wielki Test niezaliczony: ${result.title}`;
+  wrapper.appendChild(title);
+
+  const detail = document.createElement("p");
+  detail.textContent = result.text || "";
+  wrapper.appendChild(detail);
+
+  const effect = document.createElement("p");
+  effect.textContent = `Efekt: ${formatCriticalEventEffect(result.effect)}`;
+  wrapper.appendChild(effect);
+
+  return wrapper;
+}
+
+function formatCriticalEventEffect(effect) {
+  if (!effect) {
+    return "";
+  }
+
+  return [
+    `Zaufanie ${formatSigned(effect.trustChange)}`,
+    `Frustracja ${formatSigned(effect.frustrationChange)}`,
+    `Spoons ${formatSigned(effect.spoonsChange)}`
+  ].join(", ");
+}
+
+function renderUpcomingCriticalEvent(eventSummary) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "weekly-challenge-upcoming";
+
+  const heading = document.createElement("p");
+  heading.textContent = "Na horyzoncie";
+  wrapper.appendChild(heading);
+
+  const title = document.createElement("p");
+  title.textContent = eventSummary.upcoming.title;
+  wrapper.appendChild(title);
+
+  const condition = document.createElement("p");
+  condition.textContent = `Warunek: ${eventSummary.upcomingConditionText}`;
+  wrapper.appendChild(condition);
+
+  const countdown = document.createElement("p");
+  countdown.textContent = `Pozostało: ${eventSummary.upcomingDaysLeft} dni`;
+  wrapper.appendChild(countdown);
+
+  return wrapper;
+}
+// CLEAN v0.20 critical event section END
 
 function renderEffectsPanel(summary) {
   const panel = document.createElement("div");
