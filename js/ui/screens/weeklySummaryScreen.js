@@ -176,7 +176,7 @@ function renderCriticalEventSection(state) {
   }
 
   if (eventSummary.upcoming) {
-    panel.appendChild(renderUpcomingCriticalEvent(eventSummary));
+    panel.appendChild(renderUpcomingCriticalEvent(eventSummary, state));
   }
 
   return panel;
@@ -215,7 +215,7 @@ function formatCriticalEventEffect(effect) {
   ].join(", ");
 }
 
-function renderUpcomingCriticalEvent(eventSummary) {
+function renderUpcomingCriticalEvent(eventSummary, state) {
   const wrapper = document.createElement("div");
   wrapper.className = "weekly-challenge-upcoming";
 
@@ -227,15 +227,33 @@ function renderUpcomingCriticalEvent(eventSummary) {
   title.textContent = eventSummary.upcoming.title;
   wrapper.appendChild(title);
 
+  // v0.20.1, Część D: separator "·" zamiast " i " TYLKO w tym miejscu
+  // (Wielki Test w weekly summary) — Weekly Stakes i sam formatter w
+  // criticalEventSystem.js dalej używają pełnego " i ".
   const condition = document.createElement("p");
-  condition.textContent = `Warunek: ${eventSummary.upcomingConditionText}`;
+  condition.textContent = `Warunek: ${eventSummary.upcomingConditionText.replace(/ i /g, " · ")}`;
   wrapper.appendChild(condition);
 
   const countdown = document.createElement("p");
   countdown.textContent = `Pozostało: ${eventSummary.upcomingDaysLeft} dni`;
   wrapper.appendChild(countdown);
 
+  // v0.20.1, Część B: postęp miesięcznego łuku, np. "Miesięczny łuk:
+  // dzień 8 z 28". Liczony TU (nie w criticalEventSystem.js — nie było
+  // to konieczne, mamy tu już wszystkie potrzebne dane: arcStartDay,
+  // dueDay, state.day), czysto tekstowa linia, bez paska CSS.
+  const arcProgress = document.createElement("p");
+  arcProgress.textContent = buildMonthlyArcProgressText(eventSummary.upcoming, state);
+  wrapper.appendChild(arcProgress);
+
   return wrapper;
+}
+
+function buildMonthlyArcProgressText(event, state) {
+  const total = event.dueDay - event.arcStartDay + 1;
+  const rawDay = state.day - event.arcStartDay + 1;
+  const clampedDay = Math.min(total, Math.max(1, rawDay));
+  return `Miesięczny łuk: dzień ${clampedDay} z ${total}`;
 }
 // CLEAN v0.20 critical event section END
 

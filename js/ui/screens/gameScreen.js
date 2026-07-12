@@ -77,15 +77,26 @@ export function renderGameScreen(container) {
 // nietknięty).
 //
 // v0.20: Monthly Critical Event Foundation. Analogiczny teaser dla
-// Wielkiego Testu dopisany jako TRZECIE zdanie w tym samym akapicie —
-// wciąż jeden element DOM, wciąż bez zmian w layoucie/CSS. Podczas
-// pierwszego tygodnia gry (dni 1-7) Weekly Stakes jeszcze nie istnieją
-// (generują się dopiero po pierwszym weekly summary), więc naturalnie
-// widać tylko teaser Wielkiego Testu — od 2. tygodnia widać oba.
+// Wielkiego Testu dopisany jako TRZECIE zdanie w tym samym akapicie.
+//
+// v0.20.1: Critical Event Visibility + Testability. Pełne zdanie
+// "Nowy dzień się zaczyna..." + dwa teasery robiło się zbyt długie i
+// ryzykowało ellipsis w wąskim pasku narracji. Gdy istnieje choć jeden
+// aktywny system (Weekly Stake i/lub Wielki Test), narracja przechodzi
+// na krótszą formę "Dziś: plan dnia. ...". Pełne, "opisowe" zdanie
+// zostaje TYLKO wtedy, gdy żaden system jeszcze nie istnieje (pierwszy
+// możliwy moment w grze — w praktyce ułamek sekundy, bo Wielki Test
+// generuje się już na tym samym renderze, ale zostawiamy to jako
+// bezpieczny fallback).
 function buildMorningNarrative(state) {
-  const base = "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
+  const weeklyTeaser = buildWeeklyStakeTeaser(state);
+  const criticalTeaser = buildCriticalEventTeaser(state);
 
-  const parts = [base, buildWeeklyStakeTeaser(state), buildCriticalEventTeaser(state)].filter(Boolean);
+  if (!weeklyTeaser && !criticalTeaser) {
+    return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
+  }
+
+  const parts = ["Dziś: plan dnia.", weeklyTeaser, criticalTeaser].filter(Boolean);
   return parts.join(" ");
 }
 
@@ -98,9 +109,7 @@ function buildWeeklyStakeTeaser(state) {
   }
 
   const daysLeft = getWeeklyChallengeCountdown(state);
-  const dayWord = daysLeft === 1 ? "dzień" : "dni";
-
-  return `Stawka tygodnia: ${challenge.title} za ${daysLeft} ${dayWord}.`;
+  return `Stawka: ${challenge.title} za ${daysLeft} ${dayWord(daysLeft)}.`;
 }
 
 function buildCriticalEventTeaser(state) {
@@ -112,7 +121,9 @@ function buildCriticalEventTeaser(state) {
   }
 
   const daysLeft = getCriticalEventCountdown(state);
-  const dayWord = daysLeft === 1 ? "dzień" : "dni";
+  return `Wielki Test: ${event.title} za ${daysLeft} ${dayWord(daysLeft)}.`;
+}
 
-  return `Na horyzoncie: ${event.title} za ${daysLeft} ${dayWord}.`;
+function dayWord(daysLeft) {
+  return daysLeft === 1 ? "dzień" : "dni";
 }
