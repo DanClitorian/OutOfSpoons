@@ -1,0 +1,18 @@
+[35mapply_hotfix_v0_17_4_layout_stabilization.py[m[36m:[m[32m758[m[36m:[m    vn_layout = root / "js" / "ui" / "[1;31mvnLayout[m.js"
+[35mapply_hotfix_v0_17_4_layout_stabilization.py[m[36m:[m[32m764[m[36m:[m        "[1;31mvnLayout[m sidebar stack + relationship card"
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m199[m[36m:[mVN_LAYOUT_OLD = r"""// [1;31mvnLayout[m.js
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m726[m[36m:[mVN_LAYOUT_NEW = r"""// [1;31mvnLayout[m.js
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m1301[m[36m:[m} from "../[1;31mvnLayout[m.js";
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m1743[m[36m:[m// (patrz js/ui/[1;31mvnLayout[m.js#buildRelationshipCard, dodane w hotfixach
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m1759[m[36m:[m} from "../[1;31mvnLayout[m.js";
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m1827[m[36m:[m} from "../[1;31mvnLayout[m.js";
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m2015[m[36m:[m} from "../[1;31mvnLayout[m.js";
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m2169[m[36m:[m} from "../[1;31mvnLayout[m.js";
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m2314[m[36m:[m} from "../[1;31mvnLayout[m.js";
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m2713[m[36m:[m        "js/ui/[1;31mvnLayout[m.js",
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m2734[m[36m:[m    print("1/6 js/ui/[1;31mvnLayout[m.js (pelna podmiana)")
+[35mapply_hotfix_v0_17_5_professional_layout_polish.py[m[36m:[m[32m2735[m[36m:[m    replace_whole_file(project_root / "js/ui/[1;31mvnLayout[m.js", VN_LAYOUT_OLD, VN_LAYOUT_NEW, "[1;31mvnLayout[m.js -> mood prefix, createConsequenceCards, layout reflection")
+[35mjs/ui/oosLayout.js[m[36m:[m[32m10[m[36m:[m// itd. Stary js/ui/[1;31mvnLayout[m.js zostaje w repo nieużywany (podobnie jak
+[35mjs/ui/uiManager.js[m[36m:[m[32m91[m[36m:[m  // vn-topbar w [1;31mvnLayout[m.js. Dzień/faza/spoons/zaufanie pokazuje teraz
+[35mjs/ui/uiManager.js[m[36m:[m[32m93[m[36m:[m  // osobna (patrz js/ui/[1;31mvnLayout[m.js#createTopBar).
+[35mjs/ui/vnLayout.js[m[36m:[m[32m1[m[36m:[m// [1;31mvnLayout[m.js
