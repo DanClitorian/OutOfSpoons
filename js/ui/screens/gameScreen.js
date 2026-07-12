@@ -21,6 +21,10 @@ import {
   getCriticalEventCountdown
 } from "../../systems/criticalEventSystem.js";
 import {
+  ensurePatternState,
+  getLatestPatternEcho
+} from "../../systems/patternSystem.js";
+import {
   createGameShell,
   createTopBar,
   createSidebar,
@@ -80,24 +84,40 @@ export function renderGameScreen(container) {
 // Wielkiego Testu dopisany jako TRZECIE zdanie w tym samym akapicie.
 //
 // v0.20.1: Critical Event Visibility + Testability. Pełne zdanie
-// "Nowy dzień się zaczyna..." + dwa teasery robiło się zbyt długie i
+// "Nowy dzień się zaczyna..." + teasery robiło się zbyt długie i
 // ryzykowało ellipsis w wąskim pasku narracji. Gdy istnieje choć jeden
-// aktywny system (Weekly Stake i/lub Wielki Test), narracja przechodzi
-// na krótszą formę "Dziś: plan dnia. ...". Pełne, "opisowe" zdanie
-// zostaje TYLKO wtedy, gdy żaden system jeszcze nie istnieje (pierwszy
-// możliwy moment w grze — w praktyce ułamek sekundy, bo Wielki Test
-// generuje się już na tym samym renderze, ale zostawiamy to jako
-// bezpieczny fallback).
+// aktywny system (wzorzec/Weekly Stake/Wielki Test), narracja
+// przechodzi na krótszą formę "Dziś: plan dnia. ...". Pełne, "opisowe"
+// zdanie zostaje TYLKO wtedy, gdy żaden system jeszcze nie istnieje.
+//
+// v0.22: Pattern Foundation / Narrative Echoes. Jeśli gracz ma aktywny
+// wzorzec zachowania, wstawiane jest "Wzorzec: {tytuł}. {echo}" zaraz
+// po "Dziś: plan dnia." — PRZED teaserami Weekly Stake/Wielkiego Testu.
+// Pokazujemy TYLKO NAJNOWSZY aktywny wzorzec (getLatestPatternEcho
+// zwraca pojedynczy obiekt albo null) — bez nowego panelu, bez zmiany
+// layoutu, wciąż jeden string w tym samym elemencie narrative strip.
 function buildMorningNarrative(state) {
+  const patternTeaser = buildPatternTeaser(state);
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
   const criticalTeaser = buildCriticalEventTeaser(state);
 
-  if (!weeklyTeaser && !criticalTeaser) {
+  if (!patternTeaser && !weeklyTeaser && !criticalTeaser) {
     return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
   }
 
-  const parts = ["Dziś: plan dnia.", weeklyTeaser, criticalTeaser].filter(Boolean);
+  const parts = ["Dziś: plan dnia.", patternTeaser, weeklyTeaser, criticalTeaser].filter(Boolean);
   return parts.join(" ");
+}
+
+function buildPatternTeaser(state) {
+  ensurePatternState(state);
+  const result = getLatestPatternEcho(state);
+
+  if (!result) {
+    return null;
+  }
+
+  return `Wzorzec: ${result.pattern.title}. ${result.text}`;
 }
 
 function buildWeeklyStakeTeaser(state) {

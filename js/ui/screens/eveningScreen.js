@@ -29,6 +29,7 @@ import {
   applyEveningRecovery
 } from "../../systems/eveningRecoverySystem.js";
 import { shouldShowWeeklySummary } from "../../systems/weeklySummarySystem.js";
+import { recordPatternFromEveningRecovery } from "../../systems/patternSystem.js";
 import {
   createGameShell,
   createTopBar,
@@ -78,6 +79,11 @@ function buildEveningCard(option, state) {
       const completedDay = currentState.day;
 
       applyEveningRecovery(option.id, currentState);
+      // v0.22: Pattern Foundation. Zapisuje wpis do historii wzorców z
+      // tej decyzji wieczornej. state.lastEveningRecovery jest już
+      // ustawiane przez eveningRecoverySystem.js (zero zmian w tym
+      // module). Nie zmienia działania evening recovery.
+      recordPatternFromEveningRecovery(currentState, currentState.lastEveningRecovery);
       advanceToNextDay();
       saveGame(currentState);
 

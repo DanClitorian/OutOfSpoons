@@ -37,6 +37,12 @@ import {
   generateNextCriticalEvent,
   buildCriticalEventSummary
 } from "../../systems/criticalEventSystem.js";
+import {
+  ensurePatternState,
+  recordPatternFromWeeklyResult,
+  recordPatternFromCriticalResult,
+  getWeeklyPatternEchoes
+} from "../../systems/patternSystem.js";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -48,7 +54,7 @@ export function renderWeeklySummaryScreen(container) {
   // weeklyChallengeSystem.js), więc bezpieczne nawet przy wielokrotnym
   // renderze tego ekranu. NIE ZMIENIONE w v0.21.
   ensureWeeklyChallengeState(state);
-  evaluateWeeklyChallenge(state);
+  const weeklyEvaluation = evaluateWeeklyChallenge(state);
   generateNextWeekChallenge(state);
 
   // v0.20: Monthly Critical Event Foundation. Ta sama idempotentna
@@ -57,8 +63,23 @@ export function renderWeeklySummaryScreen(container) {
   // criticalEventSystem.js). To DRUGI, niezależny system. NIE ZMIENIONE
   // w v0.21.
   ensureCriticalEventState(state);
-  evaluateCriticalEvent(state);
+  const criticalEvaluation = evaluateCriticalEvent(state);
   generateNextCriticalEvent(state);
+
+  // v0.22: Pattern Foundation / Narrative Echoes. evaluateWeeklyChallenge/
+  // evaluateCriticalEvent zwracają wynik TYLKO na tym renderze, na którym
+  // ocena faktycznie się wykonała (potem ich "active" jest już null albo
+  // dotyczy nowego, jeszcze nie-due cyklu) — więc to naturalnie rzadkie
+  // zdarzenie. recordPatternFromWeeklyResult/recordPatternFromCriticalResult
+  // są DODATKOWO idempotentne przez key (patrz patternSystem.js), więc
+  // podwójne wywołanie i tak nigdy nie zduplikuje wpisu historii.
+  ensurePatternState(state);
+  if (weeklyEvaluation) {
+    recordPatternFromWeeklyResult(state, weeklyEvaluation);
+  }
+  if (criticalEvaluation) {
+    recordPatternFromCriticalResult(state, criticalEvaluation);
+  }
 
   const summary = buildWeeklySummary(state);
   const challengeSummary = buildWeeklyChallengeSummary(state);
@@ -71,7 +92,7 @@ export function renderWeeklySummaryScreen(container) {
 
   const grid = document.createElement("main");
   grid.className = "oos-weekly-summary__grid";
-  grid.appendChild(buildStoryCard(summary));
+  grid.appendChild(buildStoryCard(summary, state));
   grid.appendChild(buildStateCard(summary));
   grid.appendChild(buildWeeklyStakeCard(challengeSummary));
   grid.appendChild(buildCriticalEventCard(criticalSummary, state));
@@ -112,7 +133,7 @@ function buildHeader(summary) {
 // Karta 1 — Wynik tygodnia (story)
 // --------------------------------------------------------------------
 
-function buildStoryCard(summary) {
+function buildStoryCard(summary, state) {
   const card = document.createElement("section");
   card.className = "oos-weekly-summary__card oos-weekly-summary__card--story";
 
@@ -142,7 +163,50 @@ function buildStoryCard(summary) {
 
   card.appendChild(chips);
 
+  // v0.22: Pattern Foundation / Narrative Echoes. Blok "Co zaczyna być
+  // wzorem" pod chipsami — do 3 AKTYWNYCH wzorców (nie pojedynczych
+  // ech). Style w osobnym, nowym pliku css/patterns-v0-22.css
+  // (namespace .oos-weekly-summary__pattern-*), nie w
+  // weekly-summary-v0-21.css.
+  const patterns = getWeeklyPatternEchoes(state, 3);
+  if (patterns.length > 0) {
+    card.appendChild(buildPatternsBlock(patterns));
+  }
+
   return card;
+}
+
+function buildPatternsBlock(patterns) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "oos-weekly-summary__patterns";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-weekly-summary__patterns-heading";
+  heading.textContent = "Co zaczyna być wzorem";
+  wrapper.appendChild(heading);
+
+  const list = document.createElement("ul");
+  list.className = "oos-weekly-summary__pattern-list";
+
+  patterns.forEach((pattern) => {
+    const item = document.createElement("li");
+    item.className = "oos-weekly-summary__pattern-item";
+
+    const title = document.createElement("span");
+    title.className = "oos-weekly-summary__pattern-title";
+    title.textContent = pattern.title;
+    item.appendChild(title);
+
+    const description = document.createElement("span");
+    description.className = "oos-weekly-summary__pattern-description";
+    description.textContent = ` — ${pattern.description}`;
+    item.appendChild(description);
+
+    list.appendChild(item);
+  });
+
+  wrapper.appendChild(list);
+  return wrapper;
 }
 
 function createEffectChip(label, value, desirableDirection) {

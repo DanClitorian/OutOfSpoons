@@ -1,0 +1,64 @@
+/* patterns-v0-22.css
+ *
+ * v0.22: Pattern Foundation / Narrative Echoes.
+ *
+ * Osobny plik od css/weekly-summary-v0-21.css (celowo — łatwiej
+ * rozdzielić w przyszłości). Wszystko tu jest namespacowane pod
+ * ".oos-weekly-summary__pattern-*"/".oos-weekly-summary__patterns",
+ * potomkiem ".oos-weekly-summary" (patrz weekly-summary-v0-21.css) —
+ * dzięki temu zmienne CSS (--ws-*) zdefiniowane tam są tu dostępne
+ * przez dziedziczenie. Fallbacki na wypadek, gdyby ten plik kiedyś
+ * ładował się bez weekly-summary-v0-21.css.
+ *
+ * Nic tu nie styluje globalnie: button/p/h1/section/body.
+ */
+
+.oos-weekly-summary__patterns {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--ws-line, #C8B48C);
+}
+
+.oos-weekly-summary__patterns-heading {
+  margin: 0 0 8px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ws-blue, #5D7B90);
+}
+
+.oos-weekly-summary__pattern-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.oos-weekly-summary__pattern-item {
+  position: relative;
+  padding-left: 18px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ws-ink, #3E362C);
+}
+
+.oos-weekly-summary__pattern-item::before {
+  content: "•";
+  position: absolute;
+  left: 2px;
+  top: 0;
+  color: var(--ws-gold, #C08A3E);
+}
+
+.oos-weekly-summary__pattern-title {
+  font-weight: 700;
+}
+
+.oos-weekly-summary__pattern-description {
+  color: var(--ws-muted, #8A7A67);
+  font-style: italic;
+}

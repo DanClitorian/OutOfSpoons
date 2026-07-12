@@ -18,6 +18,8 @@ import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
+import { recordPatternFromChoice } from "../../systems/patternSystem.js";
+import { eventPool } from "../../data/eventData.js";
 import {
   createGameShell,
   createTopBar,
@@ -34,6 +36,37 @@ export function renderReflectionScreen(container, data) {
   const resultText = (data && data.resultText) || (lastEntry ? lastEntry.resultText : "");
   const consequences = lastEntry ? lastEntry.consequences : null;
 
+  // v0.22: Pattern Foundation / Narrative Echoes. Zapisuje wpis do
+  // historii wzorców (state.patterns.history), JEŚLI konsekwencja albo
+  // treść decyzji dają jakiś tag (patrz patternSystem.js). To NIE jest
+  // pojedyncze echo per decyzja — to surowy sygnał, z którego dopiero
+  // WZORZEC (3+ razy w 5 dni) generuje echo. Jeśli ta konkretna decyzja
+  // akurat aktywowała/odnowiła wzorzec, dostajemy jedno krótkie zdanie
+  // do narracji ("Znowu to robisz. ..."). Idempotentne przez key oparty
+  // o day/eventId/choiceId, więc bezpieczne przy ponownym renderze.
+  // Nie zmienia resultText ani konsekwencji, nie pokazuje przewidywanych
+  // efektów na kartach.
+  let patternEcho = null;
+  if (lastEntry) {
+    const originalEvent = eventPool.find((event) => event.id === lastEntry.eventId);
+    const originalChoice = originalEvent
+      ? originalEvent.choices.find((choice) => choice.id === lastEntry.choiceId)
+      : null;
+
+    const triggered = recordPatternFromChoice(state, {
+      day: lastEntry.day,
+      eventId: lastEntry.eventId,
+      choiceId: lastEntry.choiceId,
+      choiceLabel: originalChoice ? originalChoice.label : null,
+      choiceDescription: lastEntry.resultText,
+      consequences: lastEntry.consequences
+    });
+
+    if (triggered.length > 0) {
+      patternEcho = triggered[0].text;
+    }
+  }
+
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
     state,
@@ -47,7 +80,7 @@ export function renderReflectionScreen(container, data) {
     title: "Skutek decyzji"
   });
 
-  const narrative = createNarrativeStrip(buildNarrativeText(resultText, consequences));
+  const narrative = createNarrativeStrip(buildNarrativeText(resultText, consequences, patternEcho));
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
@@ -99,14 +132,10 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences) {
+function buildNarrativeText(resultText, consequences, patternEcho) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-
-  if (!interpretation) {
-    return resultText;
-  }
-
-  return resultText ? `${resultText} ${interpretation}` : interpretation;
+  const parts = [resultText, interpretation, patternEcho].filter(Boolean);
+  return parts.join(" ");
 }
 
 function buildDayProgressText(state) {
