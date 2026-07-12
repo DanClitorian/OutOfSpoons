@@ -1,0 +1,349 @@
+/* weekly-summary-v0-21.css
+ *
+ * v0.21: Weekly Summary / Monthly Arc UI Polish.
+ *
+ * Kompletnie osobny, izolowany plik od css/game-ui-v0-18.css — ten
+ * ekran NIE jest częścią planszy gameplayowej (.oos-game grid zostaje
+ * całkowicie nietknięty). Wszystko tu jest spięte przez namespace
+ * ".oos-weekly-summary" i jego potomków. Jedyny wyjątek to celowo
+ * SCOPED (nie globalny) override szerokości kontenera dla TEGO
+ * konkretnego ekranu (patrz sekcja 0) — stary css/style.css ustawiał
+ * wąski (640px) kontener myślany pod starą, listową wersję tego
+ * ekranu; nowy układ kartowy potrzebuje więcej miejsca.
+ *
+ * Styl: ciepły parchment / paper board, cozy diary, visual novel RPG —
+ * milestone screen, nie dashboard. Bazuje na tym samym kierunku
+ * kolorystycznym co gameplay UI (v0.18), ale z WŁASNYM zestawem
+ * zmiennych CSS, żeby ten plik był w pełni samodzielny.
+ */
+
+/* --------------------------------------------------------------------
+   0. Kontener ekranu — scoped override szerokości TYLKO dla
+   weeklySummary (stary css/style.css dawał tu wąskie 640px pod starą
+   listową wersję ekranu).
+   -------------------------------------------------------------------- */
+
+body[data-game-screen="weeklySummary"] #app {
+  max-width: 980px !important;
+  padding: 28px 20px 64px !important;
+}
+
+/* --------------------------------------------------------------------
+   1. .oos-weekly-summary — plansza + zmienne
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary {
+  --ws-paper: #F7F1E4;
+  --ws-panel: #FBF7EC;
+  --ws-ink: #3E362C;
+  --ws-muted: #8A7A67;
+  --ws-line: #C8B48C;
+  --ws-blue: #5D7B90;
+  --ws-gold: #C08A3E;
+  --ws-sage: #74915E;
+  --ws-rose: #B5624F;
+  --ws-shadow: rgba(62, 54, 44, 0.18);
+
+  display: block;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0;
+  color: var(--ws-ink);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.oos-weekly-summary * {
+  box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------
+   2. Header — "Podsumowanie tygodnia" / "Tydzień X zakończony" / dni
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__header {
+  text-align: center;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--ws-line);
+}
+
+.oos-weekly-summary__eyebrow {
+  margin: 0 0 6px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ws-muted);
+}
+
+.oos-weekly-summary__title {
+  margin: 0 0 8px;
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.oos-weekly-summary__period {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ws-muted);
+}
+
+/* --------------------------------------------------------------------
+   3. Grid kart
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.oos-weekly-summary__card--story,
+.oos-weekly-summary__card--critical-event {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 700px) {
+  .oos-weekly-summary__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------
+   4. Karta — bazowy wygląd
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__card {
+  padding: 22px 24px;
+  border-radius: 16px;
+  border: 1px solid var(--ws-line);
+  background:
+    radial-gradient(circle at 92% 8%, rgba(192, 138, 62, 0.10), transparent 30%),
+    linear-gradient(180deg, var(--ws-panel), var(--ws-paper));
+  box-shadow: 0 8px 20px var(--ws-shadow);
+}
+
+.oos-weekly-summary__card-heading {
+  margin: 0 0 14px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ws-blue);
+}
+
+/* --------------------------------------------------------------------
+   5. Karta 1 — Wynik tygodnia (story) + effect chips
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__story-text {
+  margin: 0 0 18px;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.oos-weekly-summary__effect-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.oos-weekly-summary__effect-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(62, 54, 44, 0.12);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.oos-weekly-summary__effect-chip-value {
+  font-weight: 700;
+}
+
+.oos-weekly-summary__effect-chip--positive {
+  background: #E4EFDD;
+  color: #3E362C;
+}
+
+.oos-weekly-summary__effect-chip--positive .oos-weekly-summary__effect-chip-value {
+  color: var(--ws-sage);
+}
+
+.oos-weekly-summary__effect-chip--negative {
+  background: #F1DCD5;
+  color: #3E362C;
+}
+
+.oos-weekly-summary__effect-chip--negative .oos-weekly-summary__effect-chip-value {
+  color: var(--ws-rose);
+}
+
+.oos-weekly-summary__effect-chip--neutral {
+  background: #EFE6D3;
+  color: #3E362C;
+}
+
+.oos-weekly-summary__effect-chip--neutral .oos-weekly-summary__effect-chip-value {
+  color: var(--ws-muted);
+}
+
+/* --------------------------------------------------------------------
+   6. Karta 2 — Aktualny stan
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__stat-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.oos-weekly-summary__stat-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(62, 54, 44, 0.1);
+  font-size: 15px;
+}
+
+.oos-weekly-summary__stat-line:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.oos-weekly-summary__stat-line-label {
+  color: var(--ws-muted);
+}
+
+.oos-weekly-summary__stat-line-value {
+  font-weight: 700;
+}
+
+.oos-weekly-summary__mood-description {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--ws-line);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--ws-muted);
+  line-height: 1.45;
+}
+
+/* --------------------------------------------------------------------
+   7. Karty 3 + 4 — Stawka tygodnia / Wielki Test (result + upcoming)
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__result {
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border-left: 4px solid var(--ws-sage);
+  background: #EEF4EA;
+}
+
+.oos-weekly-summary__result--failure {
+  border-left-color: var(--ws-rose);
+  background: #F7EAE6;
+}
+
+.oos-weekly-summary__result-title {
+  margin: 0 0 6px;
+  font-size: 15.5px;
+  font-weight: 700;
+}
+
+.oos-weekly-summary__result-detail {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary__result-effect {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ws-muted);
+}
+
+.oos-weekly-summary__upcoming {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px dashed var(--ws-line);
+  background: rgba(93, 123, 144, 0.06);
+}
+
+.oos-weekly-summary__upcoming-eyebrow {
+  margin: 0 0 6px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ws-blue);
+}
+
+.oos-weekly-summary__upcoming-title {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.oos-weekly-summary__upcoming-condition,
+.oos-weekly-summary__upcoming-countdown,
+.oos-weekly-summary__arc-progress {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--ws-muted);
+}
+
+.oos-weekly-summary__arc-progress {
+  font-weight: 600;
+  color: var(--ws-blue);
+}
+
+/* --------------------------------------------------------------------
+   8. Footer / CTA — button zachowuje historyczną klasę "primary-button"
+   (spójność z resztą gry), ale styl jest w pełni SCOPED do tego
+   footera, nie globalny.
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.oos-weekly-summary__footer .primary-button {
+  min-height: 60px;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #9B6846, #6F442E);
+  color: #F7F1E4;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  font-weight: 700;
+  box-shadow: 0 6px 0 rgba(74, 45, 31, 0.75), 0 12px 20px var(--ws-shadow);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.oos-weekly-summary__footer .primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 rgba(74, 45, 31, 0.7), 0 16px 24px var(--ws-shadow);
+}
+
+@media (max-width: 700px) {
+  .oos-weekly-summary__card {
+    padding: 18px 18px;
+  }
+}

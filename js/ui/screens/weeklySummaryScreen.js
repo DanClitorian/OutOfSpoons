@@ -3,6 +3,23 @@
 // v0.11: weekly summary screen.
 // The day has already advanced in eveningScreen.js before this screen appears.
 // This screen does not call advanceToNextDay().
+//
+// v0.19: dodana ocena/generacja Weekly Stakes (idempotentna).
+// v0.20: dodana ocena/generacja Critical Event / Wielki Test (idempotentna,
+// niezależna od Weekly Stakes).
+//
+// v0.21: Weekly Summary / Monthly Arc UI Polish. Ekran przestał wyglądać
+// jak techniczna lista statystyk i dostał nowy, izolowany namespace
+// ".oos-weekly-summary" (patrz css/weekly-summary-v0-21.css) — milestone
+// screen / tygodniowy rytuał zamiast tabeli. MECHANIKA jest CAŁKOWICIE
+// NIETKNIĘTA: dalej oceniamy i generujemy Weekly Stakes oraz Critical
+// Event dokładnie w tej samej kolejności i w ten sam idempotentny sposób
+// co w v0.19/v0.20, zanim zbudujemy podsumowanie. Zmienia się WYŁĄCZNIE
+// prezentacja tych samych danych.
+//
+// Ten ekran CELOWO nie używa .oos-game ani oosLayout.js — to inny,
+// osobny namespace (".oos-weekly-summary"), bo to nie jest część planszy
+// gameplayowej (grid .oos-game zostaje całkowicie nietknięty).
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -26,10 +43,10 @@ export function renderWeeklySummaryScreen(container) {
 
   // v0.19: oceń poprzednie wyzwanie (jeśli jego termin minął) i od razu
   // wygeneruj kolejne na nadchodzący tydzień, ZANIM zbudujemy podsumowanie
-  // — dzięki temu "Aktualny stan" niżej pokazuje spoons już po ewentualnej
-  // nagrodzie/karze. Obie funkcje są idempotentne (patrz
+  // — dzięki temu sekcja "Aktualny stan" niżej pokazuje spoons już po
+  // ewentualnej nagrodzie/karze. Obie funkcje są idempotentne (patrz
   // weeklyChallengeSystem.js), więc bezpieczne nawet przy wielokrotnym
-  // renderze tego ekranu.
+  // renderze tego ekranu. NIE ZMIENIONE w v0.21.
   ensureWeeklyChallengeState(state);
   evaluateWeeklyChallenge(state);
   generateNextWeekChallenge(state);
@@ -37,170 +54,279 @@ export function renderWeeklySummaryScreen(container) {
   // v0.20: Monthly Critical Event Foundation. Ta sama idempotentna
   // logika co Weekly Stakes powyżej, ale z 28-dniowym cyklem i innymi
   // efektami (trust/frustration/current spoons, BEZ max spoons — patrz
-  // criticalEventSystem.js). To DRUGI, niezależny system — nie zastępuje
-  // ani nie dubluje Weekly Stakes.
+  // criticalEventSystem.js). To DRUGI, niezależny system. NIE ZMIENIONE
+  // w v0.21.
   ensureCriticalEventState(state);
   evaluateCriticalEvent(state);
   generateNextCriticalEvent(state);
 
   const summary = buildWeeklySummary(state);
+  const challengeSummary = buildWeeklyChallengeSummary(state);
+  const criticalSummary = buildCriticalEventSummary(state);
 
-  const wrapper = document.createElement("div");
-  wrapper.className = "screen weekly-summary-screen";
+  const root = document.createElement("section");
+  root.className = "oos-weekly-summary screen";
 
-  const title = document.createElement("h2");
-  title.textContent = "Podsumowanie tygodnia";
-  wrapper.appendChild(title);
+  root.appendChild(buildHeader(summary));
 
-  const period = document.createElement("p");
-  period.className = "weekly-summary-period";
-  period.textContent = `Tydzień ${summary.weekNumber} — dni ${summary.startDay}–${summary.endDay}`;
-  wrapper.appendChild(period);
+  const grid = document.createElement("main");
+  grid.className = "oos-weekly-summary__grid";
+  grid.appendChild(buildStoryCard(summary));
+  grid.appendChild(buildStateCard(summary));
+  grid.appendChild(buildWeeklyStakeCard(challengeSummary));
+  grid.appendChild(buildCriticalEventCard(criticalSummary, state));
+  root.appendChild(grid);
 
-  const text = document.createElement("p");
-  text.className = "weekly-summary-text";
-  text.textContent = summary.summaryText;
-  wrapper.appendChild(text);
+  root.appendChild(buildFooter());
 
-  wrapper.appendChild(renderEffectsPanel(summary));
-  wrapper.appendChild(renderCurrentStatePanel(summary));
-  wrapper.appendChild(renderWeeklyChallengeSection(state));
-  wrapper.appendChild(renderCriticalEventSection(state));
-
-  const continueButton = document.createElement("button");
-  continueButton.className = "primary-button";
-  continueButton.textContent = "Rozpocznij kolejny tydzień";
-  continueButton.addEventListener("click", () => {
-    saveGame();
-    showScreen("game");
-  });
-  wrapper.appendChild(continueButton);
-
-  container.appendChild(wrapper);
+  container.appendChild(root);
 }
 
-// CLEAN v0.19 weekly challenge section START
-// v0.19: Weekly Stakes. Sekcja reużywa istniejące klasy CSS
-// (.weekly-summary-panel / .weekly-summary-heading) — celowo bez
-// nowego CSS, zgodnie z wymogiem "nie musi być jeszcze pięknie
-// stylizowana jak gameplay UI".
-function renderWeeklyChallengeSection(state) {
-  const panel = document.createElement("div");
-  panel.className = "weekly-summary-panel";
+// --------------------------------------------------------------------
+// Header
+// --------------------------------------------------------------------
+
+function buildHeader(summary) {
+  const header = document.createElement("header");
+  header.className = "oos-weekly-summary__header";
+
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "oos-weekly-summary__eyebrow";
+  eyebrow.textContent = "Podsumowanie tygodnia";
+  header.appendChild(eyebrow);
+
+  const title = document.createElement("h1");
+  title.className = "oos-weekly-summary__title";
+  title.textContent = `Tydzień ${summary.weekNumber} zakończony`;
+  header.appendChild(title);
+
+  const period = document.createElement("p");
+  period.className = "oos-weekly-summary__period";
+  period.textContent = `Dni ${summary.startDay}–${summary.endDay}`;
+  header.appendChild(period);
+
+  return header;
+}
+
+// --------------------------------------------------------------------
+// Karta 1 — Wynik tygodnia (story)
+// --------------------------------------------------------------------
+
+function buildStoryCard(summary) {
+  const card = document.createElement("section");
+  card.className = "oos-weekly-summary__card oos-weekly-summary__card--story";
 
   const heading = document.createElement("p");
-  heading.className = "weekly-summary-heading";
-  heading.textContent = "Stawka tygodnia";
-  panel.appendChild(heading);
+  heading.className = "oos-weekly-summary__card-heading";
+  heading.textContent = "Jak minął tydzień";
+  card.appendChild(heading);
 
-  const challengeSummary = buildWeeklyChallengeSummary(state);
+  const text = document.createElement("p");
+  text.className = "oos-weekly-summary__story-text";
+  text.textContent = summary.summaryText;
+  card.appendChild(text);
+
+  const chips = document.createElement("div");
+  chips.className = "oos-weekly-summary__effect-chips";
+
+  chips.appendChild(createEffectChip("🥄 Spoons", summary.spoonsChange));
+  chips.appendChild(createEffectChip("🤝 Zaufanie", summary.trustChange));
+  // Frustracja ma ODWRÓCONĄ semantykę koloru — wzrost jest złym efektem
+  // (czerwony), spadek dobrym (zielony). Ta sama zasada co w
+  // reflectionScreen.js (patrz oosLayout.js#createResultTile).
+  chips.appendChild(createEffectChip("🌡️ Frustracja", summary.frustrationChange, "down"));
+
+  if (summary.hasFatigueData && summary.fatigueChange !== 0) {
+    chips.appendChild(createEffectChip("🌀 Przeciążenie", summary.fatigueChange, "down"));
+  }
+
+  card.appendChild(chips);
+
+  return card;
+}
+
+function createEffectChip(label, value, desirableDirection) {
+  const direction = resolveChipDirection(value, desirableDirection);
+
+  const chip = document.createElement("span");
+  chip.className = `oos-weekly-summary__effect-chip oos-weekly-summary__effect-chip--${direction}`;
+
+  const labelEl = document.createElement("span");
+  labelEl.className = "oos-weekly-summary__effect-chip-label";
+  labelEl.textContent = label;
+  chip.appendChild(labelEl);
+
+  const valueEl = document.createElement("span");
+  valueEl.className = "oos-weekly-summary__effect-chip-value";
+  valueEl.textContent = formatSigned(value);
+  chip.appendChild(valueEl);
+
+  return chip;
+}
+
+function resolveChipDirection(value, desirableDirection) {
+  if (!value) {
+    return "neutral";
+  }
+
+  const isIncrease = value > 0;
+
+  if (desirableDirection === "down") {
+    return isIncrease ? "negative" : "positive";
+  }
+
+  return isIncrease ? "positive" : "negative";
+}
+
+// --------------------------------------------------------------------
+// Karta 2 — Aktualny stan
+// --------------------------------------------------------------------
+
+function buildStateCard(summary) {
+  const card = document.createElement("section");
+  card.className = "oos-weekly-summary__card oos-weekly-summary__card--state";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-weekly-summary__card-heading";
+  heading.textContent = "Aktualny stan";
+  card.appendChild(heading);
+
+  const list = document.createElement("div");
+  list.className = "oos-weekly-summary__stat-lines";
+
+  list.appendChild(createStatLine("Spoons", `${summary.currentSpoons}/${summary.maxSpoons}`));
+
+  if (summary.currentTrust !== null) {
+    list.appendChild(createStatLine("Zaufanie", `${summary.currentTrust}/100`));
+  }
+
+  if (summary.currentFrustration !== null) {
+    list.appendChild(createStatLine("Frustracja", `${summary.currentFrustration}/100`));
+  }
+
+  if (summary.relationshipMoodLabel) {
+    list.appendChild(createStatLine("Stan relacji", summary.relationshipMoodLabel));
+  }
+
+  card.appendChild(list);
+
+  if (summary.relationshipMoodDescription) {
+    const description = document.createElement("p");
+    description.className = "oos-weekly-summary__mood-description";
+    description.textContent = summary.relationshipMoodDescription;
+    card.appendChild(description);
+  }
+
+  return card;
+}
+
+function createStatLine(label, value) {
+  const line = document.createElement("div");
+  line.className = "oos-weekly-summary__stat-line";
+
+  const labelEl = document.createElement("span");
+  labelEl.className = "oos-weekly-summary__stat-line-label";
+  labelEl.textContent = label;
+  line.appendChild(labelEl);
+
+  const valueEl = document.createElement("span");
+  valueEl.className = "oos-weekly-summary__stat-line-value";
+  valueEl.textContent = value;
+  line.appendChild(valueEl);
+
+  return line;
+}
+
+// --------------------------------------------------------------------
+// Karta 3 — Stawka tygodnia
+// --------------------------------------------------------------------
+
+function buildWeeklyStakeCard(challengeSummary) {
+  const card = document.createElement("section");
+  card.className = "oos-weekly-summary__card oos-weekly-summary__card--weekly-stake";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-weekly-summary__card-heading";
+  heading.textContent = "Stawka tygodnia";
+  card.appendChild(heading);
 
   if (challengeSummary.lastResult) {
-    panel.appendChild(renderChallengeResult(challengeSummary.lastResult));
+    card.appendChild(buildResultBlock({
+      titleText: challengeSummary.lastResult.success
+        ? `Udało się: ${challengeSummary.lastResult.title}`
+        : `Nie udało się: ${challengeSummary.lastResult.title}`,
+      detailText: challengeSummary.lastResult.success
+        ? "Relacja wytrzymała próbę."
+        : "Wchodzisz w kolejny tydzień z większym napięciem.",
+      effectText: challengeSummary.lastResult.success
+        ? "Nagroda: +1 do maksymalnych spoons."
+        : "Kara: -2 spoons na start tygodnia.",
+      success: challengeSummary.lastResult.success
+    }));
   }
 
   if (challengeSummary.upcoming) {
-    panel.appendChild(renderUpcomingChallenge(challengeSummary));
+    card.appendChild(buildUpcomingBlock({
+      eyebrowText: "Stawka nadchodzącego tygodnia",
+      titleText: challengeSummary.upcoming.title,
+      conditionText: challengeSummary.upcomingConditionText,
+      daysLeftText: `Pozostało: ${challengeSummary.upcomingDaysLeft} dni`
+    }));
   }
 
-  return panel;
+  return card;
 }
 
-function renderChallengeResult(result) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "weekly-challenge-result";
+// --------------------------------------------------------------------
+// Karta 4 — Wielki Test
+// --------------------------------------------------------------------
 
-  const title = document.createElement("p");
-  title.textContent = result.success
-    ? `Udało się: ${result.title}`
-    : `Nie udało się: ${result.title}`;
-  wrapper.appendChild(title);
-
-  const detail = document.createElement("p");
-  detail.textContent = result.success
-    ? "Relacja wytrzymała próbę."
-    : "Wchodzisz w kolejny tydzień z większym napięciem.";
-  wrapper.appendChild(detail);
-
-  const effect = document.createElement("p");
-  effect.textContent = result.success
-    ? "Nagroda: +1 do maksymalnych spoons."
-    : "Kara: -2 spoons na start tygodnia.";
-  wrapper.appendChild(effect);
-
-  return wrapper;
-}
-
-function renderUpcomingChallenge(challengeSummary) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "weekly-challenge-upcoming";
+function buildCriticalEventCard(criticalSummary, state) {
+  const card = document.createElement("section");
+  card.className = "oos-weekly-summary__card oos-weekly-summary__card--critical-event";
 
   const heading = document.createElement("p");
-  heading.textContent = "Stawka nadchodzącego tygodnia";
-  wrapper.appendChild(heading);
-
-  const title = document.createElement("p");
-  title.textContent = challengeSummary.upcoming.title;
-  wrapper.appendChild(title);
-
-  const condition = document.createElement("p");
-  condition.textContent = `Warunek: ${challengeSummary.upcomingConditionText}`;
-  wrapper.appendChild(condition);
-
-  const countdown = document.createElement("p");
-  countdown.textContent = `Pozostało: ${challengeSummary.upcomingDaysLeft} dni`;
-  wrapper.appendChild(countdown);
-
-  return wrapper;
-}
-// CLEAN v0.19 weekly challenge section END
-
-// CLEAN v0.20 critical event section START
-// v0.20: Monthly Critical Event Foundation. Ta sama zasada co sekcja
-// Weekly Stakes powyżej: reużywa istniejące klasy CSS
-// (.weekly-summary-panel / .weekly-summary-heading / .weekly-challenge-*)
-// — zero nowego CSS, żeby nie ruszać layoutu v0.18/v0.19.
-function renderCriticalEventSection(state) {
-  const panel = document.createElement("div");
-  panel.className = "weekly-summary-panel";
-
-  const heading = document.createElement("p");
-  heading.className = "weekly-summary-heading";
+  heading.className = "oos-weekly-summary__card-heading";
   heading.textContent = "Wielki Test";
-  panel.appendChild(heading);
+  card.appendChild(heading);
 
-  const eventSummary = buildCriticalEventSummary(state);
-
-  if (eventSummary.lastResult) {
-    panel.appendChild(renderCriticalEventResult(eventSummary.lastResult));
+  if (criticalSummary.lastResult) {
+    card.appendChild(buildResultBlock({
+      titleText: criticalSummary.lastResult.success
+        ? `Wielki Test zaliczony: ${criticalSummary.lastResult.title}`
+        : `Wielki Test niezaliczony: ${criticalSummary.lastResult.title}`,
+      detailText: criticalSummary.lastResult.text || "",
+      effectText: `Efekt: ${formatCriticalEventEffect(criticalSummary.lastResult.effect)}`,
+      success: criticalSummary.lastResult.success
+    }));
   }
 
-  if (eventSummary.upcoming) {
-    panel.appendChild(renderUpcomingCriticalEvent(eventSummary, state));
+  if (criticalSummary.upcoming) {
+    // v0.20.1, Część D (przeniesione bez zmian): separator "·" zamiast
+    // " i " TYLKO w tym miejscu (Wielki Test w weekly summary) — sam
+    // formatter w criticalEventSystem.js i Weekly Stakes dalej używają
+    // pełnego " i ".
+    const compactCondition = criticalSummary.upcomingConditionText.replace(/ i /g, " · ");
+
+    const upcomingBlock = buildUpcomingBlock({
+      eyebrowText: "Na horyzoncie",
+      titleText: criticalSummary.upcoming.title,
+      conditionText: compactCondition,
+      daysLeftText: `Pozostało: ${criticalSummary.upcomingDaysLeft} dni`
+    });
+
+    // v0.20.1, Część B (przeniesione bez zmian): postęp miesięcznego
+    // łuku, liczony lokalnie tutaj — nie wymaga zmian w
+    // criticalEventSystem.js.
+    const arcProgress = document.createElement("p");
+    arcProgress.className = "oos-weekly-summary__arc-progress";
+    arcProgress.textContent = buildMonthlyArcProgressText(criticalSummary.upcoming, state);
+    upcomingBlock.appendChild(arcProgress);
+
+    card.appendChild(upcomingBlock);
   }
 
-  return panel;
-}
-
-function renderCriticalEventResult(result) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "weekly-challenge-result";
-
-  const title = document.createElement("p");
-  title.textContent = result.success
-    ? `Wielki Test zaliczony: ${result.title}`
-    : `Wielki Test niezaliczony: ${result.title}`;
-  wrapper.appendChild(title);
-
-  const detail = document.createElement("p");
-  detail.textContent = result.text || "";
-  wrapper.appendChild(detail);
-
-  const effect = document.createElement("p");
-  effect.textContent = `Efekt: ${formatCriticalEventEffect(result.effect)}`;
-  wrapper.appendChild(effect);
-
-  return wrapper;
+  return card;
 }
 
 function formatCriticalEventEffect(effect) {
@@ -215,126 +341,88 @@ function formatCriticalEventEffect(effect) {
   ].join(", ");
 }
 
-function renderUpcomingCriticalEvent(eventSummary, state) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "weekly-challenge-upcoming";
-
-  const heading = document.createElement("p");
-  heading.textContent = "Na horyzoncie";
-  wrapper.appendChild(heading);
-
-  const title = document.createElement("p");
-  title.textContent = eventSummary.upcoming.title;
-  wrapper.appendChild(title);
-
-  // v0.20.1, Część D: separator "·" zamiast " i " TYLKO w tym miejscu
-  // (Wielki Test w weekly summary) — Weekly Stakes i sam formatter w
-  // criticalEventSystem.js dalej używają pełnego " i ".
-  const condition = document.createElement("p");
-  condition.textContent = `Warunek: ${eventSummary.upcomingConditionText.replace(/ i /g, " · ")}`;
-  wrapper.appendChild(condition);
-
-  const countdown = document.createElement("p");
-  countdown.textContent = `Pozostało: ${eventSummary.upcomingDaysLeft} dni`;
-  wrapper.appendChild(countdown);
-
-  // v0.20.1, Część B: postęp miesięcznego łuku, np. "Miesięczny łuk:
-  // dzień 8 z 28". Liczony TU (nie w criticalEventSystem.js — nie było
-  // to konieczne, mamy tu już wszystkie potrzebne dane: arcStartDay,
-  // dueDay, state.day), czysto tekstowa linia, bez paska CSS.
-  const arcProgress = document.createElement("p");
-  arcProgress.textContent = buildMonthlyArcProgressText(eventSummary.upcoming, state);
-  wrapper.appendChild(arcProgress);
-
-  return wrapper;
-}
-
 function buildMonthlyArcProgressText(event, state) {
   const total = event.dueDay - event.arcStartDay + 1;
   const rawDay = state.day - event.arcStartDay + 1;
   const clampedDay = Math.min(total, Math.max(1, rawDay));
   return `Miesięczny łuk: dzień ${clampedDay} z ${total}`;
 }
-// CLEAN v0.20 critical event section END
 
-function renderEffectsPanel(summary) {
-  const panel = document.createElement("div");
-  panel.className = "weekly-summary-panel";
+// --------------------------------------------------------------------
+// Wspólne bloki (result / upcoming) dla kart Stawka tygodnia i Wielki Test
+// --------------------------------------------------------------------
 
-  const heading = document.createElement("p");
-  heading.className = "weekly-summary-heading";
-  heading.textContent = "Efekty tygodnia";
-  panel.appendChild(heading);
+function buildResultBlock({ titleText, detailText, effectText, success }) {
+  const wrapper = document.createElement("div");
+  wrapper.className = success
+    ? "oos-weekly-summary__result oos-weekly-summary__result--success"
+    : "oos-weekly-summary__result oos-weekly-summary__result--failure";
 
-  const list = document.createElement("ul");
-  list.className = "weekly-summary-list";
+  const title = document.createElement("p");
+  title.className = "oos-weekly-summary__result-title";
+  title.textContent = titleText;
+  wrapper.appendChild(title);
 
-  list.appendChild(renderSummaryItem("Spoons", summary.spoonsChange));
-  list.appendChild(renderSummaryItem("Zaufanie", summary.trustChange));
-  list.appendChild(renderSummaryItem("Frustracja", summary.frustrationChange));
-
-  if (summary.hasFatigueData && summary.fatigueChange !== 0) {
-    list.appendChild(renderSummaryItem("Przeciążenie", summary.fatigueChange));
+  if (detailText) {
+    const detail = document.createElement("p");
+    detail.className = "oos-weekly-summary__result-detail";
+    detail.textContent = detailText;
+    wrapper.appendChild(detail);
   }
 
-  panel.appendChild(list);
-  return panel;
+  const effect = document.createElement("p");
+  effect.className = "oos-weekly-summary__result-effect";
+  effect.textContent = effectText;
+  wrapper.appendChild(effect);
+
+  return wrapper;
 }
 
-function renderCurrentStatePanel(summary) {
-  const panel = document.createElement("div");
-  panel.className = "weekly-summary-current-state";
+function buildUpcomingBlock({ eyebrowText, titleText, conditionText, daysLeftText }) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "oos-weekly-summary__upcoming";
 
-  const heading = document.createElement("p");
-  heading.className = "weekly-summary-heading";
-  heading.textContent = "Aktualny stan";
-  panel.appendChild(heading);
+  const eyebrow = document.createElement("p");
+  eyebrow.className = "oos-weekly-summary__upcoming-eyebrow";
+  eyebrow.textContent = eyebrowText;
+  wrapper.appendChild(eyebrow);
 
-  panel.appendChild(renderStateLine(`Aktualne spoons: ${summary.currentSpoons}/${summary.maxSpoons}`));
+  const title = document.createElement("p");
+  title.className = "oos-weekly-summary__upcoming-title";
+  title.textContent = titleText;
+  wrapper.appendChild(title);
 
-  if (summary.currentTrust !== null) {
-    panel.appendChild(renderStateLine(`Zaufanie: ${summary.currentTrust}/100`));
-  }
+  const condition = document.createElement("p");
+  condition.className = "oos-weekly-summary__upcoming-condition";
+  condition.textContent = `Warunek: ${conditionText}`;
+  wrapper.appendChild(condition);
 
-  if (summary.currentFrustration !== null) {
-    panel.appendChild(renderStateLine(`Frustracja: ${summary.currentFrustration}/100`));
-  }
+  const countdown = document.createElement("p");
+  countdown.className = "oos-weekly-summary__upcoming-countdown";
+  countdown.textContent = daysLeftText;
+  wrapper.appendChild(countdown);
 
-  if (summary.relationshipMoodLabel) {
-    panel.appendChild(renderStateLine(`Stan relacji: ${summary.relationshipMoodLabel}`));
-  }
-
-  if (summary.relationshipMoodDescription) {
-    const description = document.createElement("p");
-    description.className = "weekly-summary-mood-description";
-    description.textContent = summary.relationshipMoodDescription;
-    panel.appendChild(description);
-  }
-
-  return panel;
+  return wrapper;
 }
 
-function renderSummaryItem(label, value) {
-  const item = document.createElement("li");
-  item.className = "weekly-summary-item";
+// --------------------------------------------------------------------
+// Footer
+// --------------------------------------------------------------------
 
-  const labelEl = document.createElement("span");
-  labelEl.className = "weekly-summary-label";
-  labelEl.textContent = `${label}:`;
-  item.appendChild(labelEl);
+function buildFooter() {
+  const footer = document.createElement("footer");
+  footer.className = "oos-weekly-summary__footer";
 
-  const valueEl = document.createElement("span");
-  valueEl.className = "weekly-summary-value";
-  valueEl.textContent = formatSigned(value);
-  item.appendChild(valueEl);
+  const continueButton = document.createElement("button");
+  continueButton.className = "primary-button";
+  continueButton.textContent = "Rozpocznij kolejny tydzień";
+  continueButton.addEventListener("click", () => {
+    saveGame();
+    showScreen("game");
+  });
+  footer.appendChild(continueButton);
 
-  return item;
-}
-
-function renderStateLine(text) {
-  const line = document.createElement("p");
-  line.textContent = text;
-  return line;
+  return footer;
 }
 
 function formatSigned(value) {
