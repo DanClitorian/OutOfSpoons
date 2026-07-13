@@ -1,4 +1,6 @@
 // eventWeightSystem.js
+import { getPartnerCapacityContext } from "./partnerCapacitySystem.js";
+
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
@@ -59,6 +61,17 @@ function computeEventWeight(event, state) {
 
   if (tags.includes("tension") && frustration !== null && frustration >= 50) weight += 2;
   if (tags.includes("avoidance") && spoons !== null && spoons <= 4) weight += 2;
+
+  // v0.23: Partner Capacity Foundation. Delikatne ważenie (NIE
+  // guaranteed spawn) — eventy oznaczone tymi tagami mają WIĘKSZĄ
+  // SZANSĘ pojawić się, kiedy partner ma dziś mało miejsca, ale nadal
+  // konkurują losowo z resztą puli.
+  const partnerCapacity = getPartnerCapacityContext(state);
+  if (tags.includes("partner-capacity-low")) {
+    if (partnerCapacity.isLow) weight += 4;
+    if (partnerCapacity.isCritical) weight += 3;
+  }
+  if (tags.includes("partner-needs-support") && partnerCapacity.stress >= 65) weight += 3;
 
   return Math.max(1, weight);
 }

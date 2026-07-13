@@ -260,5 +260,91 @@ export const eventPool = [
         resultText: "Zaskakująco się udaje. {partnerName} docenia zmianę priorytetów."
       }
     ]
+  },
+
+  // CLEAN v0.23 partner-autonomy events START
+  // v0.23: Partner Capacity / Partner Autonomy Foundation. Pierwsza
+  // realna oznaka tego, że partner ma własną pojemność, niezależną od
+  // gracza. weightTags "partner-capacity-low" / "partner-needs-support"
+  // dają tym eventom WIĘKSZĄ SZANSĘ (nie gwarancję) pojawienia się,
+  // kiedy partnerCapacitySystem.js zgłasza niski capacity / wysoki
+  // stress (patrz eventWeightSystem.js). Bez tego kontekstu zachowują
+  // się jak zwykłe eventy relacyjne z normalną wagą bazową.
+  {
+    id: "partner_no_capacity",
+    title: "Brak miejsca",
+    tags: ["relationship", "partner-autonomy"],
+    weightTags: ["partner-capacity-low"],
+    agendaSlots: ["relationship"],
+    description:
+      "{partnerName} mówi, że nie ma dziś pojemności na trudną rozmowę. Nie brzmi to jak kara. " +
+      "Bardziej jak informacja o stanie systemu.",
+    choices: [
+      {
+        id: "give_space",
+        label: "Dać przestrzeń",
+        spoonsCost: 1,
+        trustChange: 1,
+        frustrationChange: -1,
+        resultText:
+          "Nie dostajesz wsparcia, po które przyszedłeś/przyszłaś, ale nie dokładasz ciężaru drugiej osobie."
+      },
+      {
+        id: "ask_anyway",
+        label: "Poprosić mimo wszystko",
+        spoonsCost: 2,
+        trustChange: -1,
+        frustrationChange: 2,
+        resultText:
+          "Potrzebujesz rozmowy. {partnerName} próbuje być, ale między wami pojawia się koszt, którego nikt nie chciał nazwać."
+      },
+      {
+        id: "withdraw",
+        label: "Wycofać się bez słowa",
+        spoonsCost: 0,
+        trustChange: -2,
+        frustrationChange: 1,
+        resultText: "Robi się cicho. Technicznie nikt nie krzyczy. Relacja zna ten rodzaj ciszy."
+      }
+    ]
+  },
+  {
+    id: "partner_needs_support",
+    title: "To nie twój kryzys. Jeszcze.",
+    tags: ["relationship", "partner-autonomy"],
+    weightTags: ["partner-needs-support"],
+    agendaSlots: ["relationship"],
+    description:
+      "{partnerName} przychodzi z czymś swoim — nie dramatycznym, ale ciężkim. Nie prosi wprost o pomoc. " +
+      "Zostawia to gdzieś między słowami.",
+    choices: [
+      {
+        id: "support_anyway",
+        label: "Wesprzeć, mimo że sam/a niewiele masz",
+        spoonsCost: 3,
+        trustChange: 4,
+        frustrationChange: -3,
+        resultText:
+          "{partnerName} czuje się mniej sam/a z tym, co niesie. Ty zostajesz z rachunkiem, który zapłacisz później."
+      },
+      {
+        id: "name_limits",
+        label: "Powiedzieć uczciwie, że nie masz dziś zasobów",
+        spoonsCost: 1,
+        trustChange: 1,
+        frustrationChange: 1,
+        resultText:
+          "Nie brzmi to jak odrzucenie, ale i tak trochę nim jest. {partnerName} przyjmuje to — z wysiłkiem."
+      },
+      {
+        id: "postpone_support",
+        label: "Odroczyć rozmowę na inny dzień",
+        spoonsCost: 0,
+        trustChange: -1,
+        frustrationChange: 2,
+        resultText: "{partnerName} zostaje sam/a z tym jeszcze trochę dłużej. Nikt tego głośno nie nazywa problemem."
+      }
+    ]
   }
+  // CLEAN v0.23 partner-autonomy events END
 ];

@@ -21,13 +21,13 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js";
+import { eventPool } from "../data/eventData.js?v=230";
 import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js";
-import { completeCurrentAgendaItem } from "./dayAgendaSystem.js";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=230";
+import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=230";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }

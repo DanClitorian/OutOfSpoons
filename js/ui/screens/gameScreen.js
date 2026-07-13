@@ -7,7 +7,7 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=230";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,
@@ -24,6 +24,11 @@ import {
   ensurePatternState,
   getLatestPatternEcho
 } from "../../systems/patternSystem.js";
+import {
+  ensurePartnerCapacityState,
+  resolvePartnerDailyCapacity,
+  getPartnerCapacityShortLabel
+} from "../../systems/partnerCapacitySystem.js";
 import {
   createGameShell,
   createTopBar,
@@ -43,6 +48,18 @@ export function renderGameScreen(container) {
   ensureCriticalEventState(state);
   if (!getCurrentCriticalEvent(state)) {
     generateNextCriticalEvent(state);
+    saveGame(state);
+  }
+
+  // v0.23: Partner Capacity Foundation. Jeden los dziennie, idempotentny
+  // (resolvePartnerDailyCapacity sam sprawdza lastRolledDay). Zapisujemy
+  // TYLKO jeśli to faktycznie pierwszy roll dzisiaj — ten sam wzorzec co
+  // przy Wielkim Teście powyżej.
+  ensurePartnerCapacityState(state);
+  const capacityBeforeRoll = state.partner.capacity;
+  const alreadyRolledToday = capacityBeforeRoll && capacityBeforeRoll.lastRolledDay === state.day;
+  resolvePartnerDailyCapacity(state);
+  if (!alreadyRolledToday) {
     saveGame(state);
   }
 
@@ -96,17 +113,37 @@ export function renderGameScreen(container) {
 // Pokazujemy TYLKO NAJNOWSZY aktywny wzorzec (getLatestPatternEcho
 // zwraca pojedynczy obiekt albo null) — bez nowego panelu, bez zmiany
 // layoutu, wciąż jeden string w tym samym elemencie narrative strip.
+//
+// v0.23: Partner Capacity Foundation. Sygnał partnera dopisany jako
+// PIERWSZY teaser (przed wzorcem) — celowo w KRÓTKIEJ formie
+// ("Partner: {etykieta}.", bez liczb), bo narracja porankowa już dzieli
+// miejsce z Echo/Wzorcem/Weekly Stake/Wielkim Testem i ryzyko ellipsis
+// jest realne. Pełna forma zdania z narracyjnym sygnałem (patrz
+// SIGNAL_DEFINITIONS w partnerCapacitySystem.js) jest dostępna w
+// dailySignal.text, ale świadomie NIE jest tu użyta — priorytet ma
+// długość całego akapitu.
 function buildMorningNarrative(state) {
+  const partnerTeaser = buildPartnerCapacityTeaser(state);
   const patternTeaser = buildPatternTeaser(state);
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
   const criticalTeaser = buildCriticalEventTeaser(state);
 
-  if (!patternTeaser && !weeklyTeaser && !criticalTeaser) {
+  if (!partnerTeaser && !patternTeaser && !weeklyTeaser && !criticalTeaser) {
     return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
   }
 
-  const parts = ["Dziś: plan dnia.", patternTeaser, weeklyTeaser, criticalTeaser].filter(Boolean);
+  const parts = ["Dziś: plan dnia.", partnerTeaser, patternTeaser, weeklyTeaser, criticalTeaser].filter(Boolean);
   return parts.join(" ");
+}
+
+function buildPartnerCapacityTeaser(state) {
+  const shortLabel = getPartnerCapacityShortLabel(state);
+
+  if (!shortLabel) {
+    return null;
+  }
+
+  return `Partner: ${shortLabel}.`;
 }
 
 function buildPatternTeaser(state) {

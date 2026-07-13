@@ -6,15 +6,23 @@
 // - rejestruje ekran evening,
 // - zachowuje initUI i showScreen,
 // - wspiera stare aliasy nazw ekranów.
+//
+// v0.23: Partner Capacity Foundation. Cache-bust (?v=230) na importach
+// gameScreen.js / eventScreen.js / weeklySummaryScreen.js — te 3
+// moduły faktycznie zmieniły zawartość w tej wersji, więc przeglądarka
+// musi pobrać je na nowo, nie użyć starej wersji z cache. Pozostałe
+// ekrany (mainMenu/characterCreator/reflection/evening/agenda) NIE
+// zmieniły się w v0.23, więc ich importy zostają bez query — nie było
+// potrzeby ich bustować.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js";
-import { renderEventScreen } from "./screens/eventScreen.js";
+import { renderGameScreen } from "./screens/gameScreen.js?v=230";
+import { renderEventScreen } from "./screens/eventScreen.js?v=230";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=230";
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js";
 let appContainer = null;

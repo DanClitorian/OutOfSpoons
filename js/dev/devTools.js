@@ -2,9 +2,13 @@
 //
 // v0.20.1: Critical Event Visibility + Testability.
 // v0.20.2/v0.20.3: null-state guard + cache-busted import.
+// v0.23: Partner Capacity Foundation — dodane 3 helpery testowe
+// (setPartnerCapacityLow/High, showPartnerCapacity). Istniejące funkcje
+// (jumpToDay, jumpToCriticalDueDay, forceCriticalEventDue,
+// showStateSummary) NIE zostały zmienione.
 //
-// DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu bez
-// ręcznego przeklikiwania 7/28 dni. Ten moduł:
+// DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
+// Partner Capacity bez ręcznego przeklikiwania wielu dni. Ten moduł:
 //   - NIE renderuje żadnego UI,
 //   - NIE wywołuje się sam z siebie podczas normalnej gry,
 //   - wystawia funkcje WYŁĄCZNIE pod window.oosDev.
@@ -15,9 +19,14 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js";
+import { showScreen } from "../ui/uiManager.js?v=230";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js";
+import {
+  ensurePartnerCapacityState,
+  getPartnerCapacity,
+  refreshPartnerCapacityMood
+} from "../systems/partnerCapacitySystem.js";
 
 function requireActiveState(actionName) {
   const state = getState();
@@ -137,12 +146,93 @@ function showStateSummary() {
   return summary;
 }
 
+// v0.23: Partner Capacity Foundation. Ustawia partnerowi NISKĄ
+// pojemność (current=0, stress=85) i od razu przelicza mood — do
+// szybkiego sprawdzenia narracji/wagi eventów przy niskim capacity bez
+// czekania na niekorzystny los.
+function setPartnerCapacityLow() {
+  const state = requireActiveState("setPartnerCapacityLow()");
+  if (!state) {
+    return null;
+  }
+
+  const capacity = ensurePartnerCapacityState(state);
+  if (!capacity) {
+    console.warn("[oosDev] Brak partnera w stanie gry.");
+    return null;
+  }
+
+  capacity.current = 0;
+  capacity.stress = 85;
+  capacity.lastRolledDay = state.day;
+  refreshPartnerCapacityMood(state);
+  saveGame(state);
+
+  console.log(`[oosDev] Partner capacity ustawiona na NISKĄ (mood: ${capacity.mood}).`);
+  return capacity;
+}
+
+// v0.23: Partner Capacity Foundation. Ustawia partnerowi WYSOKĄ
+// pojemność (current=max, stress=10) — do sprawdzenia przeciwnego
+// bieguna.
+function setPartnerCapacityHigh() {
+  const state = requireActiveState("setPartnerCapacityHigh()");
+  if (!state) {
+    return null;
+  }
+
+  const capacity = ensurePartnerCapacityState(state);
+  if (!capacity) {
+    console.warn("[oosDev] Brak partnera w stanie gry.");
+    return null;
+  }
+
+  capacity.current = capacity.max;
+  capacity.stress = 10;
+  capacity.lastRolledDay = state.day;
+  refreshPartnerCapacityMood(state);
+  saveGame(state);
+
+  console.log(`[oosDev] Partner capacity ustawiona na WYSOKĄ (mood: ${capacity.mood}).`);
+  return capacity;
+}
+
+// v0.23: Partner Capacity Foundation. Wypisuje do konsoli aktualny
+// stan capacity partnera (do debugowania — te liczby NIGDY nie trafiają
+// do UI gracza).
+function showPartnerCapacity() {
+  const state = requireActiveState("showPartnerCapacity()");
+  if (!state) {
+    return null;
+  }
+
+  const capacity = getPartnerCapacity(state);
+  if (!capacity) {
+    console.warn("[oosDev] Brak partnera w stanie gry.");
+    return null;
+  }
+
+  console.table({
+    current: capacity.current,
+    max: capacity.max,
+    stress: capacity.stress,
+    mood: capacity.mood,
+    lastRolledDay: capacity.lastRolledDay,
+    dailySignalType: capacity.dailySignal ? capacity.dailySignal.type : "brak"
+  });
+
+  return capacity;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
     jumpToDay,
     jumpToCriticalDueDay,
     forceCriticalEventDue,
-    showStateSummary
+    showStateSummary,
+    setPartnerCapacityLow,
+    setPartnerCapacityHigh,
+    showPartnerCapacity
   };
 }

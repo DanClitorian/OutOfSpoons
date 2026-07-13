@@ -43,6 +43,7 @@ import {
   recordPatternFromCriticalResult,
   getWeeklyPatternEchoes
 } from "../../systems/patternSystem.js";
+import { buildWeeklyPartnerCapacityNote } from "../../systems/partnerCapacitySystem.js";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -93,7 +94,7 @@ export function renderWeeklySummaryScreen(container) {
   const grid = document.createElement("main");
   grid.className = "oos-weekly-summary__grid";
   grid.appendChild(buildStoryCard(summary, state));
-  grid.appendChild(buildStateCard(summary));
+  grid.appendChild(buildStateCard(summary, state));
   grid.appendChild(buildWeeklyStakeCard(challengeSummary));
   grid.appendChild(buildCriticalEventCard(criticalSummary, state));
   root.appendChild(grid);
@@ -246,7 +247,7 @@ function resolveChipDirection(value, desirableDirection) {
 // Karta 2 — Aktualny stan
 // --------------------------------------------------------------------
 
-function buildStateCard(summary) {
+function buildStateCard(summary, state) {
   const card = document.createElement("section");
   card.className = "oos-weekly-summary__card oos-weekly-summary__card--state";
 
@@ -279,6 +280,17 @@ function buildStateCard(summary) {
     description.className = "oos-weekly-summary__mood-description";
     description.textContent = summary.relationshipMoodDescription;
     card.appendChild(description);
+  }
+
+  // v0.23: Partner Capacity Foundation. Krótka, zagregowana notatka o
+  // partnerze z ostatniego tygodnia — reużywa ISTNIEJĄCEJ klasy CSS
+  // (.oos-weekly-summary__mood-description), zero nowego pliku CSS.
+  const partnerNote = buildWeeklyPartnerCapacityNote(state);
+  if (partnerNote) {
+    const partnerNoteEl = document.createElement("p");
+    partnerNoteEl.className = "oos-weekly-summary__mood-description";
+    partnerNoteEl.textContent = partnerNote;
+    card.appendChild(partnerNoteEl);
   }
 
   return card;
@@ -379,9 +391,9 @@ function buildCriticalEventCard(criticalSummary, state) {
       daysLeftText: `Pozostało: ${criticalSummary.upcomingDaysLeft} dni`
     });
 
-    // v0.20.1, Część B (przeniesione bez zmian): postęp miesięcznego
-    // łuku, liczony lokalnie tutaj — nie wymaga zmian w
-    // criticalEventSystem.js.
+    // v0.20.1, Część B (przeniesione bez zmian, tekst poprawiony w v0.23:
+    // "cykl" zamiast "łuk"): postęp miesięcznego cyklu, liczony lokalnie
+    // tutaj — nie wymaga zmian w criticalEventSystem.js.
     const arcProgress = document.createElement("p");
     arcProgress.className = "oos-weekly-summary__arc-progress";
     arcProgress.textContent = buildMonthlyArcProgressText(criticalSummary.upcoming, state);
@@ -409,7 +421,7 @@ function buildMonthlyArcProgressText(event, state) {
   const total = event.dueDay - event.arcStartDay + 1;
   const rawDay = state.day - event.arcStartDay + 1;
   const clampedDay = Math.min(total, Math.max(1, rawDay));
-  return `Miesięczny łuk: dzień ${clampedDay} z ${total}`;
+  return `Miesięczny cykl: dzień ${clampedDay} z ${total}`;
 }
 
 // --------------------------------------------------------------------

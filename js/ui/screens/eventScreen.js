@@ -24,7 +24,8 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js";
-import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js";
+import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=230";
+import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js";
 import {
   createGameShell,
   createTopBar,
@@ -52,7 +53,7 @@ export function renderEventScreen(container) {
     title: replacePlaceholders(event.title, state)
   });
 
-  const narrative = createNarrativeStrip(replacePlaceholders(event.description, state));
+  const narrative = createNarrativeStrip(buildEventNarrative(event, state));
 
   const anyAffordable = event.choices.some((choice) => choice.spoonsCost <= currentSpoons);
   const forcedChoice = anyAffordable ? null : getCheapestChoice(event.choices);
@@ -101,4 +102,36 @@ function replacePlaceholders(text, state) {
 
   const partnerName = state.partner ? state.partner.name : "partner";
   return text.replace(/\{partnerName\}/g, partnerName);
+}
+
+// v0.23: Partner Capacity Foundation. Jeśli aktualny event jest
+// relacyjny (agendaSlots zawiera "relationship") i partner ma dziś
+// niski capacity, dopisujemy JEDNO zdanie kontekstu do narracji eventu.
+// Zero liczb, zero zmiany kart wyboru — tylko dodatkowa "temperatura"
+// tekstu, dokładnie jak w specyfikacji.
+function buildEventNarrative(event, state) {
+  const base = replacePlaceholders(event.description, state);
+  const isRelationshipEvent = Array.isArray(event.agendaSlots) && event.agendaSlots.includes("relationship");
+
+  if (!isRelationshipEvent) {
+    return base;
+  }
+
+  const note = buildPartnerCapacityNote(state);
+  return note ? `${base} ${note}` : base;
+}
+
+function buildPartnerCapacityNote(state) {
+  const context = getPartnerCapacityContext(state);
+  const partnerName = state.partner ? state.partner.name : "Partner";
+
+  if (context.isCritical) {
+    return `${partnerName} jest dziś dostępny/a tylko częściowo. To zmienia temperaturę rozmowy.`;
+  }
+
+  if (context.isLow) {
+    return "Widać, że ta rozmowa nie trafia w pustą przestrzeń. Trafia w kogoś, kto też jest zmęczony.";
+  }
+
+  return null;
 }
