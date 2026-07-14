@@ -24,33 +24,33 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=290";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=300";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,
   getCurrentWeeklyChallenge,
   getWeeklyChallengeCountdown
-} from "../../systems/weeklyChallengeSystem.js";
+} from "../../systems/weeklyChallengeSystem.js?v=300";
 import {
   ensureCriticalEventState,
   generateNextCriticalEvent,
   getCurrentCriticalEvent,
   getCriticalEventCountdown
-} from "../../systems/criticalEventSystem.js?v=250";
+} from "../../systems/criticalEventSystem.js?v=300";
 import {
   ensurePatternState,
   getLatestPatternEcho
-} from "../../systems/patternSystem.js";
+} from "../../systems/patternSystem.js?v=300";
 import {
   ensurePartnerCapacityState,
   resolvePartnerDailyCapacity,
   getPartnerCapacityShortLabel
-} from "../../systems/partnerCapacitySystem.js";
+} from "../../systems/partnerCapacitySystem.js?v=300";
 import {
   ensureStaticState,
   calculateDailyStatic,
   buildMorningStaticLine
-} from "../../systems/staticSystem.js?v=270";
+} from "../../systems/staticSystem.js?v=300";
 import {
   createGameShell,
   createTopBar,
@@ -60,8 +60,8 @@ import {
   createCtaButton
 } from "../oosLayout.js";
 
-import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=280";
-import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine } from "../../systems/workPressureSystem.js?v=290";
+import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=300";
+import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine } from "../../systems/workPressureSystem.js?v=300";
 export function renderGameScreen(container) {
   const state = getState();
 

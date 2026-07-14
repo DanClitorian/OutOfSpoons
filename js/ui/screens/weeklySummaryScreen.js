@@ -30,26 +30,27 @@ import {
   evaluateWeeklyChallenge,
   generateNextWeekChallenge,
   buildWeeklyChallengeSummary
-} from "../../systems/weeklyChallengeSystem.js";
+} from "../../systems/weeklyChallengeSystem.js?v=300";
 import {
   ensureCriticalEventState,
   evaluateCriticalEvent,
   generateNextCriticalEvent,
   buildCriticalEventSummary
-} from "../../systems/criticalEventSystem.js?v=250";
+} from "../../systems/criticalEventSystem.js?v=300";
 import {
   ensurePatternState,
   recordPatternFromWeeklyResult,
   recordPatternFromCriticalResult,
   getWeeklyPatternEchoes
-} from "../../systems/patternSystem.js";
+} from "../../systems/patternSystem.js?v=300";
 import { buildWeeklyPartnerCapacityNote } from "../../systems/partnerCapacitySystem.js";
 import { buildWeeklyRelationshipScarsNote } from "../../systems/relationshipScarsSystem.js";
 import { buildWeeklyRelationshipRepairNote } from "../../systems/relationshipRepairSystem.js";
 import { buildWeeklyStaticNote } from "../../systems/staticSystem.js?v=270";
 
-import { buildWeeklyMetamourNote } from "../../systems/metamourSystem.js?v=280";
-import { buildWeeklyWorkNote } from "../../systems/workPressureSystem.js?v=290";
+import { buildWeeklyMetamourNote } from "../../systems/metamourSystem.js?v=300";
+import { buildWeeklyWorkNote } from "../../systems/workPressureSystem.js?v=300";
+import { evaluateMonthlyLoopAfterWeeklySummary, hasPendingMonthSummary } from "../../systems/monthlyLoopSystem.js?v=304";
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
 
@@ -71,6 +72,9 @@ export function renderWeeklySummaryScreen(container) {
   ensureCriticalEventState(state);
   const criticalEvaluation = evaluateCriticalEvent(state);
   generateNextCriticalEvent(state);
+
+  // v0.30: domknięcie pierwszego miesięcznego cyklu.
+  evaluateMonthlyLoopAfterWeeklySummary(state);
 
   // v0.22: Pattern Foundation / Narrative Echoes. evaluateWeeklyChallenge/
   // evaluateCriticalEvent zwracają wynik TYLKO na tym renderze, na którym
@@ -550,7 +554,7 @@ function buildFooter() {
   continueButton.textContent = "Rozpocznij kolejny tydzień";
   continueButton.addEventListener("click", () => {
     saveGame();
-    showScreen("game");
+    showScreen(hasPendingMonthSummary(state) ? "monthSummary" : "game");
   });
   footer.appendChild(continueButton);
 

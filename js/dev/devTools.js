@@ -26,25 +26,26 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=290";
+import { showScreen } from "../ui/uiManager.js?v=304";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
-import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=250";
+import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=300";
 import {
   ensurePartnerCapacityState,
   getPartnerCapacity,
   refreshPartnerCapacityMood
-} from "../systems/partnerCapacitySystem.js";
-import { getPatternPressureDebugSummary } from "../systems/patternPressureSystem.js";
-import { getRelationshipScarsDebugSummary } from "../systems/relationshipScarsSystem.js";
-import { getRelationshipRepairDebugSummary } from "../systems/relationshipRepairSystem.js";
+} from "../systems/partnerCapacitySystem.js?v=300";
+import { getPatternPressureDebugSummary } from "../systems/patternPressureSystem.js?v=300";
+import { getRelationshipScarsDebugSummary } from "../systems/relationshipScarsSystem.js?v=300";
+import { getRelationshipRepairDebugSummary } from "../systems/relationshipRepairSystem.js?v=300";
 import {
   getStaticDebugSummary,
   setStaticForDebug,
   clearStaticForDebug
-} from "../systems/staticSystem.js?v=270";
+} from "../systems/staticSystem.js?v=300";
 
-import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHighState, clearMetamourSignal as clearMetamourSignalState } from "../systems/metamourSystem.js?v=280";
-import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=290";
+import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHighState, clearMetamourSignal as clearMetamourSignalState } from "../systems/metamourSystem.js?v=300";
+import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=300";
+import { getMonthlyLoopDebugSummary, forceMonthSummaryPending } from "../systems/monthlyLoopSystem.js?v=304";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -491,6 +492,48 @@ function clearWorkSignal() {
   return result;
 }
 
+
+// v0.30: Month One Complete Loop. Dev-only podgląd domknięcia miesiąca.
+function showMonthlyLoop() {
+  const state = requireActiveState("showMonthlyLoop()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getMonthlyLoopDebugSummary(state);
+  console.log("[oosDev] Monthly loop:", summary);
+  if (summary && summary.latest && summary.latest.stats) {
+    console.table(summary.latest.stats);
+  }
+  return summary;
+}
+
+// v0.30: wymusza pending summary miesiąca do testu ekranu.
+function forceMonthSummary() {
+  const state = requireActiveState("forceMonthSummary()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = forceMonthSummaryPending(state);
+  saveGame(state);
+  console.log("[oosDev] Month summary pending:", summary);
+  return summary;
+}
+
+// v0.30: otwiera ekran podsumowania miesiąca.
+function showMonthSummaryScreen() {
+  const state = requireActiveState("showMonthSummaryScreen()");
+  if (!state) {
+    return null;
+  }
+
+  forceMonthSummaryPending(state);
+  saveGame(state);
+  showScreen("monthSummary");
+  return getMonthlyLoopDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -512,6 +555,9 @@ if (typeof window !== "undefined") {
     clearMetamourSignal,
     showWorkPressure,
     setWorkPressureHigh,
-    clearWorkSignal
+    clearWorkSignal,
+    showMonthlyLoop,
+    forceMonthSummary,
+    showMonthSummaryScreen
   };
 }

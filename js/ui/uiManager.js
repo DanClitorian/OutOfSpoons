@@ -51,14 +51,15 @@
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=290";
-import { renderEventScreen } from "./screens/eventScreen.js?v=290";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=290";
+import { renderGameScreen } from "./screens/gameScreen.js?v=300";
+import { renderEventScreen } from "./screens/eventScreen.js?v=300";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=300";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=290";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=300";
 import { appendVersionBadge } from "./versionBadge.js";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=290";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=300";
+import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=304";
 let appContainer = null;
 
 const screens = {
@@ -75,7 +76,9 @@ const screens = {
   reflection: renderReflectionScreen,
   evening: renderEveningScreen,
   weeklySummary: renderWeeklySummaryScreen,
-  agenda: renderAgendaScreen
+  monthSummary: renderMonthSummaryScreen,
+  "month-summary": renderMonthSummaryScreen,
+agenda: renderAgendaScreen
 };
 
 export function initUI(rootElementId = "app") {

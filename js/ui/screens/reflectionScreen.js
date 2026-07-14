@@ -17,13 +17,13 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=290";
-import { recordPatternFromChoice } from "../../systems/patternSystem.js";
-import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js";
-import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js";
-import { buildRelationshipRepairReflection } from "../../systems/relationshipRepairSystem.js";
-import { buildReflectionStaticLine } from "../../systems/staticSystem.js?v=270";
-import { eventPool } from "../../data/eventData.js?v=260";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=300";
+import { recordPatternFromChoice } from "../../systems/patternSystem.js?v=300";
+import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js?v=300";
+import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js?v=300";
+import { buildRelationshipRepairReflection } from "../../systems/relationshipRepairSystem.js?v=300";
+import { buildReflectionStaticLine } from "../../systems/staticSystem.js?v=300";
+import { eventPool } from "../../data/eventData.js?v=300";
 import {
   createGameShell,
   createTopBar,
@@ -34,8 +34,8 @@ import {
   createCtaButton
 } from "../oosLayout.js";
 
-import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=280";
-import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=290";
+import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=300";
+import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=300";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
