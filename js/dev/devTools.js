@@ -26,7 +26,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=280";
+import { showScreen } from "../ui/uiManager.js?v=290";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=250";
 import {
@@ -44,6 +44,7 @@ import {
 } from "../systems/staticSystem.js?v=270";
 
 import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHighState, clearMetamourSignal as clearMetamourSignalState } from "../systems/metamourSystem.js?v=280";
+import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=290";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -438,6 +439,58 @@ function clearMetamourSignal() {
   return result;
 }
 
+
+// v0.29: Work Pressure. Dev-only podgląd presji pracy.
+function showWorkPressure() {
+  const state = requireActiveState("showWorkPressure()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getWorkPressureDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak player.work w stanie gry.");
+    return null;
+  }
+
+  console.table({
+    pressure: summary.pressure,
+    stability: summary.stability,
+    burnout: summary.burnout
+  });
+  console.log("[oosDev] Daily signal:", summary.dailySignal || "brak");
+  console.log("[oosDev] Ostatnie wpisy historii:");
+  console.table(summary.recentHistory);
+
+  return summary;
+}
+
+// v0.29: Work Pressure. Ustawia wysokie ciśnienie i burnout.
+function setWorkPressureHigh() {
+  const state = requireActiveState("setWorkPressureHigh()");
+  if (!state) {
+    return null;
+  }
+
+  const result = setWorkPressureHighState(state);
+  saveGame(state);
+  console.log("[oosDev] Work pressure ustawione wysoko.");
+  return result;
+}
+
+// v0.29: Work Pressure. Czyści tylko dailySignal.
+function clearWorkSignal() {
+  const state = requireActiveState("clearWorkSignal()");
+  if (!state) {
+    return null;
+  }
+
+  const result = clearWorkSignalState(state);
+  saveGame(state);
+  console.log("[oosDev] Work dailySignal wyczyszczony.");
+  return result;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -456,6 +509,9 @@ if (typeof window !== "undefined") {
     clearStatic,
     showMetamour,
     setMetamourTensionHigh,
-    clearMetamourSignal
+    clearMetamourSignal,
+    showWorkPressure,
+    setWorkPressureHigh,
+    clearWorkSignal
   };
 }

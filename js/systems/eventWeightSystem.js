@@ -3,6 +3,7 @@ import { getPartnerCapacityContext } from "./partnerCapacitySystem.js";
 import { hasRepairableScars } from "./relationshipRepairSystem.js";
 
 import { getMetamourContext, hasMetamourSignal } from "./metamourSystem.js?v=280";
+import { getWorkPressureContext, hasWorkSignal } from "./workPressureSystem.js?v=290";
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
@@ -94,6 +95,34 @@ function computeEventWeight(event, state) {
     metamourContext &&
     metamourContext.tension >= 60 &&
     (tags.includes("relationship-tension") || tags.includes("tension"))
+  ) {
+    weight += 2;
+  }
+
+  // v0.29: Work Pressure weights. Delikatne ważenie, bez forced spawnu.
+  const workContext = getWorkPressureContext(state);
+  const allTags = Array.from(new Set([...(tags || []), ...((event && event.tags) || [])]));
+
+  if (
+    workContext &&
+    allTags.includes("work-pressure") &&
+    (workContext.pressure >= 55 || hasWorkSignal(state))
+  ) {
+    weight += 4;
+  }
+
+  if (
+    workContext &&
+    workContext.burnout >= 60 &&
+    (allTags.includes("burnout") || allTags.includes("low-spoons"))
+  ) {
+    weight += 2;
+  }
+
+  if (
+    workContext &&
+    workContext.stability <= 35 &&
+    (allTags.includes("obligation") || allTags.includes("work"))
   ) {
     weight += 2;
   }

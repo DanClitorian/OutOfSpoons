@@ -21,17 +21,18 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js?v=280";
+import { eventPool } from "../data/eventData.js?v=290";
 import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=280";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=290";
 import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=260";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js";
 import { applyRepairFromChoice } from "./relationshipRepairSystem.js";
 import { applyMetamourEffectFromChoice, formatWithMetamourPlaceholders } from "./metamourSystem.js?v=280";
+import { applyWorkEffectFromChoice } from "./workPressureSystem.js?v=290";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -178,6 +179,9 @@ export function applyChoice(state, event, choiceId) {
   // v0.28: Metamour — wpływa wyłącznie na state.partner.metamour.
   const metamourResult = applyMetamourEffectFromChoice(state, event, choice);
 
+  // v0.29: Work Pressure — wpływa wyłącznie na state.player.work.
+  const workResult = applyWorkEffectFromChoice(state, event, choice);
+
   const resultText = formatWithMetamourPlaceholders(choice.resultText, state);
 
   // v0.5: spoonsChange to zawsze liczba ujemna (albo zero) — koszt
@@ -238,6 +242,18 @@ export function applyChoice(state, event, choiceId) {
           tensionChange: metamourResult.tensionChange,
           familiarityAfter: metamourResult.familiarityAfter,
           tensionAfter: metamourResult.tensionAfter
+        }
+      : { applied: false },
+    // v0.29: Work Pressure. Tylko do logu/devTools/reflection — UI nie pokazuje liczb.
+    workEffect: workResult.applied
+      ? {
+          applied: true,
+          pressureChange: workResult.pressureChange,
+          stabilityChange: workResult.stabilityChange,
+          burnoutChange: workResult.burnoutChange,
+          pressureAfter: workResult.pressureAfter,
+          stabilityAfter: workResult.stabilityAfter,
+          burnoutAfter: workResult.burnoutAfter
         }
       : { applied: false }
   });

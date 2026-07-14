@@ -582,5 +582,123 @@ export const eventPool = [
     ]
   }
   // CLEAN v0.28 metamour events END
+  ,
+
+  // CLEAN v0.29 work pressure events START
+  {
+    id: "work_deadline_evening",
+    title: "Termin, który wszedł w wieczór",
+    tags: ["work", "obligation", "time", "relationship"],
+    weightTags: ["work-pressure", "tension", "low-spoons"],
+    agendaSlots: ["obligation"],
+    description:
+      "Termin z pracy przesuwa się dokładnie tam, gdzie miał być kawałek wieczoru dla ciebie i {partnerName}. Nikt nie zrobił tego specjalnie. To prawie gorsze.",
+    choices: [
+      {
+        id: "finish_work",
+        label: "Dokończyć pracę i odwołać resztę wieczoru",
+        spoonsCost: 2,
+        trustChange: -2,
+        frustrationChange: 3,
+        workEffect: { pressureChange: -8, stabilityChange: 2, burnoutChange: 4 },
+        resultText: "Termin przestaje wisieć nad głową. Zostaje miejsce, w którym miał być wieczór."
+      },
+      {
+        id: "protect_evening",
+        label: "Zamknąć laptop i ochronić wieczór",
+        spoonsCost: 1,
+        trustChange: 3,
+        frustrationChange: -2,
+        workEffect: { pressureChange: 6, stabilityChange: -2, burnoutChange: -2 },
+        resultText: "Nie wszystko da się nadrobić spokojem. Ale przez chwilę naprawdę jesteś obecny/a."
+      },
+      {
+        id: "split_attention",
+        label: "Próbować robić jedno i drugie naraz",
+        spoonsCost: 4,
+        trustChange: -1,
+        frustrationChange: 2,
+        workEffect: { pressureChange: -3, stabilityChange: 0, burnoutChange: 6 },
+        resultText: "Technicznie jesteś wszędzie. Emocjonalnie nigdzie na tyle długo, żeby to wystarczyło."
+      }
+    ]
+  },
+  {
+    id: "work_after_hours_call",
+    title: "Telefon po godzinach",
+    tags: ["work", "boundaries", "obligation"],
+    weightTags: ["work-pressure", "overextension", "tension"],
+    agendaSlots: ["obligation"],
+    description:
+      "Po pracy przychodzi wiadomość. Niby drobiazg. Tak zaczynają się rzeczy, które potem mieszkają w twojej głowie bez czynszu.",
+    choices: [
+      {
+        id: "answer_immediately",
+        label: "Odpowiedzieć od razu",
+        spoonsCost: 1,
+        trustChange: 0,
+        frustrationChange: 1,
+        workEffect: { pressureChange: -4, stabilityChange: 1, burnoutChange: 5 },
+        resultText: "Sprawa załatwiona. Granica też. Tylko w drugą stronę."
+      },
+      {
+        id: "set_boundary",
+        label: "Odpisać, że wrócisz do tego jutro",
+        spoonsCost: 1,
+        trustChange: 1,
+        frustrationChange: -1,
+        workEffect: { pressureChange: 3, stabilityChange: 0, burnoutChange: -3 },
+        resultText: "Granica nie robi fanfar. Po prostu stoi tam, gdzie ją postawiono."
+      },
+      {
+        id: "ignore_and_stew",
+        label: "Nie odpisać, ale myśleć o tym cały wieczór",
+        spoonsCost: 2,
+        trustChange: -1,
+        frustrationChange: 2,
+        workEffect: { pressureChange: 5, stabilityChange: 0, burnoutChange: 3 },
+        resultText: "Nie pracujesz. Nie odpoczywasz. Genialny kompromis wymyślony przez układ nerwowy."
+      }
+    ]
+  },
+  {
+    id: "work_burnout_face",
+    title: "Nie mam dziś twarzy do ludzi",
+    tags: ["work", "burnout", "social", "spoons"],
+    weightTags: ["work-pressure", "low-spoons", "high-frustration", "burnout"],
+    agendaSlots: ["inner", "obligation"],
+    description:
+      "Po całym dniu funkcjonowania w trybie osoby kompetentnej zostaje ci twarz. Ale niekoniecznie twoja.",
+    choices: [
+      {
+        id: "unmask_at_home",
+        label: "Powiedzieć wprost, że nie masz dziś twarzy do ludzi",
+        spoonsCost: 0,
+        trustChange: 2,
+        frustrationChange: -1,
+        workEffect: { pressureChange: 0, stabilityChange: 0, burnoutChange: -4 },
+        resultText: "To nie rozwiązuje dnia. Ale przestajesz grać jeszcze jedną scenę po napisach."
+      },
+      {
+        id: "keep_performing",
+        label: "Dociągnąć performans do końca dnia",
+        spoonsCost: 3,
+        trustChange: 0,
+        frustrationChange: 2,
+        workEffect: { pressureChange: -1, stabilityChange: 1, burnoutChange: 6 },
+        resultText: "Nikt nie zauważa problemu. To znaczy: problem wykonał świetną robotę."
+      },
+      {
+        id: "collapse_silently",
+        label: "Zniknąć bez tłumaczenia",
+        spoonsCost: 0,
+        trustChange: -2,
+        frustrationChange: 3,
+        workEffect: { pressureChange: 1, stabilityChange: 0, burnoutChange: 2 },
+        resultText: "Cisza daje ulgę. Potem zaczyna wysyłać własne powiadomienia."
+      }
+    ]
+  }
+  // CLEAN v0.29 work pressure events END
 
 ];

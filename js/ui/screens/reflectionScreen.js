@@ -17,7 +17,7 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=280";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=290";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js";
@@ -35,6 +35,7 @@ import {
 } from "../oosLayout.js";
 
 import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=280";
+import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=290";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -123,6 +124,7 @@ export function renderReflectionScreen(container, data) {
   // Pattern Pressure/Relationship Scars/Repair.
   const staticText = buildReflectionStaticLine(state, lastEntry);
   const metamourText = buildMetamourReflection(state, lastEntry ? lastEntry.metamourEffect : null);
+  const workText = buildWorkReflection(state, lastEntry ? lastEntry.workEffect : null);
 
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
@@ -138,7 +140,7 @@ export function renderReflectionScreen(container, data) {
   });
 
   const narrative = createNarrativeStrip(
-    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText)
+    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText)
   );
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
@@ -191,9 +193,9 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText) {
+function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText, staticText, metamourText].filter(
+  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText].filter(
     Boolean
   );
   return parts.join(" ");

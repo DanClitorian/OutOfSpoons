@@ -44,8 +44,8 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=280";
-import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=280";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=290";
+import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=290";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js";
 import { buildEventStaticLine } from "../../systems/staticSystem.js?v=270";
 import {

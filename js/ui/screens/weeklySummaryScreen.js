@@ -49,6 +49,7 @@ import { buildWeeklyRelationshipRepairNote } from "../../systems/relationshipRep
 import { buildWeeklyStaticNote } from "../../systems/staticSystem.js?v=270";
 
 import { buildWeeklyMetamourNote } from "../../systems/metamourSystem.js?v=280";
+import { buildWeeklyWorkNote } from "../../systems/workPressureSystem.js?v=290";
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
 
@@ -185,6 +186,15 @@ function buildStoryCard(summary, state) {
     metamourNoteEl.className = "oos-weekly-summary__mood-description";
     metamourNoteEl.textContent = metamourNote;
     card.appendChild(metamourNoteEl);
+  }
+
+  // v0.29: Work Pressure. Krótka wzmianka, jeśli praca wchodziła w tydzień.
+  const workNote = buildWeeklyWorkNote(state);
+  if (workNote) {
+    const workNoteEl = document.createElement("p");
+    workNoteEl.className = "oos-weekly-summary__mood-description";
+    workNoteEl.textContent = workNote;
+    card.appendChild(workNoteEl);
   }
 
   return card;

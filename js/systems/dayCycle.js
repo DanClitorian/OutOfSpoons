@@ -23,12 +23,12 @@ import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
 import { regenerateSpoons } from "./spoonsSystem.js";
 import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=280";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=290";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
 import { ensureMorningEventState, resolveMorningEvents } from "./morningEventSystem.js";
-import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=280";
+import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=290";
 // v0.5: wpisy w state.log zyskały pole "consequences" (jawne, mechaniczne
 // skutki wyboru: spoonsChange/trustChange/frustrationChange), pokazywane
 // teraz graczowi na ekranie refleksji. To kolejna niekompatybilna zmiana
