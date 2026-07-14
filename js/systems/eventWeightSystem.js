@@ -2,6 +2,7 @@
 import { getPartnerCapacityContext } from "./partnerCapacitySystem.js";
 import { hasRepairableScars } from "./relationshipRepairSystem.js";
 
+import { getMetamourContext, hasMetamourSignal } from "./metamourSystem.js?v=280";
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
@@ -81,6 +82,20 @@ function computeEventWeight(event, state) {
   // bonusu.
   if ((tags.includes("relationship-scar") || tags.includes("repair-opportunity")) && hasRepairableScars(state)) {
     weight += 5;
+  }
+
+  // v0.28: Metamour weights. Delikatne ważenie, bez forced spawnu.
+  if (tags.includes("metamour-signal") && hasMetamourSignal(state)) {
+    weight += 4;
+  }
+
+  const metamourContext = getMetamourContext(state);
+  if (
+    metamourContext &&
+    metamourContext.tension >= 60 &&
+    (tags.includes("relationship-tension") || tags.includes("tension"))
+  ) {
+    weight += 2;
   }
 
   return Math.max(1, weight);

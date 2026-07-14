@@ -26,7 +26,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=270";
+import { showScreen } from "../ui/uiManager.js?v=280";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=250";
 import {
@@ -43,6 +43,7 @@ import {
   clearStaticForDebug
 } from "../systems/staticSystem.js?v=270";
 
+import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHighState, clearMetamourSignal as clearMetamourSignalState } from "../systems/metamourSystem.js?v=280";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -382,6 +383,61 @@ function clearStatic() {
   return result;
 }
 
+
+// v0.28: Metamour. Dev-only podgląd osoby z sieci relacji.
+function showMetamour() {
+  const state = requireActiveState("showMetamour()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getMetamourDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak partnera/metamoura w stanie gry.");
+    return null;
+  }
+
+  console.table({
+    name: summary.name,
+    roleLabel: summary.roleLabel,
+    pronouns: summary.pronouns,
+    closeness: summary.closeness,
+    tension: summary.tension,
+    familiarity: summary.familiarity
+  });
+  console.log("[oosDev] Daily signal:", summary.dailySignal || "brak");
+  console.log("[oosDev] Ostatnie wpisy historii:");
+  console.table(summary.recentHistory);
+
+  return summary;
+}
+
+// v0.28: Metamour. Ustawia wysokie napięcie i sygnał dzienny.
+function setMetamourTensionHigh() {
+  const state = requireActiveState("setMetamourTensionHigh()");
+  if (!state) {
+    return null;
+  }
+
+  const result = setMetamourTensionHighState(state);
+  saveGame(state);
+  console.log("[oosDev] Metamour tension ustawione wysoko.");
+  return result;
+}
+
+// v0.28: Metamour. Czyści tylko dailySignal.
+function clearMetamourSignal() {
+  const state = requireActiveState("clearMetamourSignal()");
+  if (!state) {
+    return null;
+  }
+
+  const result = clearMetamourSignalState(state);
+  saveGame(state);
+  console.log("[oosDev] Metamour dailySignal wyczyszczony.");
+  return result;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -397,6 +453,9 @@ if (typeof window !== "undefined") {
     showRelationshipRepair,
     showStatic,
     setStaticHigh,
-    clearStatic
+    clearStatic,
+    showMetamour,
+    setMetamourTensionHigh,
+    clearMetamourSignal
   };
 }

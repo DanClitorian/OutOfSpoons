@@ -464,4 +464,123 @@ export const eventPool = [
     ]
   }
   // CLEAN v0.26 repair events END
+  ,
+
+  // CLEAN v0.28 metamour events START
+  {
+    id: "metamour_calendar",
+    title: "Ktoś jeszcze w kalendarzu",
+    tags: ["relationship", "metamour", "calendar", "boundaries"],
+    weightTags: ["metamour-signal", "relationship-tension"],
+    agendaSlots: ["relationship"],
+    description:
+      "W planach {partnerName} pojawia się {metamourName}. Nie ma w tym nic nieuczciwego. To właśnie jest najtrudniejsze.",
+    choices: [
+      {
+        id: "ask_plainly",
+        label: "Zapytać spokojnie, jak wygląda plan",
+        spoonsCost: 1,
+        trustChange: 2,
+        frustrationChange: -1,
+        metamourEffect: { familiarityChange: 6, tensionChange: -4 },
+        resultText: "Pytanie nie znika w powietrzu. Dostajesz odpowiedź, a nie potwierdzenie najgorszego scenariusza."
+      },
+      {
+        id: "pretend_unbothered",
+        label: "Udać, że w ogóle cię to nie rusza",
+        spoonsCost: 0,
+        trustChange: 0,
+        frustrationChange: 2,
+        metamourEffect: { familiarityChange: 0, tensionChange: 5 },
+        resultText: "Na zewnątrz spokój. W środku ktoś przesuwa meble bez pytania."
+      },
+      {
+        id: "demand_priority",
+        label: "Zażądać jasnego priorytetu",
+        spoonsCost: 2,
+        trustChange: -3,
+        frustrationChange: 5,
+        metamourEffect: { familiarityChange: 0, tensionChange: 8 },
+        resultText: "Dostajesz jasność. Nie tę, o którą chodziło."
+      }
+    ]
+  },
+  {
+    id: "metamour_name_in_room",
+    title: "Imię w rozmowie",
+    tags: ["relationship", "metamour", "communication"],
+    weightTags: ["metamour-signal", "low-trust", "tension"],
+    agendaSlots: ["relationship"],
+    description:
+      "{metamourName} pojawia się w rozmowie mimochodem. Wystarcza jedno imię, żeby część ciebie zaczęła robić matematykę porównań.",
+    choices: [
+      {
+        id: "name_the_reaction",
+        label: "Nazwać swoją reakcję bez oskarżania",
+        spoonsCost: 2,
+        trustChange: 3,
+        frustrationChange: -2,
+        metamourEffect: { familiarityChange: 5, tensionChange: -5 },
+        resultText: "Nie robisz z tego procesu sądowego. To pomaga rozmowie zostać rozmową."
+      },
+      {
+        id: "joke_it_away",
+        label: "Obrócić to w żart",
+        spoonsCost: 0,
+        trustChange: 0,
+        frustrationChange: 1,
+        metamourEffect: { familiarityChange: 0, tensionChange: 3 },
+        resultText: "Żart przechodzi. Prawie. Zostawia po sobie trochę kredy na języku."
+      },
+      {
+        id: "compare_yourself",
+        label: "Zapytać, czy wypadasz gorzej",
+        spoonsCost: 2,
+        trustChange: -2,
+        frustrationChange: 4,
+        metamourEffect: { familiarityChange: 0, tensionChange: 7 },
+        resultText: "Porównanie udaje pytanie. Oboje to słyszycie."
+      }
+    ]
+  },
+  {
+    id: "metamour_information_boundary",
+    title: "Granice informacyjne",
+    tags: ["relationship", "metamour", "boundaries", "communication"],
+    weightTags: ["metamour-signal", "repair", "tension"],
+    agendaSlots: ["relationship"],
+    description:
+      "Wraca temat tego, ile chcesz wiedzieć o relacji {partnerName} z {metamourName}. Za mało informacji boli. Za dużo też.",
+    choices: [
+      {
+        id: "set_info_boundary",
+        label: "Ustalić, jakie informacje są ci potrzebne",
+        spoonsCost: 2,
+        trustChange: 3,
+        frustrationChange: -2,
+        metamourEffect: { familiarityChange: 4, tensionChange: -6 },
+        resultText: "Nie ustalacie kontroli. Ustalacie mapę, żeby nie chodzić po omacku."
+      },
+      {
+        id: "want_everything",
+        label: "Chcieć wiedzieć wszystko",
+        spoonsCost: 3,
+        trustChange: -1,
+        frustrationChange: 3,
+        metamourEffect: { familiarityChange: 8, tensionChange: 4 },
+        resultText: "Więcej informacji nie zawsze oznacza więcej bezpieczeństwa."
+      },
+      {
+        id: "want_nothing",
+        label: "Nie chcieć wiedzieć nic",
+        spoonsCost: 0,
+        trustChange: -1,
+        frustrationChange: 2,
+        metamourEffect: { familiarityChange: -2, tensionChange: 4 },
+        resultText: "Cisza też jest rodzajem informacji. Tylko trudniej ją zinterpretować."
+      }
+    ]
+  }
+  // CLEAN v0.28 metamour events END
+
 ];

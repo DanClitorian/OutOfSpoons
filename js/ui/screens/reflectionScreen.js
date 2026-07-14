@@ -17,7 +17,7 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=260";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=280";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js";
@@ -34,6 +34,7 @@ import {
   createCtaButton
 } from "../oosLayout.js";
 
+import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=280";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -121,6 +122,7 @@ export function renderReflectionScreen(container, data) {
   // Maksymalnie jedno zdanie — nie dokłada się do ściany tekstu z
   // Pattern Pressure/Relationship Scars/Repair.
   const staticText = buildReflectionStaticLine(state, lastEntry);
+  const metamourText = buildMetamourReflection(state, lastEntry ? lastEntry.metamourEffect : null);
 
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
@@ -136,7 +138,7 @@ export function renderReflectionScreen(container, data) {
   });
 
   const narrative = createNarrativeStrip(
-    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText)
+    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText)
   );
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
@@ -189,9 +191,9 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText) {
+function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText, staticText].filter(
+  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText, staticText, metamourText].filter(
     Boolean
   );
   return parts.join(" ");

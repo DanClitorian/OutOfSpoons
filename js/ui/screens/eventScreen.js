@@ -44,8 +44,8 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=260";
-import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=260";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=280";
+import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=280";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js";
 import { buildEventStaticLine } from "../../systems/staticSystem.js?v=270";
 import {
@@ -123,7 +123,10 @@ function replacePlaceholders(text, state) {
   }
 
   const partnerName = state.partner ? state.partner.name : "partner";
-  return text.replace(/\{partnerName\}/g, partnerName);
+  const metamourName = state.partner && state.partner.metamour ? state.partner.metamour.name : "ta osoba";
+  return text
+    .replace(/\{partnerName\}/g, partnerName)
+    .replace(/\{metamourName\}/g, metamourName);
 }
 
 // v0.23: Partner Capacity Foundation. Jeśli aktualny event jest

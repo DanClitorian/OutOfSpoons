@@ -4,8 +4,8 @@
 // Each day has three fixed slots: obligation, relationship and inner.
 // Slot order is fixed for now; player-controlled ordering can come later.
 
-import { eventPool } from "../data/eventData.js?v=260";
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=260";
+import { eventPool } from "../data/eventData.js?v=280";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=280";
 
 const AGENDA_SLOT_ORDER = ["obligation", "relationship", "inner"];
 

@@ -48,6 +48,7 @@ import { buildWeeklyRelationshipScarsNote } from "../../systems/relationshipScar
 import { buildWeeklyRelationshipRepairNote } from "../../systems/relationshipRepairSystem.js";
 import { buildWeeklyStaticNote } from "../../systems/staticSystem.js?v=270";
 
+import { buildWeeklyMetamourNote } from "../../systems/metamourSystem.js?v=280";
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
 
@@ -175,6 +176,15 @@ function buildStoryCard(summary, state) {
   const patterns = getWeeklyPatternEchoes(state, 3);
   if (patterns.length > 0) {
     card.appendChild(buildPatternsBlock(patterns));
+  }
+
+  // v0.28: Metamour. Krótka wzmianka, jeśli sieć relacji była w tym tygodniu obecna.
+  const metamourNote = buildWeeklyMetamourNote(state);
+  if (metamourNote) {
+    const metamourNoteEl = document.createElement("p");
+    metamourNoteEl.className = "oos-weekly-summary__mood-description";
+    metamourNoteEl.textContent = metamourNote;
+    card.appendChild(metamourNoteEl);
   }
 
   return card;

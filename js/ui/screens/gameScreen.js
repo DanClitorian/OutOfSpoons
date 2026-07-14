@@ -24,7 +24,7 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=260";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=280";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,
@@ -60,6 +60,7 @@ import {
   createCtaButton
 } from "../oosLayout.js";
 
+import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=280";
 export function renderGameScreen(container) {
   const state = getState();
 
@@ -96,6 +97,15 @@ export function renderGameScreen(container) {
   const alreadyCalculatedToday = staticBeforeCalc && staticBeforeCalc.lastCalculatedDay === state.day;
   calculateDailyStatic(state);
   if (!alreadyCalculatedToday) {
+    saveGame(state);
+  }
+
+  // v0.28: Metamour daily signal. Jeden los dziennie, idempotentny.
+  ensureMetamourState(state);
+  const metamourBeforeRoll = state.partner ? state.partner.metamour : null;
+  const alreadyMetamourRolledToday = metamourBeforeRoll && metamourBeforeRoll.lastRolledDay === state.day;
+  rollDailyMetamourSignal(state);
+  if (!alreadyMetamourRolledToday) {
     saveGame(state);
   }
 
@@ -172,6 +182,7 @@ function buildMorningNarrative(state) {
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
   const criticalTeaser = buildCriticalEventTeaser(state);
   const staticLine = buildMorningStaticLine(state);
+  const metamourLine = buildMorningMetamourLine(state);
 
   if (!partnerTeaser && !patternTeaser && !weeklyTeaser && !criticalTeaser && !staticLine) {
     return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
@@ -185,6 +196,10 @@ function buildMorningNarrative(state) {
     criticalTeaser,
     staticLine
   ].filter(Boolean);
+  if (metamourLine) {
+    parts.push(metamourLine);
+  }
+
   return parts.join(" ");
 }
 

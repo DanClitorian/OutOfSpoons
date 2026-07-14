@@ -51,14 +51,14 @@
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=270";
-import { renderEventScreen } from "./screens/eventScreen.js?v=270";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=270";
+import { renderGameScreen } from "./screens/gameScreen.js?v=280";
+import { renderEventScreen } from "./screens/eventScreen.js?v=280";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=280";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=270";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=280";
 import { appendVersionBadge } from "./versionBadge.js";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=260";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=280";
 let appContainer = null;
 
 const screens = {

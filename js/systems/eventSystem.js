@@ -21,16 +21,17 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js?v=260";
+import { eventPool } from "../data/eventData.js?v=280";
 import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=260";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=280";
 import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=260";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js";
 import { applyRepairFromChoice } from "./relationshipRepairSystem.js";
+import { applyMetamourEffectFromChoice, formatWithMetamourPlaceholders } from "./metamourSystem.js?v=280";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -174,7 +175,10 @@ export function applyChoice(state, event, choiceId) {
   // blizny (patrz relationshipRepairSystem.js).
   const repairResult = applyRepairFromChoice(state, event, choice);
 
-  const resultText = choice.resultText.replace(/\{partnerName\}/g, state.partner.name);
+  // v0.28: Metamour — wpływa wyłącznie na state.partner.metamour.
+  const metamourResult = applyMetamourEffectFromChoice(state, event, choice);
+
+  const resultText = formatWithMetamourPlaceholders(choice.resultText, state);
 
   // v0.5: spoonsChange to zawsze liczba ujemna (albo zero) — koszt
   // wyboru odejmowany od zasobów gracza, zapisany wprost, żeby UI nie
@@ -224,6 +228,16 @@ export function applyChoice(state, event, choiceId) {
           intensityBefore: repairResult.intensityBefore,
           intensityAfter: repairResult.intensityAfter,
           note: repairResult.note
+        }
+      : { applied: false },
+    // v0.28: Metamour. Tylko do logu/devTools/reflection — UI nie pokazuje liczb.
+    metamourEffect: metamourResult.applied
+      ? {
+          applied: true,
+          familiarityChange: metamourResult.familiarityChange,
+          tensionChange: metamourResult.tensionChange,
+          familiarityAfter: metamourResult.familiarityAfter,
+          tensionAfter: metamourResult.tensionAfter
         }
       : { applied: false }
   });
