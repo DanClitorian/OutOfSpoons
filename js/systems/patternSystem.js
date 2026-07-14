@@ -256,8 +256,13 @@ function deriveTagsFromText(textSources) {
 /**
  * Łączy heurystykę konsekwencji z prostym dopasowaniem słów kluczowych
  * w tekście decyzji. Zwraca tablicę tagów (może być pusta).
+ *
+ * v0.24: EKSPORTOWANE (wcześniej prywatne) — patternPressureSystem.js
+ * reużywa DOKŁADNIE tej samej heurystyki, żeby klasyfikacja "czy ten
+ * wybór pasuje do aktywnego wzorca" nigdy nie rozjechała się z
+ * klasyfikacją, która tworzy same wzorce.
  */
-function deriveTags(consequences, textSources) {
+export function deriveTags(consequences, textSources) {
   const tags = new Set([
     ...deriveTagsFromConsequences(consequences),
     ...deriveTagsFromText(textSources)

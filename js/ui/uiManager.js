@@ -14,12 +14,21 @@
 // ekrany (mainMenu/characterCreator/reflection/evening/agenda) NIE
 // zmieniły się w v0.23, więc ich importy zostają bez query — nie było
 // potrzeby ich bustować.
+//
+// v0.24: Pattern Pressure. TYLKO reflectionScreen.js dostaje ?v=240
+// (zmienił zawartość — jedno subtelne zdanie o presji wzorca, PO
+// decyzji). eventScreen.js CELOWO NIE jest ruszany w v0.24 — Pattern
+// Pressure nie może wpływać na dostępność kart przed kliknięciem, więc
+// eventScreen.js zostaje dokładnie taki, jaki był w v0.23 (import
+// zostaje przy ?v=230, bo to nadal poprawnie wskazuje na jego
+// aktualną, niezmienioną zawartość). gameScreen.js i
+// weeklySummaryScreen.js też się nie zmieniły — zostają przy ?v=230.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
 import { renderGameScreen } from "./screens/gameScreen.js?v=230";
 import { renderEventScreen } from "./screens/eventScreen.js?v=230";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=240";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=230";

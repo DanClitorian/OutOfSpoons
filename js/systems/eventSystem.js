@@ -28,6 +28,7 @@ import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
 import { getWeightedEventForDay } from "./eventWeightSystem.js?v=230";
 import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=230";
+import { applyPatternPressureToChoice } from "./patternPressureSystem.js";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -94,11 +95,22 @@ export function getEventById(eventId) {
 }
 
 /**
- * Aplikuje wybór gracza do stanu gry: modyfikuje spoons, atrybuty NPC
+ * Aplikuje decyzję gracza do stanu gry: modyfikuje spoons, atrybuty NPC
  * i dopisuje wpis do logu wydarzeń — razem z tekstem rezultatu ORAZ
  * jawnym obiektem consequences (v0.5), żeby UI mogło pokazać mechaniczne
  * skutki wyboru wprost, bez zgadywania z resultText. Zwraca wybraną
  * opcję (przydatne do wyświetlenia rezultatu na ekranie refleksji).
+ *
+ * v0.24: Pattern Pressure. Dopiero TUTAJ, PO tym jak gracz już kliknął
+ * kartę, realny koszt wyboru jest przepuszczany przez
+ * applyPatternPressureToChoice() — jeśli gracz ma aktywny wzorzec
+ * pasujący do tej decyzji, koszt spada o 1 (łatwiej wracać do znanej
+ * reakcji); jeśli wybór jest wyraźnym przeciwieństwem aktywnego
+ * wzorca, koszt rośnie o 1 (trudniej zejść z utartej ścieżki).
+ * eventScreen.js NIE wie nic o tej funkcji — dostępność kart przed
+ * kliknięciem liczona jest tam wyłącznie na surowym
+ * choice.spoonsCost, więc Pattern Pressure nigdy nie zmienia, która
+ * karta jest klikalna.
  */
 export function applyChoice(state, event, choiceId) {
   const choice = event.choices.find((c) => c.id === choiceId);
@@ -112,10 +124,14 @@ export function applyChoice(state, event, choiceId) {
   const partnerId = state.partner.id;
 
   ensureFatigueState(state);
-  const currentSpoonsBeforeChoice = state.resources.spoons.current;
-  const missingSpoons = Math.max(0, choice.spoonsCost - currentSpoonsBeforeChoice);
 
-  modifySpoons(state, -choice.spoonsCost);
+  const pressureResult = applyPatternPressureToChoice(state, event, choice);
+  const effectiveSpoonsCost = pressureResult.spoonsCost;
+
+  const currentSpoonsBeforeChoice = state.resources.spoons.current;
+  const missingSpoons = Math.max(0, effectiveSpoonsCost - currentSpoonsBeforeChoice);
+
+  modifySpoons(state, -effectiveSpoonsCost);
   const fatigueDebt = addFatigueDebt(state, missingSpoons);
   modifyTrust(state, partnerId, choice.trustChange);
   modifyFrustration(state, partnerId, choice.frustrationChange);
@@ -124,9 +140,11 @@ export function applyChoice(state, event, choiceId) {
 
   // v0.5: spoonsChange to zawsze liczba ujemna (albo zero) — koszt
   // wyboru odejmowany od zasobów gracza, zapisany wprost, żeby UI nie
-  // musiało go samo przeliczać z choice.spoonsCost.
+  // musiało go samo przeliczać z choice.spoonsCost. v0.24: to jest
+  // EFEKTYWNY koszt (po presji wzorców), nie surowy choice.spoonsCost —
+  // reflection ma pokazywać to, co faktycznie się stało.
   const consequences = {
-    spoonsChange: -choice.spoonsCost,
+    spoonsChange: -effectiveSpoonsCost,
     trustChange: choice.trustChange,
     frustrationChange: choice.frustrationChange,
     fatigueChange: fatigueDebt
@@ -137,7 +155,15 @@ export function applyChoice(state, event, choiceId) {
     eventId: event.id,
     choiceId: choice.id,
     resultText,
-    consequences
+    consequences,
+    // v0.24: Pattern Pressure. Zapisane TYLKO do wewnętrznego użytku
+    // (reflectionScreen.js buduje z tego jedno subtelne zdanie) — nie
+    // jest to nowy widoczny numer, tylko flaga + id wzorca.
+    patternPressure: {
+      applied: pressureResult.applied,
+      alignedPatternId: pressureResult.alignedPatternId,
+      opposedPatternId: pressureResult.opposedPatternId
+    }
   });
 
   completeCurrentAgendaItem(state);

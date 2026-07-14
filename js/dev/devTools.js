@@ -3,12 +3,15 @@
 // v0.20.1: Critical Event Visibility + Testability.
 // v0.20.2/v0.20.3: null-state guard + cache-busted import.
 // v0.23: Partner Capacity Foundation — dodane 3 helpery testowe
-// (setPartnerCapacityLow/High, showPartnerCapacity). Istniejące funkcje
-// (jumpToDay, jumpToCriticalDueDay, forceCriticalEventDue,
-// showStateSummary) NIE zostały zmienione.
+// (setPartnerCapacityLow/High, showPartnerCapacity).
+// v0.24: Pattern Pressure — dodany helper showPatternPressure(). Żadna
+// z istniejących funkcji (jumpToDay, jumpToCriticalDueDay,
+// forceCriticalEventDue, showStateSummary, setPartnerCapacityLow/High,
+// showPartnerCapacity) NIE została zmieniona.
 //
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
-// Partner Capacity bez ręcznego przeklikiwania wielu dni. Ten moduł:
+// Partner Capacity / Pattern Pressure bez ręcznego przeklikiwania wielu
+// dni. Ten moduł:
 //   - NIE renderuje żadnego UI,
 //   - NIE wywołuje się sam z siebie podczas normalnej gry,
 //   - wystawia funkcje WYŁĄCZNIE pod window.oosDev.
@@ -19,7 +22,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=230";
+import { showScreen } from "../ui/uiManager.js?v=240";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js";
 import {
@@ -27,6 +30,7 @@ import {
   getPartnerCapacity,
   refreshPartnerCapacityMood
 } from "../systems/partnerCapacitySystem.js";
+import { getPatternPressureDebugSummary } from "../systems/patternPressureSystem.js";
 
 function requireActiveState(actionName) {
   const state = getState();
@@ -224,6 +228,36 @@ function showPartnerCapacity() {
   return capacity;
 }
 
+// v0.24: Pattern Pressure. Wypisuje do konsoli, jakie aktywne wzorce
+// mają teraz wpływ na koszt decyzji (stały modyfikator +/-1) i co
+// przeciwstawiają — do debugowania. Te liczby NIGDY nie trafiają do UI
+// gracza.
+function showPatternPressure() {
+  const state = requireActiveState("showPatternPressure()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getPatternPressureDebugSummary(state);
+
+  if (summary.length === 0) {
+    console.log("[oosDev] Brak aktywnych wzorców — presja nie działa na żadną decyzję.");
+    return summary;
+  }
+
+  console.table(
+    summary.map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      intensity: entry.intensity,
+      modifier: entry.modifier,
+      opposes: entry.opposes.join(", ") || "brak"
+    }))
+  );
+
+  return summary;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -233,6 +267,7 @@ if (typeof window !== "undefined") {
     showStateSummary,
     setPartnerCapacityLow,
     setPartnerCapacityHigh,
-    showPartnerCapacity
+    showPartnerCapacity,
+    showPatternPressure
   };
 }

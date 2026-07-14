@@ -19,6 +19,7 @@ import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js";
+import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js";
 import { eventPool } from "../../data/eventData.js";
 import {
   createGameShell,
@@ -67,6 +68,27 @@ export function renderReflectionScreen(container, data) {
     }
   }
 
+  // v0.24: Pattern Pressure. Jeśli TA decyzja miała zmodyfikowany koszt
+  // przez aktywny wzorzec (patrz eventSystem.js#applyChoice), dostajemy
+  // jedno krótkie, subtelne zdanie do narracji — dopiero TU, po fakcie,
+  // nigdy przed wyborem. buildPatternPressureReflection() zwraca null,
+  // jeśli presja nie zadziałała (zwykły przypadek), więc nic się nie
+  // zmienia dla większości decyzji.
+  let pressureText = null;
+  if (lastEntry && lastEntry.patternPressure) {
+    const originalEvent = eventPool.find((event) => event.id === lastEntry.eventId);
+    const originalChoice = originalEvent
+      ? originalEvent.choices.find((choice) => choice.id === lastEntry.choiceId)
+      : null;
+
+    pressureText = buildPatternPressureReflection(
+      state,
+      originalEvent,
+      originalChoice,
+      lastEntry.patternPressure
+    );
+  }
+
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
     state,
@@ -80,7 +102,7 @@ export function renderReflectionScreen(container, data) {
     title: "Skutek decyzji"
   });
 
-  const narrative = createNarrativeStrip(buildNarrativeText(resultText, consequences, patternEcho));
+  const narrative = createNarrativeStrip(buildNarrativeText(resultText, consequences, patternEcho, pressureText));
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
@@ -132,9 +154,9 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho) {
+function buildNarrativeText(resultText, consequences, patternEcho, pressureText) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [resultText, interpretation, patternEcho].filter(Boolean);
+  const parts = [resultText, interpretation, patternEcho, pressureText].filter(Boolean);
   return parts.join(" ");
 }
 

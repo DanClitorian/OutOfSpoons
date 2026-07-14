@@ -4,12 +4,18 @@
 // w jakiej kolejności następują fazy dnia (poranek -> wydarzenie ->
 // refleksja -> kolejny dzień). Woła systemy (spoons, npc, event),
 // ale nie dotyka UI — o to, co pokazać na ekranie, dbają moduły w js/ui/.
+//
+// v0.24: Pattern Pressure. Import eventSystem.js dostał ?v=240 —
+// eventSystem.js zmienił zawartość (integracja presji wzorców w
+// applyChoice, działająca WYŁĄCZNIE po kliknięciu), więc przeglądarka
+// nie może dalej używać starej, cache'owanej wersji. Sama logika
+// dayCycle.js jest NIETKNIĘTA, to wyłącznie cache-busting.
 
 import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
 import { regenerateSpoons } from "./spoonsSystem.js";
 import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=240";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
