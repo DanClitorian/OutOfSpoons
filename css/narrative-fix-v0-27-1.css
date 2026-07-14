@@ -1,0 +1,54 @@
+/* narrative-fix-v0-27-1.css
+ *
+ * v0.27.1: Narrative overflow fix (hotfix).
+ *
+ * PROBLEM: css/game-ui-v0-18.css#.oos-narrative-text ustawia
+ * `-webkit-line-clamp: 3` (2 na niskich oknach, patrz media query
+ * max-height:800px w tamtym pliku) razem z `overflow: hidden` — to
+ * obcinało dłuższy tekst opisu eventu / reflection wielokropkiem, mimo
+ * że cała narracja jest już w pełni wygenerowana i przekazana do DOM
+ * (patrz js/ui/oosLayout.js#createNarrativeStrip). To był problem
+ * WYŁĄCZNIE wizualny (CSS), nie mechaniczny.
+ *
+ * Realne klasy (NIE .oos-narrative-strip / .oos-narrative__text, jak
+ * można by się spodziewać po nazewnictwie w innych projektach —
+ * potwierdzone bezpośrednio w kodzie źródłowym):
+ *   .oos-narrative       — kontener (<section>)
+ *   .oos-narrative-text  — tekst (<p>), TU był line-clamp
+ *
+ * ROZWIĄZANIE: ten plik jest CELOWO minimalnym, addytywnym override —
+ * NIE modyfikuje game-ui-v0-18.css, żeby ten plik został "czystą"
+ * wersją z v0.18 (zgodnie z ustaloną konwencją tego projektu: kolejne
+ * poprawki dostają własne, osobne pliki CSS, nie dopiski do starszych).
+ *
+ * Usuwamy line-clamp z tekstu (rośnie naturalnie, bez limitu linii).
+ * .oos-stage ma już `grid-template-rows: minmax(0, 1fr) minmax(78px, auto)`
+ * — wiersz narracji i tak rośnie do wysokości treści, a scena
+ * (pierwszy wiersz, minmax(0, 1fr)) elastycznie się kurczy, więc w
+ * WIĘKSZOŚCI przypadków wystarczy samo zdjęcie line-clamp. Jako
+ * bezpiecznik na wypadek NAPRAWDĘ długiego tekstu (żeby scena nigdy nie
+ * skurczyła się do zera i .oos-game nie zmieniło całkowitej wysokości —
+ * strona ma `overflow: hidden` na poziomie <body>, więc scrollować może
+ * TYLKO ten jeden blok, nie cała strona) dodajemy ograniczoną wysokość
+ * z wewnętrznym przewijaniem na samym `.oos-narrative`.
+ *
+ * Zero zmian w .oos-game grid, zero zmian wysokości całej planszy
+ * (.oos-game nadal `height: calc(100vh - 24px)`), zero wpływu na
+ * .oos-decision-card / .oos-cta-button / dolny panel akcji.
+ */
+
+.oos-narrative-text {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: initial !important;
+  line-clamp: unset !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  max-height: none !important;
+}
+
+.oos-narrative {
+  max-height: 45vh !important;
+  overflow-y: auto !important;
+}
