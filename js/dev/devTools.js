@@ -6,15 +6,16 @@
 // (setPartnerCapacityLow/High, showPartnerCapacity).
 // v0.24: Pattern Pressure — dodany helper showPatternPressure().
 // v0.25: Relationship Scars — dodany helper showRelationshipScars().
-// v0.26: Repair Events — dodany helper showRelationshipRepair(). Żadna
-// z istniejących funkcji (jumpToDay, jumpToCriticalDueDay,
-// forceCriticalEventDue, showStateSummary, setPartnerCapacityLow/High,
-// showPartnerCapacity, showPatternPressure, showRelationshipScars) NIE
-// została zmieniona.
+// v0.26: Repair Events — dodany helper showRelationshipRepair().
+// v0.27: The Static — dodane 3 helpery testowe (showStatic,
+// setStaticHigh, clearStatic). Żadna z istniejących funkcji (jumpToDay,
+// jumpToCriticalDueDay, forceCriticalEventDue, showStateSummary,
+// setPartnerCapacityLow/High, showPartnerCapacity, showPatternPressure,
+// showRelationshipScars, showRelationshipRepair) NIE została zmieniona.
 //
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
 // Partner Capacity / Pattern Pressure / Relationship Scars / Repair
-// Events bez ręcznego przeklikiwania wielu dni. Ten moduł:
+// Events / The Static bez ręcznego przeklikiwania wielu dni. Ten moduł:
 //   - NIE renderuje żadnego UI,
 //   - NIE wywołuje się sam z siebie podczas normalnej gry,
 //   - wystawia funkcje WYŁĄCZNIE pod window.oosDev.
@@ -25,7 +26,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=260";
+import { showScreen } from "../ui/uiManager.js?v=270";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=250";
 import {
@@ -36,6 +37,11 @@ import {
 import { getPatternPressureDebugSummary } from "../systems/patternPressureSystem.js";
 import { getRelationshipScarsDebugSummary } from "../systems/relationshipScarsSystem.js";
 import { getRelationshipRepairDebugSummary } from "../systems/relationshipRepairSystem.js";
+import {
+  getStaticDebugSummary,
+  setStaticForDebug,
+  clearStaticForDebug
+} from "../systems/staticSystem.js?v=270";
 
 function requireActiveState(actionName) {
   const state = getState();
@@ -313,6 +319,69 @@ function showRelationshipRepair() {
   return summary;
 }
 
+// v0.27: The Static. Wypisuje do konsoli intensity, powody (reasons),
+// dailySignal i ostatnie 7 wpisów historii. Te dane NIGDY nie trafiają
+// do UI gracza — w grze widać tylko subtelne zdania, nigdy liczby ani
+// listę powodów.
+function showStatic() {
+  const state = requireActiveState("showStatic()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getStaticDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  console.log(`[oosDev] Static intensity: ${summary.intensity}, powody: ${summary.reasons.join(", ") || "brak"}`);
+  console.log("[oosDev] Ostatnie przeliczenie:", summary.lastCalculatedDay, "dailySignal:", summary.dailySignal);
+  console.log("[oosDev] Ostatnie 7 wpisów historii:");
+  console.table(summary.recentHistory.map((entry) => ({ ...entry, reasons: entry.reasons.join(", ") || "brak" })));
+
+  return summary;
+}
+
+// v0.27: The Static. Wymusza intensity=3 na bieżący dzień — do
+// szybkiego sprawdzenia najsilniejszych linii narracyjnych bez
+// czekania na realne przeciążenie.
+function setStaticHigh() {
+  const state = requireActiveState("setStaticHigh()");
+  if (!state) {
+    return null;
+  }
+
+  const result = setStaticForDebug(state, 3);
+  if (!result) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  saveGame(state);
+  console.log(`[oosDev] Static ustawiony na intensity=3 (dailySignal: "${result.dailySignal.text}").`);
+  return result;
+}
+
+// v0.27: The Static. Resetuje szum do zera (intensity=0, brak powodów,
+// brak dailySignal) — do sprawdzenia "cichego" stanu.
+function clearStatic() {
+  const state = requireActiveState("clearStatic()");
+  if (!state) {
+    return null;
+  }
+
+  const result = clearStaticForDebug(state);
+  if (!result) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  saveGame(state);
+  console.log("[oosDev] Static wyczyszczony (intensity=0).");
+  return result;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -325,6 +394,9 @@ if (typeof window !== "undefined") {
     showPartnerCapacity,
     showPatternPressure,
     showRelationshipScars,
-    showRelationshipRepair
+    showRelationshipRepair,
+    showStatic,
+    setStaticHigh,
+    clearStatic
   };
 }

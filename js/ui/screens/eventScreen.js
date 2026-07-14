@@ -36,12 +36,18 @@
 // Pressure i Relationship Scars. Importy dayCycle.js i
 // dayAgendaSystem.js dostały ?v=260, bo oba zmieniły WŁASNE importy w
 // dół łańcucha (eventSystem.js / eventData.js / eventWeightSystem.js).
+//
+// v0.27: The Static. Krótka linia szumu dopisywana do narracji eventu,
+// TYLKO jeśli intensity >= 2 (patrz staticSystem.js — czyste odczyty,
+// zero wpływu na dostępność kart czy tekst wyborów). Static jest
+// liczony raz dziennie w gameScreen.js — tu tylko go CZYTAMY.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=260";
 import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=260";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js";
+import { buildEventStaticLine } from "../../systems/staticSystem.js?v=270";
 import {
   createGameShell,
   createTopBar,
@@ -125,16 +131,20 @@ function replacePlaceholders(text, state) {
 // niski capacity, dopisujemy JEDNO zdanie kontekstu do narracji eventu.
 // Zero liczb, zero zmiany kart wyboru — tylko dodatkowa "temperatura"
 // tekstu, dokładnie jak w specyfikacji.
+//
+// v0.27: The Static. Linia szumu dopisywana NIEZALEŻNIE od typu eventu
+// (nie tylko relacyjnych — szum to sprawa gracza, nie partnera), TYLKO
+// jeśli intensity >= 2. Dopisywana jako ostatnia, po ewentualnej
+// notatce o partnerze.
 function buildEventNarrative(event, state) {
   const base = replacePlaceholders(event.description, state);
   const isRelationshipEvent = Array.isArray(event.agendaSlots) && event.agendaSlots.includes("relationship");
 
-  if (!isRelationshipEvent) {
-    return base;
-  }
+  const partnerNote = isRelationshipEvent ? buildPartnerCapacityNote(state) : null;
+  const staticLine = buildEventStaticLine(state, event);
 
-  const note = buildPartnerCapacityNote(state);
-  return note ? `${base} ${note}` : base;
+  const parts = [base, partnerNote, staticLine].filter(Boolean);
+  return parts.join(" ");
 }
 
 function buildPartnerCapacityNote(state) {

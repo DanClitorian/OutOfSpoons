@@ -41,15 +41,22 @@
 // reflection, notatka o gojeniu w weekly summary — dodane fragmentowym
 // patchem, nie pełną podmianą, żeby nie ryzykować rozjazdu z realnym
 // stanem tego pliku).
+//
+// v0.27: The Static. gameScreen.js / eventScreen.js / reflectionScreen.js
+// / weeklySummaryScreen.js podbite do ?v=270 — wszystkie 4 FAKTYCZNIE
+// importują teraz staticSystem.js (nowy plik) i/albo dostały nową
+// linię narracyjną. agendaScreen.js NIE zmienił się w v0.27 — zostaje
+// przy ?v=260 (nadal poprawnie wskazuje na jego aktualną, niezmienioną
+// zawartość).
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=260";
-import { renderEventScreen } from "./screens/eventScreen.js?v=260";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=260";
+import { renderGameScreen } from "./screens/gameScreen.js?v=270";
+import { renderEventScreen } from "./screens/eventScreen.js?v=270";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=270";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=260";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=270";
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=260";
 let appContainer = null;

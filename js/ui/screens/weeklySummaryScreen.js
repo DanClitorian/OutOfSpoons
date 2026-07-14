@@ -46,6 +46,7 @@ import {
 import { buildWeeklyPartnerCapacityNote } from "../../systems/partnerCapacitySystem.js";
 import { buildWeeklyRelationshipScarsNote } from "../../systems/relationshipScarsSystem.js";
 import { buildWeeklyRelationshipRepairNote } from "../../systems/relationshipRepairSystem.js";
+import { buildWeeklyStaticNote } from "../../systems/staticSystem.js?v=270";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -315,6 +316,17 @@ function buildStateCard(summary, state) {
     repairNoteEl.className = "oos-weekly-summary__mood-description";
     repairNoteEl.textContent = repairNote;
     card.appendChild(repairNoteEl);
+  }
+
+  // v0.27: The Static. Krótka wzmianka, JEŚLI w ostatnim tygodniu szum
+  // wewnętrzny osiągnął intensity >= 2 przynajmniej raz — reużywa
+  // ISTNIEJĄCEJ klasy CSS, zero nowego pliku CSS, zero listy powodów.
+  const staticNote = buildWeeklyStaticNote(state);
+  if (staticNote) {
+    const staticNoteEl = document.createElement("p");
+    staticNoteEl.className = "oos-weekly-summary__mood-description";
+    staticNoteEl.textContent = staticNote;
+    card.appendChild(staticNoteEl);
   }
 
   return card;

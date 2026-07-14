@@ -22,6 +22,7 @@ import { recordPatternFromChoice } from "../../systems/patternSystem.js";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js";
 import { buildRelationshipRepairReflection } from "../../systems/relationshipRepairSystem.js";
+import { buildReflectionStaticLine } from "../../systems/staticSystem.js?v=270";
 import { eventPool } from "../../data/eventData.js?v=260";
 import {
   createGameShell,
@@ -114,6 +115,13 @@ export function renderReflectionScreen(container, data) {
     repairText = buildRelationshipRepairReflection(state, lastEntry.relationshipRepairEffect);
   }
 
+  // v0.27: The Static. Jeśli szum wewnętrzny był dziś aktywny
+  // (intensity >= 2, przeliczony raz dziennie w gameScreen.js — tu
+  // tylko go CZYTAMY), dostajemy JEDNO krótkie zdanie do narracji.
+  // Maksymalnie jedno zdanie — nie dokłada się do ściany tekstu z
+  // Pattern Pressure/Relationship Scars/Repair.
+  const staticText = buildReflectionStaticLine(state, lastEntry);
+
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
     state,
@@ -128,7 +136,7 @@ export function renderReflectionScreen(container, data) {
   });
 
   const narrative = createNarrativeStrip(
-    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText)
+    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText)
   );
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
@@ -181,9 +189,11 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText) {
+function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText].filter(Boolean);
+  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText, staticText].filter(
+    Boolean
+  );
   return parts.join(" ");
 }
 

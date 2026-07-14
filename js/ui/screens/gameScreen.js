@@ -16,6 +16,11 @@
 // eventy naprawcze nie mają osobnego sygnału na poranku. Import
 // dayAgendaSystem.js dostał ?v=260, bo dayAgendaSystem.js zmienił
 // WŁASNE importy eventData.js/eventWeightSystem.js.
+//
+// v0.27: The Static. calculateDailyStatic(state) wołane TU, raz na
+// poranek — funkcja sama sprawdza lastCalculatedDay i nie liczy
+// ponownie przy odświeżeniu. Krótka linia dopisywana do narracji
+// porankowej TYLKO jeśli intensity >= 1.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -41,6 +46,11 @@ import {
   resolvePartnerDailyCapacity,
   getPartnerCapacityShortLabel
 } from "../../systems/partnerCapacitySystem.js";
+import {
+  ensureStaticState,
+  calculateDailyStatic,
+  buildMorningStaticLine
+} from "../../systems/staticSystem.js?v=270";
 import {
   createGameShell,
   createTopBar,
@@ -72,6 +82,20 @@ export function renderGameScreen(container) {
   const alreadyRolledToday = capacityBeforeRoll && capacityBeforeRoll.lastRolledDay === state.day;
   resolvePartnerDailyCapacity(state);
   if (!alreadyRolledToday) {
+    saveGame(state);
+  }
+
+  // v0.27: The Static. Jeden przelicz dziennie, idempotentny
+  // (calculateDailyStatic sam sprawdza lastCalculatedDay). Zapisujemy
+  // TYLKO jeśli to faktycznie pierwsze przeliczenie dzisiaj — ten sam
+  // wzorzec co przy Wielkim Teście / Partner Capacity powyżej. Static
+  // NIE zmienia spoons/trust/frustration/dostępności kart — wyłącznie
+  // narrację.
+  ensureStaticState(state);
+  const staticBeforeCalc = state.player.static;
+  const alreadyCalculatedToday = staticBeforeCalc && staticBeforeCalc.lastCalculatedDay === state.day;
+  calculateDailyStatic(state);
+  if (!alreadyCalculatedToday) {
     saveGame(state);
   }
 
@@ -134,17 +158,33 @@ export function renderGameScreen(container) {
 // SIGNAL_DEFINITIONS w partnerCapacitySystem.js) jest dostępna w
 // dailySignal.text, ale świadomie NIE jest tu użyta — priorytet ma
 // długość całego akapitu.
+//
+// v0.27: The Static. Linia szumu dopisywana jako OSTATNI element
+// (na końcu, po Wielkim Teście) — TYLKO jeśli intensity >= 1. Static
+// jest subtelny i celowo najniższy priorytet w kolejności: jeśli
+// narracja robi się zbyt długa, to on jako ostatni naturalnie "wypada"
+// z uwagi gracza, zamiast wypychać ważniejsze teasery (Partner/Wzorzec/
+// Stawka/Wielki Test), które niosą realną informację o nadchodzących
+// wydarzeniach.
 function buildMorningNarrative(state) {
   const partnerTeaser = buildPartnerCapacityTeaser(state);
   const patternTeaser = buildPatternTeaser(state);
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
   const criticalTeaser = buildCriticalEventTeaser(state);
+  const staticLine = buildMorningStaticLine(state);
 
-  if (!partnerTeaser && !patternTeaser && !weeklyTeaser && !criticalTeaser) {
+  if (!partnerTeaser && !patternTeaser && !weeklyTeaser && !criticalTeaser && !staticLine) {
     return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
   }
 
-  const parts = ["Dziś: plan dnia.", partnerTeaser, patternTeaser, weeklyTeaser, criticalTeaser].filter(Boolean);
+  const parts = [
+    "Dziś: plan dnia.",
+    partnerTeaser,
+    patternTeaser,
+    weeklyTeaser,
+    criticalTeaser,
+    staticLine
+  ].filter(Boolean);
   return parts.join(" ");
 }
 
