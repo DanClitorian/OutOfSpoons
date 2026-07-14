@@ -11,10 +11,15 @@
 // Import criticalEventSystem.js dostał ?v=250, bo criticalEventSystem.js
 // faktycznie zmienił zawartość (dodawanie blizny po porażce w Wielkim
 // Teście) — to czysty cache-bust, nie zmiana logiki tego ekranu.
+//
+// v0.26: Repair Events. Ten plik nadal funkcjonalnie się nie zmienił —
+// eventy naprawcze nie mają osobnego sygnału na poranku. Import
+// dayAgendaSystem.js dostał ?v=260, bo dayAgendaSystem.js zmienił
+// WŁASNE importy eventData.js/eventWeightSystem.js.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=230";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=260";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,

@@ -1,5 +1,6 @@
 // eventWeightSystem.js
 import { getPartnerCapacityContext } from "./partnerCapacitySystem.js";
+import { hasRepairableScars } from "./relationshipRepairSystem.js";
 
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
@@ -72,6 +73,15 @@ function computeEventWeight(event, state) {
     if (partnerCapacity.isCritical) weight += 3;
   }
   if (tags.includes("partner-needs-support") && partnerCapacity.stress >= 65) weight += 3;
+
+  // v0.26: Repair Events. Delikatne ważenie (NIE guaranteed spawn) —
+  // eventy naprawcze mają WIĘKSZĄ SZANSĘ pojawić się, kiedy istnieje
+  // przynajmniej jedna aktywna blizna do naprawienia. Bez aktywnej
+  // blizny te eventy nadal mogą wystąpić (bazowa waga = 1), tylko bez
+  // bonusu.
+  if ((tags.includes("relationship-scar") || tags.includes("repair-opportunity")) && hasRepairableScars(state)) {
+    weight += 5;
+  }
 
   return Math.max(1, weight);
 }

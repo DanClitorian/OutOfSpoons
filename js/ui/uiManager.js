@@ -30,17 +30,28 @@
 // komentarze w tych plikach), reflectionScreen.js i
 // weeklySummaryScreen.js zmieniły się FUNKCJONALNIE (sygnał blizny w
 // reflection, notatka o bliznach w weekly summary).
+//
+// v0.26: Repair Events. Wszystkie 5 importów (w tym agendaScreen.js
+// pierwszy raz) podbite do ?v=260: gameScreen.js i eventScreen.js
+// zmieniły się TYLKO cache-bustem w dół łańcucha (dayAgendaSystem.js ->
+// eventData.js/eventWeightSystem.js zmieniły się naprawdę), agendaScreen.js
+// tak samo (to WŁAŚNIE tam realnie wybierany jest event dla slotu
+// agendy, więc jego świeżość jest krytyczna), reflectionScreen.js i
+// weeklySummaryScreen.js zmieniły się FUNKCJONALNIE (sygnał naprawy w
+// reflection, notatka o gojeniu w weekly summary — dodane fragmentowym
+// patchem, nie pełną podmianą, żeby nie ryzykować rozjazdu z realnym
+// stanem tego pliku).
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=250";
-import { renderEventScreen } from "./screens/eventScreen.js?v=250";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=250";
+import { renderGameScreen } from "./screens/gameScreen.js?v=260";
+import { renderEventScreen } from "./screens/eventScreen.js?v=260";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=260";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=250";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=260";
 import { appendVersionBadge } from "./versionBadge.js";
-import { renderAgendaScreen } from "./screens/agendaScreen.js";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=260";
 let appContainer = null;
 
 const screens = {

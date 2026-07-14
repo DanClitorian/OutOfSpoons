@@ -13,6 +13,15 @@
 // ukończone) i krótki opis tonu decyzji.
 //
 // The player chooses which remaining daily agenda slot to handle next.
+//
+// v0.26: Repair Events. Ten plik NIE ZMIENIŁ SIĘ funkcjonalnie — nowe
+// eventy naprawcze i ich ważenie nie mają osobnego UI na agendzie
+// (zwykłe karty slotów). Import dayAgendaSystem.js dostał ?v=260, bo
+// dayAgendaSystem.js zmienił WŁASNE importy eventData.js/
+// eventWeightSystem.js (oba faktycznie zmieniły zawartość) — a to
+// WŁAŚNIE TEN plik (przez ensureDailyAgenda) faktycznie wybiera event
+// dla każdego slotu agendy, więc jego świeżość jest krytyczna dla
+// realnego działania ważenia eventów naprawczych, nie tylko kosmetyczna.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -22,7 +31,7 @@ import {
   getAvailableAgendaItems,
   selectAgendaItem,
   getAgendaSlotLabel
-} from "../../systems/dayAgendaSystem.js";
+} from "../../systems/dayAgendaSystem.js?v=260";
 import {
   ensureWeeklyChallengeState,
   getCurrentWeeklyChallenge,

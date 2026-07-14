@@ -29,11 +29,18 @@
 // łańcucha, żeby przeglądarka nigdy nie uruchomiła starego, cache'owanego
 // dayCycle.js wskazującego na stare eventSystem.js. Dostępność kart
 // nadal liczona jest wyłącznie na surowym choice.spoonsCost.
+//
+// v0.26: Repair Events. Ten plik CELOWO NIE importuje
+// relationshipRepairSystem.js — repair działa wyłącznie wewnątrz
+// eventSystem.js#applyChoice, PO kliknięciu, dokładnie jak Pattern
+// Pressure i Relationship Scars. Importy dayCycle.js i
+// dayAgendaSystem.js dostały ?v=260, bo oba zmieniły WŁASNE importy w
+// dół łańcucha (eventSystem.js / eventData.js / eventWeightSystem.js).
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=250";
-import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=230";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=260";
+import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=260";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js";
 import {
   createGameShell,

@@ -45,6 +45,7 @@ import {
 } from "../../systems/patternSystem.js";
 import { buildWeeklyPartnerCapacityNote } from "../../systems/partnerCapacitySystem.js";
 import { buildWeeklyRelationshipScarsNote } from "../../systems/relationshipScarsSystem.js";
+import { buildWeeklyRelationshipRepairNote } from "../../systems/relationshipRepairSystem.js";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -303,6 +304,17 @@ function buildStateCard(summary, state) {
     scarsNoteEl.className = "oos-weekly-summary__mood-description";
     scarsNoteEl.textContent = scarsNote;
     card.appendChild(scarsNoteEl);
+  }
+
+  // v0.26: Repair Events. Krótka notatka, JEŚLI w ostatnim tygodniu
+  // zadziałała naprawa blizny — znowu reużywa ISTNIEJĄCEJ klasy CSS,
+  // zero nowego pliku CSS.
+  const repairNote = buildWeeklyRelationshipRepairNote(state);
+  if (repairNote) {
+    const repairNoteEl = document.createElement("p");
+    repairNoteEl.className = "oos-weekly-summary__mood-description";
+    repairNoteEl.textContent = repairNote;
+    card.appendChild(repairNoteEl);
   }
 
   return card;

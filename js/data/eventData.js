@@ -345,6 +345,123 @@ export const eventPool = [
         resultText: "{partnerName} zostaje sam/a z tym jeszcze trochę dłużej. Nikt tego głośno nie nazywa problemem."
       }
     ]
-  }
+  },
   // CLEAN v0.23 partner-autonomy events END
+  // CLEAN v0.26 repair events START
+  // v0.26: Repair Events / Naprawianie blizn relacyjnych. Pierwsza,
+  // bardzo ograniczona możliwość pracy z bliznami z v0.25 — naprawa
+  // działa WYŁĄCZNIE przez świadomy, kosztowny wybór (repairAction) w
+  // tych konkretnych eventach (tag "repair-event"), nigdy automatycznie.
+  // weightTags "relationship-scar" / "repair-opportunity" dają im
+  // WIĘKSZĄ SZANSĘ (nie gwarancję) pojawienia się, kiedy istnieje
+  // aktywna blizna (patrz eventWeightSystem.js).
+  {
+    id: "repair_old_conversation",
+    title: "Wracając do tamtej rozmowy",
+    tags: ["relationship", "communication", "repair-event", "repair"],
+    weightTags: ["relationship-scar", "repair-opportunity"],
+    agendaSlots: ["relationship"],
+    description:
+      "Temat, który kiedyś został źle domknięty, wraca nie jako awantura, tylko jako ciche miejsce między zdaniami.",
+    choices: [
+      {
+        id: "name_what_hurt",
+        label: "Nazwać, co wtedy naprawdę zabolało",
+        spoonsCost: 2,
+        trustChange: 3,
+        frustrationChange: -1,
+        repairAction: { type: "scar-repair", strength: 1 },
+        resultText: "Nie wszystko się wyjaśnia. Ale coś przestaje udawać, że nie istnieje."
+      },
+      {
+        id: "smooth_over",
+        label: "Wygładzić temat, żeby nie bolało",
+        spoonsCost: 0,
+        trustChange: 0,
+        frustrationChange: 1,
+        resultText: "Robi się spokojniej. Nie to samo co lepiej."
+      },
+      {
+        id: "ask_for_more_time",
+        label: "Poprosić o więcej czasu",
+        spoonsCost: 1,
+        trustChange: 1,
+        frustrationChange: 0,
+        resultText: "Nie uciekasz. Ale też jeszcze nie wchodzisz do środka."
+      }
+    ]
+  },
+  {
+    id: "repair_small_proof",
+    title: "Mały dowód",
+    tags: ["relationship", "repair-event", "trust"],
+    weightTags: ["relationship-scar", "repair-opportunity"],
+    agendaSlots: ["relationship"],
+    description:
+      "Po ostatnim kryzysie wielkie deklaracje brzmią tanio. Dzisiaj liczy się coś mniejszego.",
+    choices: [
+      {
+        id: "do_the_small_thing",
+        label: "Zrobić małą rzecz, którą obiecałeś/aś",
+        spoonsCost: 2,
+        trustChange: 2,
+        frustrationChange: -1,
+        repairAction: { type: "scar-repair", strength: 1 },
+        resultText: "To nie jest wielki gest. Właśnie dlatego działa."
+      },
+      {
+        id: "explain_instead",
+        label: "Wytłumaczyć, dlaczego ostatnio było trudno",
+        spoonsCost: 1,
+        trustChange: 1,
+        frustrationChange: 0,
+        resultText: "Wyjaśnienie pomaga. Trochę. Nie zastępuje obecności."
+      },
+      {
+        id: "promise_better",
+        label: "Obiecać, że następnym razem będzie inaczej",
+        spoonsCost: 0,
+        trustChange: 0,
+        frustrationChange: 1,
+        resultText: "Słowa są lżejsze od czynów. Czasem za lekkie."
+      }
+    ]
+  },
+  {
+    id: "repair_not_normal",
+    title: "Nie wracajmy do normalności",
+    tags: ["relationship", "repair-event", "boundaries", "repair"],
+    weightTags: ["relationship-scar", "repair-opportunity"],
+    agendaSlots: ["relationship"],
+    description:
+      "{partnerName} mówi, że nie chce po prostu udawać, że wszystko wróciło do normy. To brzmi uczciwie. I niewygodnie.",
+    choices: [
+      {
+        id: "build_new_rule",
+        label: "Ustalić jedną nową zasadę na przyszłość",
+        spoonsCost: 2,
+        trustChange: 3,
+        frustrationChange: -2,
+        repairAction: { type: "scar-repair", strength: 1 },
+        resultText: "Nie naprawiacie przeszłości. Ale zmieniacie warunki, w których może się powtórzyć."
+      },
+      {
+        id: "return_to_normal",
+        label: "Spróbować wrócić do normalności",
+        spoonsCost: 0,
+        trustChange: 0,
+        frustrationChange: 2,
+        resultText: "Normalność bywa wygodną nazwą dla rzeczy, których nikt nie chce ruszać."
+      },
+      {
+        id: "admit_you_dont_know",
+        label: "Przyznać, że nie wiesz jeszcze, jak to naprawić",
+        spoonsCost: 1,
+        trustChange: 1,
+        frustrationChange: -1,
+        resultText: "To mało. Ale jest w tym mniej udawania niż zwykle."
+      }
+    ]
+  }
+  // CLEAN v0.26 repair events END
 ];

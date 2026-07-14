@@ -21,15 +21,16 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js?v=230";
+import { eventPool } from "../data/eventData.js?v=260";
 import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=230";
-import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=230";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=260";
+import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=260";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js";
+import { applyRepairFromChoice } from "./relationshipRepairSystem.js";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -121,6 +122,15 @@ export function getEventById(eventId) {
  *      modifyTrust() i do finalnych consequences w logu.
  * Pattern Pressure i Relationship Scars działają na RÓŻNYCH polach
  * (spoons vs trust) i się nie mieszają.
+ *
+ * v0.26: Repair Events. PO zastosowaniu efektywnych consequences do
+ * stanu, jeśli wybrana opcja ma metadata `repairAction` (tylko w
+ * specjalnych eventach naprawczych, tag "repair-event" — nigdy
+ * automatycznie po zwykłym dobrym wyborze), applyRepairFromChoice()
+ * obniża intensity jednej aktywnej blizny o 1. Repair NIGDY nie zmienia
+ * spoons/trust/frustration — działa wyłącznie na intensity blizny w
+ * relationshipScarsSystem.js. eventScreen.js NIE importuje tego systemu
+ * — dostępność kart jest od niego całkowicie niezależna.
  */
 export function applyChoice(state, event, choiceId) {
   const choice = event.choices.find((c) => c.id === choiceId);
@@ -158,6 +168,11 @@ export function applyChoice(state, event, choiceId) {
   const fatigueDebt = addFatigueDebt(state, missingSpoons);
   modifyTrust(state, partnerId, effectiveTrustChange);
   modifyFrustration(state, partnerId, choice.frustrationChange);
+
+  // Krok 5: Relationship Repair — TYLKO jeśli choice ma repairAction.
+  // Nie zmienia spoons/trust/frustration, działa wyłącznie na intensity
+  // blizny (patrz relationshipRepairSystem.js).
+  const repairResult = applyRepairFromChoice(state, event, choice);
 
   const resultText = choice.resultText.replace(/\{partnerName\}/g, state.partner.name);
 
@@ -197,6 +212,18 @@ export function applyChoice(state, event, choiceId) {
           scarId: scarResult.scarId,
           trustDelta: scarResult.trustDelta,
           note: scarResult.note
+        }
+      : { applied: false },
+    // v0.26: Repair Events. Tak samo — tylko do wewnętrznego użytku
+    // (reflectionScreen.js). UI nigdy nie pokazuje intensity jako liczby.
+    relationshipRepairEffect: repairResult.applied
+      ? {
+          applied: true,
+          scarId: repairResult.scarId,
+          resolved: repairResult.resolved,
+          intensityBefore: repairResult.intensityBefore,
+          intensityAfter: repairResult.intensityAfter,
+          note: repairResult.note
         }
       : { applied: false }
   });

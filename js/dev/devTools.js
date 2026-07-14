@@ -6,13 +6,15 @@
 // (setPartnerCapacityLow/High, showPartnerCapacity).
 // v0.24: Pattern Pressure — dodany helper showPatternPressure().
 // v0.25: Relationship Scars — dodany helper showRelationshipScars().
-// Żadna z istniejących funkcji (jumpToDay, jumpToCriticalDueDay,
+// v0.26: Repair Events — dodany helper showRelationshipRepair(). Żadna
+// z istniejących funkcji (jumpToDay, jumpToCriticalDueDay,
 // forceCriticalEventDue, showStateSummary, setPartnerCapacityLow/High,
-// showPartnerCapacity, showPatternPressure) NIE została zmieniona.
+// showPartnerCapacity, showPatternPressure, showRelationshipScars) NIE
+// została zmieniona.
 //
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
-// Partner Capacity / Pattern Pressure / Relationship Scars bez ręcznego
-// przeklikiwania wielu dni. Ten moduł:
+// Partner Capacity / Pattern Pressure / Relationship Scars / Repair
+// Events bez ręcznego przeklikiwania wielu dni. Ten moduł:
 //   - NIE renderuje żadnego UI,
 //   - NIE wywołuje się sam z siebie podczas normalnej gry,
 //   - wystawia funkcje WYŁĄCZNIE pod window.oosDev.
@@ -23,7 +25,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=250";
+import { showScreen } from "../ui/uiManager.js?v=260";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=250";
 import {
@@ -33,6 +35,7 @@ import {
 } from "../systems/partnerCapacitySystem.js";
 import { getPatternPressureDebugSummary } from "../systems/patternPressureSystem.js";
 import { getRelationshipScarsDebugSummary } from "../systems/relationshipScarsSystem.js";
+import { getRelationshipRepairDebugSummary } from "../systems/relationshipRepairSystem.js";
 
 function requireActiveState(actionName) {
   const state = getState();
@@ -280,6 +283,36 @@ function showRelationshipScars() {
   return summary;
 }
 
+// v0.26: Repair Events. Wypisuje do konsoli historię naprawy blizn,
+// aktualne resolved scars i ostatni repair effect. Te dane NIGDY nie
+// trafiają do UI gracza.
+function showRelationshipRepair() {
+  const state = requireActiveState("showRelationshipRepair()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getRelationshipRepairDebugSummary(state);
+
+  if (summary.history.length === 0) {
+    console.log("[oosDev] Brak historii naprawy blizn relacyjnych.");
+  } else {
+    console.log("[oosDev] Historia naprawy blizn:");
+    console.table(summary.history);
+  }
+
+  if (summary.resolvedScars.length === 0) {
+    console.log("[oosDev] Brak w pełni naprawionych blizn.");
+  } else {
+    console.log("[oosDev] Naprawione blizny:");
+    console.table(summary.resolvedScars);
+  }
+
+  console.log("[oosDev] Ostatni repair effect:", summary.lastRepairEffect || "brak");
+
+  return summary;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -291,6 +324,7 @@ if (typeof window !== "undefined") {
     setPartnerCapacityHigh,
     showPartnerCapacity,
     showPatternPressure,
-    showRelationshipScars
+    showRelationshipScars,
+    showRelationshipRepair
   };
 }

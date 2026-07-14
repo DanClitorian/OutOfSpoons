@@ -17,11 +17,12 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=260";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js";
-import { eventPool } from "../../data/eventData.js";
+import { buildRelationshipRepairReflection } from "../../systems/relationshipRepairSystem.js";
+import { eventPool } from "../../data/eventData.js?v=260";
 import {
   createGameShell,
   createTopBar,
@@ -101,6 +102,18 @@ export function renderReflectionScreen(container, data) {
     scarText = buildRelationshipScarReflection(state, lastEntry.relationshipScarEffect);
   }
 
+  // v0.26: Repair Events. Jeśli TA decyzja była świadomym wyborem
+  // naprawczym (repairAction), który faktycznie obniżył intensity
+  // aktywnej blizny (patrz eventSystem.js#applyChoice), dostajemy jedno
+  // krótkie, subtelne zdanie do narracji — dopiero TU, po fakcie.
+  // buildRelationshipRepairReflection() zwraca null, jeśli naprawa nie
+  // zadziałała (zwykły przypadek — repairAction jest dostępny tylko w
+  // specjalnych eventach naprawczych).
+  let repairText = null;
+  if (lastEntry && lastEntry.relationshipRepairEffect) {
+    repairText = buildRelationshipRepairReflection(state, lastEntry.relationshipRepairEffect);
+  }
+
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
     state,
@@ -115,7 +128,7 @@ export function renderReflectionScreen(container, data) {
   });
 
   const narrative = createNarrativeStrip(
-    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText)
+    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText)
   );
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
@@ -168,9 +181,9 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText) {
+function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [resultText, interpretation, patternEcho, pressureText, scarText].filter(Boolean);
+  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText].filter(Boolean);
   return parts.join(" ");
 }
 
