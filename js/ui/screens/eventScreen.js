@@ -20,10 +20,19 @@
 // choice availability by spoons (blokowanie zbyt drogich wyborów,
 // forced cheapest choice) NADAL działa dokładnie tak samo — zmienia się
 // tylko to, co widać, nie logika dostępności ani mechanika konsekwencji.
+//
+// v0.24/v0.25: Pattern Pressure i Relationship Scars działają WYŁĄCZNIE
+// wewnątrz eventSystem.js#applyChoice, PO kliknięciu — ten plik
+// funkcjonalnie się nie zmienił od v0.23. Import dayCycle.js dostał
+// ?v=250 w v0.25, bo dayCycle.js zmienił WŁASNY import eventSystem.js
+// (które faktycznie zmieniło zawartość) — to czysty cache-bust w dół
+// łańcucha, żeby przeglądarka nigdy nie uruchomiła starego, cache'owanego
+// dayCycle.js wskazującego na stare eventSystem.js. Dostępność kart
+// nadal liczona jest wyłącznie na surowym choice.spoonsCost.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=250";
 import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=230";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js";
 import {

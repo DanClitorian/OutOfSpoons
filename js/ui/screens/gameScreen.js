@@ -4,6 +4,13 @@
 // v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
 // system .oos-* (patrz js/ui/oosLayout.js). Żadnej zależności od
 // starych klas .vn-*.
+//
+// v0.25: Relationship Scars. Ten plik funkcjonalnie się nie zmienił —
+// blizny relacyjne nie mają jeszcze osobnego sygnału na poranku w
+// v0.25 (tylko reflection + weekly summary, zgodnie ze specyfikacją).
+// Import criticalEventSystem.js dostał ?v=250, bo criticalEventSystem.js
+// faktycznie zmienił zawartość (dodawanie blizny po porażce w Wielkim
+// Teście) — to czysty cache-bust, nie zmiana logiki tego ekranu.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -19,7 +26,7 @@ import {
   generateNextCriticalEvent,
   getCurrentCriticalEvent,
   getCriticalEventCountdown
-} from "../../systems/criticalEventSystem.js";
+} from "../../systems/criticalEventSystem.js?v=250";
 import {
   ensurePatternState,
   getLatestPatternEcho

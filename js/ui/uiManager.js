@@ -23,15 +23,22 @@
 // zostaje przy ?v=230, bo to nadal poprawnie wskazuje na jego
 // aktualną, niezmienioną zawartość). gameScreen.js i
 // weeklySummaryScreen.js też się nie zmieniły — zostają przy ?v=230.
+//
+// v0.25: Relationship Scars. Wszystkie 4 importy podbite do ?v=250:
+// gameScreen.js i eventScreen.js zmieniły się TYLKO cache-bustem
+// (import criticalEventSystem.js / dayCycle.js w dół łańcucha — patrz
+// komentarze w tych plikach), reflectionScreen.js i
+// weeklySummaryScreen.js zmieniły się FUNKCJONALNIE (sygnał blizny w
+// reflection, notatka o bliznach w weekly summary).
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=230";
-import { renderEventScreen } from "./screens/eventScreen.js?v=230";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=240";
+import { renderGameScreen } from "./screens/gameScreen.js?v=250";
+import { renderEventScreen } from "./screens/eventScreen.js?v=250";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=250";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=230";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=250";
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js";
 let appContainer = null;

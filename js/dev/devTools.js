@@ -4,14 +4,15 @@
 // v0.20.2/v0.20.3: null-state guard + cache-busted import.
 // v0.23: Partner Capacity Foundation — dodane 3 helpery testowe
 // (setPartnerCapacityLow/High, showPartnerCapacity).
-// v0.24: Pattern Pressure — dodany helper showPatternPressure(). Żadna
-// z istniejących funkcji (jumpToDay, jumpToCriticalDueDay,
+// v0.24: Pattern Pressure — dodany helper showPatternPressure().
+// v0.25: Relationship Scars — dodany helper showRelationshipScars().
+// Żadna z istniejących funkcji (jumpToDay, jumpToCriticalDueDay,
 // forceCriticalEventDue, showStateSummary, setPartnerCapacityLow/High,
-// showPartnerCapacity) NIE została zmieniona.
+// showPartnerCapacity, showPatternPressure) NIE została zmieniona.
 //
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
-// Partner Capacity / Pattern Pressure bez ręcznego przeklikiwania wielu
-// dni. Ten moduł:
+// Partner Capacity / Pattern Pressure / Relationship Scars bez ręcznego
+// przeklikiwania wielu dni. Ten moduł:
 //   - NIE renderuje żadnego UI,
 //   - NIE wywołuje się sam z siebie podczas normalnej gry,
 //   - wystawia funkcje WYŁĄCZNIE pod window.oosDev.
@@ -22,15 +23,16 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=240";
+import { showScreen } from "../ui/uiManager.js?v=250";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
-import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js";
+import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=250";
 import {
   ensurePartnerCapacityState,
   getPartnerCapacity,
   refreshPartnerCapacityMood
 } from "../systems/partnerCapacitySystem.js";
 import { getPatternPressureDebugSummary } from "../systems/patternPressureSystem.js";
+import { getRelationshipScarsDebugSummary } from "../systems/relationshipScarsSystem.js";
 
 function requireActiveState(actionName) {
   const state = getState();
@@ -258,6 +260,26 @@ function showPatternPressure() {
   return summary;
 }
 
+// v0.25: Relationship Scars. Wypisuje do konsoli aktywne blizny
+// relacyjne — id, tytuł, intensity, createdDay, sourceEventId. Te dane
+// NIGDY nie trafiają do UI gracza.
+function showRelationshipScars() {
+  const state = requireActiveState("showRelationshipScars()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getRelationshipScarsDebugSummary(state);
+
+  if (summary.length === 0) {
+    console.log("[oosDev] Brak aktywnych blizn relacyjnych.");
+    return summary;
+  }
+
+  console.table(summary);
+  return summary;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -268,6 +290,7 @@ if (typeof window !== "undefined") {
     setPartnerCapacityLow,
     setPartnerCapacityHigh,
     showPartnerCapacity,
-    showPatternPressure
+    showPatternPressure,
+    showRelationshipScars
   };
 }

@@ -20,6 +20,7 @@ import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js";
+import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js";
 import { eventPool } from "../../data/eventData.js";
 import {
   createGameShell,
@@ -89,6 +90,17 @@ export function renderReflectionScreen(container, data) {
     );
   }
 
+  // v0.25: Relationship Scars. Jeśli TA decyzja miała pomniejszony
+  // zysk zaufania przez aktywną bliznę relacyjną (patrz
+  // eventSystem.js#applyChoice), dostajemy jedno krótkie, subtelne
+  // zdanie do narracji — dopiero TU, po fakcie, nigdy przed wyborem.
+  // buildRelationshipScarReflection() zwraca null, jeśli blizna nie
+  // zadziałała (zwykły przypadek).
+  let scarText = null;
+  if (lastEntry && lastEntry.relationshipScarEffect) {
+    scarText = buildRelationshipScarReflection(state, lastEntry.relationshipScarEffect);
+  }
+
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
     state,
@@ -102,7 +114,9 @@ export function renderReflectionScreen(container, data) {
     title: "Skutek decyzji"
   });
 
-  const narrative = createNarrativeStrip(buildNarrativeText(resultText, consequences, patternEcho, pressureText));
+  const narrative = createNarrativeStrip(
+    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText)
+  );
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
@@ -154,9 +168,9 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho, pressureText) {
+function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [resultText, interpretation, patternEcho, pressureText].filter(Boolean);
+  const parts = [resultText, interpretation, patternEcho, pressureText, scarText].filter(Boolean);
   return parts.join(" ");
 }
 

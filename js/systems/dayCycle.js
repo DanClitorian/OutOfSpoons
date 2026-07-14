@@ -10,12 +10,16 @@
 // applyChoice, działająca WYŁĄCZNIE po kliknięciu), więc przeglądarka
 // nie może dalej używać starej, cache'owanej wersji. Sama logika
 // dayCycle.js jest NIETKNIĘTA, to wyłącznie cache-busting.
+//
+// v0.25: Relationship Scars. eventSystem.js znowu zmienił zawartość
+// (integracja blizn relacyjnych w applyChoice) — import podbity do
+// ?v=250. Sama logika dayCycle.js nadal NIETKNIĘTA.
 
 import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
 import { regenerateSpoons } from "./spoonsSystem.js";
 import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=240";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=250";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 

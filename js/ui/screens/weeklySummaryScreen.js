@@ -36,7 +36,7 @@ import {
   evaluateCriticalEvent,
   generateNextCriticalEvent,
   buildCriticalEventSummary
-} from "../../systems/criticalEventSystem.js";
+} from "../../systems/criticalEventSystem.js?v=250";
 import {
   ensurePatternState,
   recordPatternFromWeeklyResult,
@@ -44,6 +44,7 @@ import {
   getWeeklyPatternEchoes
 } from "../../systems/patternSystem.js";
 import { buildWeeklyPartnerCapacityNote } from "../../systems/partnerCapacitySystem.js";
+import { buildWeeklyRelationshipScarsNote } from "../../systems/relationshipScarsSystem.js";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -291,6 +292,17 @@ function buildStateCard(summary, state) {
     partnerNoteEl.className = "oos-weekly-summary__mood-description";
     partnerNoteEl.textContent = partnerNote;
     card.appendChild(partnerNoteEl);
+  }
+
+  // v0.25: Relationship Scars. Krótka, naturalna wzmianka o aktywnych
+  // bliznach relacyjnych (max 2 tytuły) — znowu reużywa ISTNIEJĄCEJ
+  // klasy CSS, zero nowego pliku CSS, zero tabeli/listy.
+  const scarsNote = buildWeeklyRelationshipScarsNote(state);
+  if (scarsNote) {
+    const scarsNoteEl = document.createElement("p");
+    scarsNoteEl.className = "oos-weekly-summary__mood-description";
+    scarsNoteEl.textContent = scarsNote;
+    card.appendChild(scarsNoteEl);
   }
 
   return card;

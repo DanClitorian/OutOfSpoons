@@ -15,9 +15,18 @@
 //   Critical Events:  zmiana trust / frustration / current spoons
 //                      (BEZ max spoons — to zastrzeżone dla Weekly Stakes)
 //
+// v0.25: Relationship Scars. Porażka w Wielkim Teście może dodatkowo
+// zostawić trwały ślad w relacji — patrz applyScarFromCriticalResult()
+// wołane wewnątrz evaluateCriticalEvent() PO ustaleniu porażki, PRZED
+// zapisaniem lastResult. Idempotencja evaluateCriticalEvent() (guard
+// na lastEvaluatedDueDay) automatycznie chroni też dodanie blizny —
+// cały ten blok kodu wykonuje się dokładnie raz na dueDay.
+//
 // Ten moduł NIE renderuje UI — tylko zarządza stanem w
 // state.criticalEvent. Ekrany (weeklySummaryScreen.js, gameScreen.js)
 // czytają z niego dane do wyświetlenia.
+
+import { applyScarFromCriticalResult } from "./relationshipScarsSystem.js";
 
 // --------------------------------------------------------------------
 // Pula Wielkich Testów
@@ -244,6 +253,13 @@ export function evaluateCriticalEvent(state) {
     text: success ? event.successText : event.failureText,
     effect
   };
+
+  // v0.25: Relationship Scars. TYLKO po porażce (applyScarFromCriticalResult
+  // sama sprawdza criticalResult.success i wychodzi wcześnie przy
+  // sukcesie). Zapisuje ewentualne scarId wprost na obiekcie `result`,
+  // który za chwilę trafia do criticalState.lastResult — to jest
+  // jednocześnie mechanizm idempotencji (patrz relationshipScarsSystem.js).
+  applyScarFromCriticalResult(state, result);
 
   criticalState.lastResult = result;
   criticalState.history.push(result);

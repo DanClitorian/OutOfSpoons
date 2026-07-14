@@ -29,6 +29,7 @@ import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 import { getWeightedEventForDay } from "./eventWeightSystem.js?v=230";
 import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=230";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js";
+import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -101,16 +102,25 @@ export function getEventById(eventId) {
  * skutki wyboru wprost, bez zgadywania z resultText. Zwraca wybraną
  * opcję (przydatne do wyświetlenia rezultatu na ekranie refleksji).
  *
- * v0.24: Pattern Pressure. Dopiero TUTAJ, PO tym jak gracz już kliknął
- * kartę, realny koszt wyboru jest przepuszczany przez
+ * v0.24: Pattern Pressure. Realny koszt wyboru jest przepuszczany przez
  * applyPatternPressureToChoice() — jeśli gracz ma aktywny wzorzec
- * pasujący do tej decyzji, koszt spada o 1 (łatwiej wracać do znanej
- * reakcji); jeśli wybór jest wyraźnym przeciwieństwem aktywnego
- * wzorca, koszt rośnie o 1 (trudniej zejść z utartej ścieżki).
- * eventScreen.js NIE wie nic o tej funkcji — dostępność kart przed
- * kliknięciem liczona jest tam wyłącznie na surowym
- * choice.spoonsCost, więc Pattern Pressure nigdy nie zmienia, która
- * karta jest klikalna.
+ * pasujący do tej decyzji, koszt spada o 1; jeśli wybór jest wyraźnym
+ * przeciwieństwem aktywnego wzorca, koszt rośnie o 1. eventScreen.js
+ * NIE wie nic o tej funkcji — dostępność kart liczona jest tam
+ * wyłącznie na surowym choice.spoonsCost.
+ *
+ * v0.25: Relationship Scars. Dokładnie w tej kolejności:
+ *   1. Pattern Pressure modyfikuje spoonsCost (bez zmian wobec v0.24).
+ *   2. Budujemy BAZOWE consequences (spoonsChange z efektywnego kosztu,
+ *      trustChange/frustrationChange wprost z choice).
+ *   3. Relationship Scars dostaje te bazowe consequences i, jeśli
+ *      aktywna blizna tematycznie pasuje, zwraca pomniejszony
+ *      (efektywny) trustChange — nigdy nie dotyka spoons ani
+ *      frustration, nigdy nie blokuje wyboru.
+ *   4. Efektywny trust (nie surowy choice.trustChange) trafia do
+ *      modifyTrust() i do finalnych consequences w logu.
+ * Pattern Pressure i Relationship Scars działają na RÓŻNYCH polach
+ * (spoons vs trust) i się nie mieszają.
  */
 export function applyChoice(state, event, choiceId) {
   const choice = event.choices.find((c) => c.id === choiceId);
@@ -125,27 +135,41 @@ export function applyChoice(state, event, choiceId) {
 
   ensureFatigueState(state);
 
+  // Krok 1: Pattern Pressure na spoonsCost.
   const pressureResult = applyPatternPressureToChoice(state, event, choice);
   const effectiveSpoonsCost = pressureResult.spoonsCost;
 
+  // Krok 2: bazowe consequences, PRZED Relationship Scars.
+  const baseConsequences = {
+    spoonsChange: -effectiveSpoonsCost,
+    trustChange: choice.trustChange,
+    frustrationChange: choice.frustrationChange
+  };
+
+  // Krok 3: Relationship Scars na trustChange (tylko trust, nigdy spoons/frustration).
+  const scarResult = applyRelationshipScarsToChoice(state, event, choice, baseConsequences);
+  const effectiveTrustChange = scarResult.applied ? scarResult.effectiveTrustChange : choice.trustChange;
+
+  // Krok 4: zastosuj efektywne wartości do stanu.
   const currentSpoonsBeforeChoice = state.resources.spoons.current;
   const missingSpoons = Math.max(0, effectiveSpoonsCost - currentSpoonsBeforeChoice);
 
   modifySpoons(state, -effectiveSpoonsCost);
   const fatigueDebt = addFatigueDebt(state, missingSpoons);
-  modifyTrust(state, partnerId, choice.trustChange);
+  modifyTrust(state, partnerId, effectiveTrustChange);
   modifyFrustration(state, partnerId, choice.frustrationChange);
 
   const resultText = choice.resultText.replace(/\{partnerName\}/g, state.partner.name);
 
   // v0.5: spoonsChange to zawsze liczba ujemna (albo zero) — koszt
   // wyboru odejmowany od zasobów gracza, zapisany wprost, żeby UI nie
-  // musiało go samo przeliczać z choice.spoonsCost. v0.24: to jest
-  // EFEKTYWNY koszt (po presji wzorców), nie surowy choice.spoonsCost —
-  // reflection ma pokazywać to, co faktycznie się stało.
+  // musiało go samo przeliczać z choice.spoonsCost. v0.24/v0.25: to są
+  // EFEKTYWNE wartości (po presji wzorców i bliznach relacyjnych), nie
+  // surowe wartości z choice — reflection ma pokazywać to, co faktycznie
+  // się stało.
   const consequences = {
     spoonsChange: -effectiveSpoonsCost,
-    trustChange: choice.trustChange,
+    trustChange: effectiveTrustChange,
     frustrationChange: choice.frustrationChange,
     fatigueChange: fatigueDebt
   };
@@ -163,7 +187,18 @@ export function applyChoice(state, event, choiceId) {
       applied: pressureResult.applied,
       alignedPatternId: pressureResult.alignedPatternId,
       opposedPatternId: pressureResult.opposedPatternId
-    }
+    },
+    // v0.25: Relationship Scars. Tak samo — tylko do wewnętrznego
+    // użytku (reflectionScreen.js). UI nigdy nie pokazuje trustDelta
+    // jako liczby.
+    relationshipScarEffect: scarResult.applied
+      ? {
+          applied: true,
+          scarId: scarResult.scarId,
+          trustDelta: scarResult.trustDelta,
+          note: scarResult.note
+        }
+      : { applied: false }
   });
 
   completeCurrentAgendaItem(state);
