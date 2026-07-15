@@ -37,6 +37,14 @@
 // "Stawka dnia: ..." dopisywana do narracji porankowej jako PIERWSZY
 // element (zaraz po "Dziś: plan dnia.") — Daily Stakes NIE zmienia
 // spoons/trust/frustration/losowania eventów, wyłącznie framing.
+//
+// v0.33: Masking Debt. resolveMorningMaskingDebt(state) wołane TU,
+// PRZED Static (Static ma czytać już obniżone spoons, jeśli rachunek
+// zaszedł tego ranka) — jeden idempotentny wzorzec co reszta powyżej.
+// W PRZECIWIEŃSTWIE do Daily Stakes/Static/Metamour/Work, Masking
+// Debt FAKTYCZNIE zmienia spoons (odejmuje 1-2, nigdy poniżej 0) —
+// ale to NIE jest reset ani regeneracja, tylko koszt wynikający z
+// wczorajszych decyzji, doliczany do już-persystentnych spoons.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -62,6 +70,11 @@ import {
   resolvePartnerDailyCapacity,
   getPartnerCapacityShortLabel
 } from "../../systems/partnerCapacitySystem.js?v=300";
+import {
+  ensureMaskingDebtState,
+  resolveMorningMaskingDebt,
+  buildMorningMaskingDebtLine
+} from "../../systems/maskingDebtSystem.js?v=330";
 import {
   ensureStaticState,
   calculateDailyStatic,
@@ -101,6 +114,22 @@ export function renderGameScreen(container) {
   const alreadyRolledToday = capacityBeforeRoll && capacityBeforeRoll.lastRolledDay === state.day;
   resolvePartnerDailyCapacity(state);
   if (!alreadyRolledToday) {
+    saveGame(state);
+  }
+
+  // v0.33: Masking Debt. Jedno rozliczenie dziennie, idempotentne
+  // (resolveMorningMaskingDebt sam sprawdza lastMorningResolvedDay).
+  // Zapisujemy TYLKO jeśli to faktycznie pierwsze rozliczenie dzisiaj.
+  // W PRZECIWIEŃSTWIE do reszty systemów tutaj — to NIE jest czysty
+  // odczyt: jeśli dług >= 3, ta funkcja FAKTYCZNIE odejmuje 1-2 spoons
+  // (nigdy poniżej 0). To celowo dzieje się PRZED Static, żeby Static
+  // widział już obniżone spoons tego ranka.
+  ensureMaskingDebtState(state);
+  const maskingDebtBeforeResolve = state.player.maskingDebt;
+  const alreadyResolvedMaskingDebtToday =
+    maskingDebtBeforeResolve && maskingDebtBeforeResolve.lastMorningResolvedDay === state.day;
+  resolveMorningMaskingDebt(state);
+  if (!alreadyResolvedMaskingDebtToday) {
     saveGame(state);
   }
 
@@ -224,8 +253,16 @@ export function renderGameScreen(container) {
 // gracz zobaczy cokolwiek innego. Zawsze coś zwraca (poza brakiem
 // gracza w stanie), więc dopisana jest bezwarunkowo do warunku "czy
 // pokazać krótką formę narracji" ponizej.
+//
+// v0.33: Masking Debt. Linia rachunku za maskowanie dopisywana zaraz
+// PO Stawce dnia, PRZED Partnerem — dokładnie w kolejności z ticketu:
+// "Dziś: plan dnia." / Daily Stakes / Masking Debt / Partner Capacity
+// / Pattern / Weekly Stake / Wielki Test / Static / Metamour / Work.
+// Zwraca null w większości poranków (dług < 3 nie generuje kary), więc
+// zwykle nic się nie zmienia w długości akapitu.
 function buildMorningNarrative(state) {
   const stakesLine = buildMorningStakesLine(state);
+  const maskingDebtLine = buildMorningMaskingDebtLine(state);
   const partnerTeaser = buildPartnerCapacityTeaser(state);
   const patternTeaser = buildPatternTeaser(state);
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
@@ -234,13 +271,22 @@ function buildMorningNarrative(state) {
   const metamourLine = buildMorningMetamourLine(state);
   const workLine = buildMorningWorkLine(state);
 
-  if (!stakesLine && !partnerTeaser && !patternTeaser && !weeklyTeaser && !criticalTeaser && !staticLine) {
+  if (
+    !stakesLine &&
+    !maskingDebtLine &&
+    !partnerTeaser &&
+    !patternTeaser &&
+    !weeklyTeaser &&
+    !criticalTeaser &&
+    !staticLine
+  ) {
     return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
   }
 
   const parts = [
     "Dziś: plan dnia.",
     stakesLine,
+    maskingDebtLine,
     partnerTeaser,
     patternTeaser,
     weeklyTeaser,

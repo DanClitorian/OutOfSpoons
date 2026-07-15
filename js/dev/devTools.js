@@ -32,6 +32,12 @@
 // zmienione ekrany dostały nowe query stringi). Żadna z istniejących
 // funkcji NIE została zmieniona.
 //
+// v0.33: Masking Debt — dodane 3 helpery testowe (showMaskingDebt,
+// setMaskingDebtHigh, clearMaskingDebt). Import uiManager.js podbity
+// do ?v=330 (uiManager.js znowu zmienił zawartość — 3 zmienione
+// ekrany dostały nowe query stringi). Żadna z istniejących funkcji NIE
+// została zmieniona.
+//
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
 // Partner Capacity / Pattern Pressure / Relationship Scars / Repair
 // Events / The Static bez ręcznego przeklikiwania wielu dni. Ten moduł:
@@ -45,7 +51,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=320";
+import { showScreen } from "../ui/uiManager.js?v=330";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -66,6 +72,10 @@ import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHi
 import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=300";
 import { getMonthlyLoopDebugSummary, forceMonthSummaryPending } from "../systems/monthlyLoopSystem.js?v=305";
 import { ensureDailyStakesState, calculateDailyStakes, getDailyStakesDebugSummary } from "../systems/dailyStakesSystem.js?v=320";
+import {
+  ensureMaskingDebtState,
+  getMaskingDebtDebugSummary
+} from "../systems/maskingDebtSystem.js?v=330";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -601,6 +611,73 @@ function recalculateDailyStakes() {
   return result;
 }
 
+// v0.33: Masking Debt. Wypisuje do konsoli current, ostatnie dni,
+// ostatni efekt poranny i ostatnie 7 wpisów historii. Te dane NIGDY
+// nie trafiają do UI gracza.
+function showMaskingDebt() {
+  const state = requireActiveState("showMaskingDebt()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getMaskingDebtDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  console.log(`[oosDev] Masking Debt: current=${summary.current}, lastAppliedDay=${summary.lastAppliedDay}`);
+  console.log(`[oosDev] lastMorningResolvedDay=${summary.lastMorningResolvedDay}`, "lastMorningEffect:", summary.lastMorningEffect);
+  console.log("[oosDev] Ostatnie 7 wpisów historii:");
+  console.table(summary.recentHistory);
+
+  return summary;
+}
+
+// v0.33: Masking Debt. Ustawia current na 5 (próg "heavy" dla
+// najbliższego porannego rozliczenia) — do szybkiego sprawdzenia
+// najsilniejszego efektu bez czekania na realne nagromadzenie długu.
+function setMaskingDebtHigh() {
+  const state = requireActiveState("setMaskingDebtHigh()");
+  if (!state) {
+    return null;
+  }
+
+  const debtState = ensureMaskingDebtState(state);
+  if (!debtState) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  debtState.current = 5;
+  saveGame(state);
+
+  console.log("[oosDev] Masking Debt ustawiony na current=5.");
+  return getMaskingDebtDebugSummary(state);
+}
+
+// v0.33: Masking Debt. Resetuje dług do zera i czyści lastMorningEffect
+// — do sprawdzenia "cichego" stanu.
+function clearMaskingDebt() {
+  const state = requireActiveState("clearMaskingDebt()");
+  if (!state) {
+    return null;
+  }
+
+  const debtState = ensureMaskingDebtState(state);
+  if (!debtState) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  debtState.current = 0;
+  debtState.lastMorningEffect = null;
+  saveGame(state);
+
+  console.log("[oosDev] Masking Debt wyczyszczony (current=0).");
+  return getMaskingDebtDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -627,6 +704,9 @@ if (typeof window !== "undefined") {
     forceMonthSummary,
     showMonthSummaryScreen,
     showDailyStakes,
-    recalculateDailyStakes
+    recalculateDailyStakes,
+    showMaskingDebt,
+    setMaskingDebtHigh,
+    clearMaskingDebt
   };
 }

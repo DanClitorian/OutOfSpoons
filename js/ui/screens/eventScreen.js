@@ -46,10 +46,18 @@
 // oba zmieniły WŁASNE importy w dół łańcucha (eventSystem.js /
 // eventData.js — 9 nowych eventów) — importy podbite do ?v=310. Ten
 // plik funkcjonalnie się nie zmienił.
+//
+// v0.33: Masking Debt. Ten plik CELOWO NIE importuje
+// maskingDebtSystem.js — dług maskowania działa wyłącznie wewnątrz
+// eventSystem.js#applyChoice, PO kliknięciu, i boli dopiero rano w
+// gameScreen.js, nigdy na tym ekranie. Import dayCycle.js dostał
+// ?v=330, bo dayCycle.js zmienił WŁASNY import eventSystem.js (które
+// faktycznie zmieniło zawartość) — to czysty cache-bust w dół
+// łańcucha, nie zmiana logiki tego ekranu.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=310";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=330";
 import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=310";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js?v=300";
 import { buildEventStaticLine } from "../../systems/staticSystem.js?v=300";

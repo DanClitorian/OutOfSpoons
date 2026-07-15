@@ -22,12 +22,18 @@
 // v0.31: Content Expansion Pack 1. eventSystem.js i dayAgendaSystem.js
 // oba zmieniły WŁASNE importy eventData.js (9 nowych eventów) — importy
 // podbite do ?v=310. Sama logika dayCycle.js nadal NIETKNIĘTA.
+//
+// v0.33: Masking Debt. eventSystem.js znowu zmienił zawartość
+// (integracja długu maskowania w applyChoice, działająca WYŁĄCZNIE po
+// kliknięciu, dokładnie jak Pattern Pressure/Scars/Repair/Metamour/
+// Work) — import podbity do ?v=330. Sama logika dayCycle.js nadal
+// NIETKNIĘTA.
 
 import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
 import { regenerateSpoons } from "./spoonsSystem.js";
 import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=310";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=330";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 

@@ -33,6 +33,7 @@ import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js?v=3
 import { applyRepairFromChoice } from "./relationshipRepairSystem.js?v=300";
 import { applyMetamourEffectFromChoice, formatWithMetamourPlaceholders } from "./metamourSystem.js?v=300";
 import { applyWorkEffectFromChoice } from "./workPressureSystem.js?v=300";
+import { applyMaskingDebtFromChoice } from "./maskingDebtSystem.js?v=330";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -182,6 +183,13 @@ export function applyChoice(state, event, choiceId) {
   // v0.29: Work Pressure — wpływa wyłącznie na state.player.work.
   const workResult = applyWorkEffectFromChoice(state, event, choice);
 
+  // v0.33: Masking Debt. NIE zmienia spoons/trust/frustration teraz —
+  // tylko zwiększa state.player.maskingDebt.current (max 6), jeśli
+  // wybór wygląda jak maskowanie (patrz maskingDebtSystem.js#
+  // detectMaskingChoice, celowo ostrożne wykrywanie). Koszt przychodzi
+  // dopiero rano, przez resolveMorningMaskingDebt() w gameScreen.js.
+  const maskingDebtResult = applyMaskingDebtFromChoice(state, event, choice);
+
   const resultText = formatWithMetamourPlaceholders(choice.resultText, state);
 
   // v0.5: spoonsChange to zawsze liczba ujemna (albo zero) — koszt
@@ -254,6 +262,16 @@ export function applyChoice(state, event, choiceId) {
           pressureAfter: workResult.pressureAfter,
           stabilityAfter: workResult.stabilityAfter,
           burnoutAfter: workResult.burnoutAfter
+        }
+      : { applied: false },
+    // v0.33: Masking Debt. Tylko do logu/devTools/reflection — UI nie
+    // pokazuje liczb ani "masking debt +1". Dług boli dopiero rano.
+    maskingDebtEffect: maskingDebtResult.applied
+      ? {
+          applied: true,
+          amount: maskingDebtResult.amount,
+          currentAfter: maskingDebtResult.currentAfter,
+          text: maskingDebtResult.text
         }
       : { applied: false }
   });

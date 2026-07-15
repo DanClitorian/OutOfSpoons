@@ -42,6 +42,7 @@ import {
 import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=300";
 import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=300";
 import { buildReflectionStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
+import { buildReflectionMaskingDebtLine } from "../../systems/maskingDebtSystem.js?v=330";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -138,6 +139,13 @@ export function renderReflectionScreen(container, data) {
   // dokładać się do ściany tekstu z pozostałych systemów powyżej.
   const stakesText = buildReflectionStakesLine(state, lastEntry);
 
+  // v0.33: Masking Debt. Jeśli TA decyzja była wykryta jako maskująca
+  // (patrz eventSystem.js#applyChoice), dostajemy jedno krótkie zdanie
+  // — dopiero TU, po fakcie, nigdy przed wyborem, i nigdy jako liczba
+  // ("masking debt +1"). buildReflectionMaskingDebtLine() zwraca null
+  // w normalnym przypadku (wybór niemaskujący).
+  const maskingDebtText = buildReflectionMaskingDebtLine(state, lastEntry);
+
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
     state,
@@ -152,7 +160,19 @@ export function renderReflectionScreen(container, data) {
   });
 
   const narrative = createNarrativeStrip(
-    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText, stakesText)
+    buildNarrativeText(
+      resultText,
+      consequences,
+      patternEcho,
+      pressureText,
+      scarText,
+      repairText,
+      staticText,
+      metamourText,
+      workText,
+      stakesText,
+      maskingDebtText
+    )
   );
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
@@ -205,7 +225,19 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText, stakesText) {
+function buildNarrativeText(
+  resultText,
+  consequences,
+  patternEcho,
+  pressureText,
+  scarText,
+  repairText,
+  staticText,
+  metamourText,
+  workText,
+  stakesText,
+  maskingDebtText
+) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
   const parts = [
     resultText,
@@ -217,7 +249,8 @@ function buildNarrativeText(resultText, consequences, patternEcho, pressureText,
     staticText,
     metamourText,
     workText,
-    stakesText
+    stakesText,
+    maskingDebtText
   ].filter(Boolean);
   return parts.join(" ");
 }

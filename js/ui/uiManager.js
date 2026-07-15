@@ -76,12 +76,21 @@
 // zostaje przy ?v=310. weeklySummaryScreen.js i monthSummaryScreen.js
 // NIE zmieniły się — Daily Stakes to system DZIENNY, nie tygodniowy,
 // zgodnie z jawną instrukcją ticketu.
+//
+// v0.33: Masking Debt. gameScreen.js / reflectionScreen.js / eventScreen.js
+// podbite do ?v=330: gameScreen.js i reflectionScreen.js FAKTYCZNIE
+// importują teraz maskingDebtSystem.js (nowy plik) i dostały nową
+// linię/zdanie narracyjne; eventScreen.js zmienił się TYLKO
+// cache-bustem w dół łańcucha (dayCycle.js -> eventSystem.js, które
+// faktycznie zmieniło zawartość) — CELOWO NIE importuje
+// maskingDebtSystem.js samo. agendaScreen.js / weeklySummaryScreen.js
+// / monthSummaryScreen.js NIE zmieniły się w v0.33.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=320";
-import { renderEventScreen } from "./screens/eventScreen.js?v=310";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=320";
+import { renderGameScreen } from "./screens/gameScreen.js?v=330";
+import { renderEventScreen } from "./screens/eventScreen.js?v=330";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=330";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";
