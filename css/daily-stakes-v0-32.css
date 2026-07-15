@@ -1,0 +1,78 @@
+/* daily-stakes-v0-32.css
+ *
+ * v0.32: Game Feel / Daily Stakes Pass.
+ *
+ * Minimalny, namespaced styl dla małego badge'a napięcia dnia
+ * (.oos-daily-stakes) — wstawiany PRZEZ agendaScreen.js jako pierwsze
+ * dziecko WEWNĄTRZ istniejącej sekcji .oos-narrative (przed
+ * paragrafem tekstu), nigdy jako nowe dziecko .oos-stage/.oos-game —
+ * grid v0.18 pozostaje całkowicie nietknięty.
+ *
+ * .oos-narrative w game-ui-v0-18.css używa `display: flex;
+ * align-items: center; justify-content: center;` (jeden wiersz tekstu
+ * wyśrodkowany). Żeby dwa dzieci (badge + paragraf) ładnie się
+ * ułożyły jedno pod drugim zamiast obok siebie, override poniżej jest
+ * SCOPOWANY wyłącznie do ekranu agendy przez
+ * `body[data-game-screen="agenda"]` — żaden inny ekran (poranek,
+ * event, reflection, evening, weekly/month summary) nie jest w ogóle
+ * dotknięty.
+ *
+ * Kolory używają istniejących zmiennych CSS z game-ui-v0-18.css
+ * (--oos-ink, --oos-muted, --oos-line, --oos-gold) — zero nowych,
+ * krzykliwych kolorów, żeby pasować do papierowego stylu gry (i
+ * automatycznie działać też w trybie ciemnym, który te zmienne już
+ * przedefiniowuje).
+ */
+
+body[data-game-screen="agenda"] .oos-narrative {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.oos-daily-stakes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--oos-line);
+}
+
+.oos-daily-stakes__label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--oos-muted);
+  white-space: nowrap;
+}
+
+.oos-daily-stakes__text {
+  font-size: 0.92rem;
+  color: var(--oos-ink);
+  opacity: 0.88;
+}
+
+/* Poziomy — celowo bardzo subtelne różnice (grubość/kolor etykiety),
+ * bez krzykliwych kolorów tła czy ramek. */
+.oos-daily-stakes--low .oos-daily-stakes__label {
+  color: var(--oos-muted);
+}
+
+.oos-daily-stakes--medium .oos-daily-stakes__label {
+  color: var(--oos-blue);
+}
+
+.oos-daily-stakes--high .oos-daily-stakes__label {
+  color: var(--oos-gold);
+}
+
+.oos-daily-stakes--critical .oos-daily-stakes__label {
+  color: var(--oos-rose);
+}
+
+.oos-daily-stakes--critical .oos-daily-stakes__text {
+  opacity: 1;
+  font-weight: 600;
+}

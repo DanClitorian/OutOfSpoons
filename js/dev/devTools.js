@@ -26,6 +26,12 @@
 // podbity do ?v=310. Żadna funkcja devTools NIE zmieniona (ten ticket
 // to wyłącznie nowa treść eventów, zero nowego systemu).
 //
+// v0.32: Game Feel / Daily Stakes Pass — dodane 2 helpery testowe
+// (showDailyStakes, recalculateDailyStakes). Import uiManager.js
+// podbity do ?v=320 (uiManager.js znowu zmienił zawartość — 3
+// zmienione ekrany dostały nowe query stringi). Żadna z istniejących
+// funkcji NIE została zmieniona.
+//
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
 // Partner Capacity / Pattern Pressure / Relationship Scars / Repair
 // Events / The Static bez ręcznego przeklikiwania wielu dni. Ten moduł:
@@ -39,7 +45,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=310";
+import { showScreen } from "../ui/uiManager.js?v=320";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -59,6 +65,7 @@ import {
 import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHighState, clearMetamourSignal as clearMetamourSignalState } from "../systems/metamourSystem.js?v=300";
 import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=300";
 import { getMonthlyLoopDebugSummary, forceMonthSummaryPending } from "../systems/monthlyLoopSystem.js?v=305";
+import { ensureDailyStakesState, calculateDailyStakes, getDailyStakesDebugSummary } from "../systems/dailyStakesSystem.js?v=320";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -547,6 +554,53 @@ function showMonthSummaryScreen() {
   return getMonthlyLoopDebugSummary(state);
 }
 
+// v0.32: Game Feel / Daily Stakes Pass. Wypisuje do konsoli level,
+// title, text, reasons, tags napięcia dnia. Te dane NIGDY nie trafiają
+// do UI gracza jako liczby — w grze widać tylko etykietę i zdanie.
+function showDailyStakes() {
+  const state = requireActiveState("showDailyStakes()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getDailyStakesDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  console.log(`[oosDev] Daily Stakes: ${summary.level} ("${summary.title}") — dzień ${summary.day}`);
+  console.log(`[oosDev] Tekst: "${summary.text}"`);
+  console.log(`[oosDev] Powody: ${summary.reasons.join(", ") || "brak"}`);
+  console.log(`[oosDev] Tagi: ${summary.tags.join(", ") || "brak"}`);
+
+  return summary;
+}
+
+// v0.32: Game Feel / Daily Stakes Pass. Czyści state.player.dailyStakes.day
+// (wymusza ponowne przeliczenie przy następnym calculateDailyStakes()
+// dla TEGO SAMEGO dnia — idempotencja per-day jest tu celowo obchodzona
+// wyłącznie do debugowania) i od razu przelicza ponownie.
+function recalculateDailyStakes() {
+  const state = requireActiveState("recalculateDailyStakes()");
+  if (!state) {
+    return null;
+  }
+
+  const stakes = ensureDailyStakesState(state);
+  if (!stakes) {
+    console.warn("[oosDev] Brak gracza w stanie gry.");
+    return null;
+  }
+
+  stakes.day = null;
+  const result = calculateDailyStakes(state);
+  saveGame(state);
+
+  console.log(`[oosDev] Daily Stakes przeliczone ponownie: ${result.level} ("${result.title}").`);
+  return result;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -571,6 +625,8 @@ if (typeof window !== "undefined") {
     clearWorkSignal,
     showMonthlyLoop,
     forceMonthSummary,
-    showMonthSummaryScreen
+    showMonthSummaryScreen,
+    showDailyStakes,
+    recalculateDailyStakes
   };
 }

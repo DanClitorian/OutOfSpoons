@@ -67,17 +67,26 @@
 // zgodnie z jawnym zakazem w tickecie v0.31 ("nie ruszaj v0.30.5
 // stabilizacji poza cache-bustingiem, jeśli jest potrzebny" — tu nie
 // był potrzebny).
+//
+// v0.32: Game Feel / Daily Stakes Pass. gameScreen.js / agendaScreen.js
+// / reflectionScreen.js podbite do ?v=320 — wszystkie 3 FAKTYCZNIE
+// importują teraz dailyStakesSystem.js (nowy plik) i dostały nową
+// linię/badge/zdanie narracyjne. eventScreen.js NIE zmienił się w
+// v0.32 (Daily Stakes nie ma sygnału na ekranie eventu w tej wersji) —
+// zostaje przy ?v=310. weeklySummaryScreen.js i monthSummaryScreen.js
+// NIE zmieniły się — Daily Stakes to system DZIENNY, nie tygodniowy,
+// zgodnie z jawną instrukcją ticketu.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=310";
+import { renderGameScreen } from "./screens/gameScreen.js?v=320";
 import { renderEventScreen } from "./screens/eventScreen.js?v=310";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=310";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=320";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";
 import { appendVersionBadge } from "./versionBadge.js";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=310";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=320";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
 let appContainer = null;
 

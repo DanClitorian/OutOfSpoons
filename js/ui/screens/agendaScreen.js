@@ -29,6 +29,14 @@
 // import nie był bustowany od v0.26, mimo że dayAgendaSystem.js
 // zmieniał się od tamtej pory kilkukrotnie — czysta korekta, zero
 // zmian funkcjonalnych tego ekranu).
+//
+// v0.32: Game Feel / Daily Stakes Pass. Mały badge napięcia dnia
+// (label + jedno zdanie, ZERO liczb) wstawiony jako PIERWSZY element
+// WEWNĄTRZ istniejącej sekcji .oos-narrative (przed paragrafem tekstu)
+// — NIE jako nowe dziecko .oos-stage ani .oos-game, więc główny grid
+// v0.18 zostaje całkowicie nietknięty. Stylowanie w osobnym, nowym
+// pliku css/daily-stakes-v0-32.css, scope'owanym do
+// body[data-game-screen="agenda"], więc nie wpływa na żaden inny ekran.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -52,6 +60,7 @@ import {
   createNarrativeStrip,
   createDecisionCard
 } from "../oosLayout.js";
+import { buildAgendaStakesBadge } from "../../systems/dailyStakesSystem.js?v=320";
 
 const SLOT_ICONS = {
   obligation: "📌",
@@ -86,6 +95,15 @@ export function renderAgendaScreen(container) {
   });
 
   const narrative = createNarrativeStrip(buildAgendaNarrative(state));
+
+  // v0.32: Game Feel / Daily Stakes Pass. Badge wstawiony jako
+  // PIERWSZE dziecko WEWNĄTRZ .oos-narrative (przed paragrafem tekstu)
+  // — nie dodaje nowego dziecka do .oos-stage/.oos-game, więc grid
+  // v0.18 pozostaje nietknięty.
+  const stakesBadgeEl = buildStakesBadgeElement(state);
+  if (stakesBadgeEl) {
+    narrative.insertBefore(stakesBadgeEl, narrative.firstChild);
+  }
 
   const cards = agenda.slots.map((item, index) => buildAgendaCard(item, index, state));
 
@@ -137,4 +155,31 @@ function buildAgendaCard(item, index, state) {
       showScreen("event");
     }
   });
+}
+
+// v0.32: Game Feel / Daily Stakes Pass. Mały, namespaced badge
+// (.oos-daily-stakes) — TYLKO label + jedno zdanie, ZERO liczb, ZERO
+// listy powodów. Zwraca null, jeśli z jakiegoś powodu nie da się
+// zbudować (bezpiecznik — agenda ma wtedy wyglądać dokładnie tak jak
+// przed v0.32).
+function buildStakesBadgeElement(state) {
+  const badge = buildAgendaStakesBadge(state);
+  if (!badge) {
+    return null;
+  }
+
+  const wrapper = document.createElement("div");
+  wrapper.className = `oos-daily-stakes oos-daily-stakes--${badge.level}`;
+
+  const labelEl = document.createElement("span");
+  labelEl.className = "oos-daily-stakes__label";
+  labelEl.textContent = badge.label;
+  wrapper.appendChild(labelEl);
+
+  const textEl = document.createElement("span");
+  textEl.className = "oos-daily-stakes__text";
+  textEl.textContent = badge.text;
+  wrapper.appendChild(textEl);
+
+  return wrapper;
 }

@@ -30,6 +30,13 @@
 // v0.31: Content Expansion Pack 1. dayAgendaSystem.js zmienił WŁASNY
 // import eventData.js (9 nowych eventów) — import podbity do ?v=310.
 // Ten plik funkcjonalnie się nie zmienił.
+//
+// v0.32: Game Feel / Daily Stakes Pass. calculateDailyStakes(state)
+// wołane TU, raz na poranek — ten sam idempotentny wzorzec co Wielki
+// Test/Partner Capacity/Static/Metamour/Work powyżej. Krótka linia
+// "Stawka dnia: ..." dopisywana do narracji porankowej jako PIERWSZY
+// element (zaraz po "Dziś: plan dnia.") — Daily Stakes NIE zmienia
+// spoons/trust/frustration/losowania eventów, wyłącznie framing.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -71,6 +78,7 @@ import {
 
 import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=300";
 import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine } from "../../systems/workPressureSystem.js?v=300";
+import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 export function renderGameScreen(container) {
   const state = getState();
 
@@ -125,6 +133,20 @@ export function renderGameScreen(container) {
   const alreadyWorkRolledToday = workBeforeRoll && workBeforeRoll.lastRolledDay === state.day;
   rollDailyWorkSignal(state);
   if (!alreadyWorkRolledToday) {
+    saveGame(state);
+  }
+
+  // v0.32: Game Feel / Daily Stakes Pass. Jedno przeliczenie dziennie,
+  // idempotentne (calculateDailyStakes sam sprawdza dailyStakes.day).
+  // Zapisujemy TYLKO jeśli to faktycznie pierwsze przeliczenie dzisiaj
+  // — ten sam wzorzec co przy pozostałych systemach powyżej. Daily
+  // Stakes NIE zmienia spoons/trust/frustration/losowania eventów —
+  // wyłącznie framing.
+  ensureDailyStakesState(state);
+  const stakesBeforeCalc = state.player.dailyStakes;
+  const alreadyCalculatedStakesToday = stakesBeforeCalc && stakesBeforeCalc.day === state.day;
+  calculateDailyStakes(state);
+  if (!alreadyCalculatedStakesToday) {
     saveGame(state);
   }
 
@@ -195,7 +217,15 @@ export function renderGameScreen(container) {
 // z uwagi gracza, zamiast wypychać ważniejsze teasery (Partner/Wzorzec/
 // Stawka/Wielki Test), które niosą realną informację o nadchodzących
 // wydarzeniach.
+//
+// v0.32: Game Feel / Daily Stakes Pass. Linia "Stawka dnia: ..."
+// dopisywana jako PIERWSZY element (zaraz po "Dziś: plan dnia.",
+// przed Partnerem/Wzorcem) — to ma być pierwsze wrażenie dnia, zanim
+// gracz zobaczy cokolwiek innego. Zawsze coś zwraca (poza brakiem
+// gracza w stanie), więc dopisana jest bezwarunkowo do warunku "czy
+// pokazać krótką formę narracji" ponizej.
 function buildMorningNarrative(state) {
+  const stakesLine = buildMorningStakesLine(state);
   const partnerTeaser = buildPartnerCapacityTeaser(state);
   const patternTeaser = buildPatternTeaser(state);
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
@@ -204,12 +234,13 @@ function buildMorningNarrative(state) {
   const metamourLine = buildMorningMetamourLine(state);
   const workLine = buildMorningWorkLine(state);
 
-  if (!partnerTeaser && !patternTeaser && !weeklyTeaser && !criticalTeaser && !staticLine) {
+  if (!stakesLine && !partnerTeaser && !patternTeaser && !weeklyTeaser && !criticalTeaser && !staticLine) {
     return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
   }
 
   const parts = [
     "Dziś: plan dnia.",
+    stakesLine,
     partnerTeaser,
     patternTeaser,
     weeklyTeaser,

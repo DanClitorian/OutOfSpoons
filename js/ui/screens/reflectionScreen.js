@@ -41,6 +41,7 @@ import {
 
 import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=300";
 import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=300";
+import { buildReflectionStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -131,6 +132,12 @@ export function renderReflectionScreen(container, data) {
   const metamourText = buildMetamourReflection(state, lastEntry ? lastEntry.metamourEffect : null);
   const workText = buildWorkReflection(state, lastEntry ? lastEntry.workEffect : null);
 
+  // v0.32: Game Feel / Daily Stakes Pass. Jedno krótkie zdanie, TYLKO
+  // CZASEM (nigdy przy niskim napięciu dnia, patrz
+  // dailyStakesSystem.js#buildReflectionStakesLine) — żeby nie
+  // dokładać się do ściany tekstu z pozostałych systemów powyżej.
+  const stakesText = buildReflectionStakesLine(state, lastEntry);
+
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
     state,
@@ -145,7 +152,7 @@ export function renderReflectionScreen(container, data) {
   });
 
   const narrative = createNarrativeStrip(
-    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText)
+    buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText, stakesText)
   );
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
@@ -198,11 +205,20 @@ function buildResultTiles(consequences) {
   return items.map((item) => createResultTile(item));
 }
 
-function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText) {
+function buildNarrativeText(resultText, consequences, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText, stakesText) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [resultText, interpretation, patternEcho, pressureText, scarText, repairText, staticText, metamourText, workText].filter(
-    Boolean
-  );
+  const parts = [
+    resultText,
+    interpretation,
+    patternEcho,
+    pressureText,
+    scarText,
+    repairText,
+    staticText,
+    metamourText,
+    workText,
+    stakesText
+  ].filter(Boolean);
   return parts.join(" ");
 }
 
