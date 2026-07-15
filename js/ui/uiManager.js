@@ -48,18 +48,27 @@
 // linię narracyjną. agendaScreen.js NIE zmienił się w v0.27 — zostaje
 // przy ?v=260 (nadal poprawnie wskazuje na jego aktualną, niezmienioną
 // zawartość).
+//
+// v0.30.5: Stabilizacja Month One Complete Loop. Trzy importy podbite
+// do ?v=305: gameScreen.js i weeklySummaryScreen.js (oba zależą od
+// criticalEventSystem.js, które dostało nowe pole completedDay —
+// weeklySummaryScreen.js dodatkowo dostał realną poprawkę buga w
+// buildFooter(), który wcześniej rzucał ReferenceError przy kliknięciu
+// "Rozpocznij kolejny tydzień") i monthSummaryScreen.js (cache-bust w
+// dół łańcucha). eventScreen.js / reflectionScreen.js / agendaScreen.js
+// NIE zmieniły się w v0.30.5 — zostają przy swoich aktualnych query.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=300";
+import { renderGameScreen } from "./screens/gameScreen.js?v=305";
 import { renderEventScreen } from "./screens/eventScreen.js?v=300";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=300";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=300";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=300";
-import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=304";
+import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
 let appContainer = null;
 
 const screens = {
@@ -78,7 +87,7 @@ const screens = {
   weeklySummary: renderWeeklySummaryScreen,
   monthSummary: renderMonthSummaryScreen,
   "month-summary": renderMonthSummaryScreen,
-agenda: renderAgendaScreen
+  agenda: renderAgendaScreen
 };
 
 export function initUI(rootElementId = "app") {

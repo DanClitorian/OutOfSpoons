@@ -22,6 +22,11 @@
 // ponownie przy odświeżeniu. Krótka linia dopisywana do narracji
 // porankowej TYLKO jeśli intensity >= 1.
 
+// v0.30.5: criticalEventSystem.js zmienił zawartość (dodane pole
+// completedDay na wyniku Wielkiego Testu, potrzebne przez
+// monthlyLoopSystem.js) — import podbity do ?v=305. Sama logika tego
+// ekranu jest NIETKNIĘTA.
+
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=300";
@@ -36,7 +41,7 @@ import {
   generateNextCriticalEvent,
   getCurrentCriticalEvent,
   getCriticalEventCountdown
-} from "../../systems/criticalEventSystem.js?v=300";
+} from "../../systems/criticalEventSystem.js?v=305";
 import {
   ensurePatternState,
   getLatestPatternEcho

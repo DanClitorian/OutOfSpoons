@@ -2,11 +2,18 @@
 //
 // v0.30: Month One Complete Loop.
 // Ekran krótkiego podsumowania pierwszego miesiąca.
+//
+// v0.30.5: stabilizacja — importy podbite do ?v=305 (uiManager.js i
+// monthlyLoopSystem.js oba zmieniły zawartość: uiManager.js dostał
+// nowe query stringi na swoich importach, monthlyLoopSystem.js NIE
+// zmienił się bezpośrednio, ale criticalEventSystem.js, od którego
+// zależy, dostał nowe pole completedDay — bump zapewnia spójność
+// całego łańcucha).
 
 import { getState } from "../../state/gameState.js";
-import { showScreen } from "../uiManager.js?v=304";
+import { showScreen } from "../uiManager.js?v=305";
 import { createTopBar } from "../oosLayout.js";
-import { consumePendingMonthSummary, getLatestMonthSummary } from "../../systems/monthlyLoopSystem.js?v=304";
+import { consumePendingMonthSummary, getLatestMonthSummary } from "../../systems/monthlyLoopSystem.js?v=305";
 
 export function renderMonthSummaryScreen(root) {
   const state = getState();

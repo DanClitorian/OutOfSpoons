@@ -249,6 +249,15 @@ export function evaluateCriticalEvent(state) {
     id: event.id,
     title: event.title,
     dueDay: event.dueDay,
+    // v0.30.5: monthlyLoopSystem.js#evaluateMonthlyLoopAfterWeeklySummary
+    // czyta lastResult.completedDay, żeby rozpoznać domknięcie
+    // pierwszego miesięcznego cyklu. To pole nigdy wcześniej nie było
+    // zapisywane na obiekcie result — lokalna zmienna `completedDay`
+    // (patrz linijka wyżej) była liczona, ale nigdy nie trafiała do
+    // stanu. Bez tego pola miesięczne podsumowanie nie mogło się
+    // uruchomić przez normalną rozgrywkę, tylko przez
+    // window.oosDev.forceMonthSummary().
+    completedDay,
     success,
     text: success ? event.successText : event.failureText,
     effect

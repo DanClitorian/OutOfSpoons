@@ -13,6 +13,14 @@
 // setPartnerCapacityLow/High, showPartnerCapacity, showPatternPressure,
 // showRelationshipScars, showRelationshipRepair) NIE została zmieniona.
 //
+// v0.30.5: Stabilizacja integracji Month One Complete Loop po
+// hotfixach v0.30.1-v0.30.4. Importy uiManager.js / criticalEventSystem.js
+// / monthlyLoopSystem.js podbite do ?v=305 (uiManager.js i
+// criticalEventSystem.js faktycznie zmieniły zawartość — patrz
+// criticalEventSystem.js#evaluateCriticalEvent, nowe pole completedDay).
+// Żadna funkcja devTools NIE zduplikowana, NIE zmieniona funkcjonalnie
+// poza tym cache-bustem.
+//
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
 // Partner Capacity / Pattern Pressure / Relationship Scars / Repair
 // Events / The Static bez ręcznego przeklikiwania wielu dni. Ten moduł:
@@ -26,9 +34,9 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=304";
+import { showScreen } from "../ui/uiManager.js?v=305";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
-import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=300";
+import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
   ensurePartnerCapacityState,
   getPartnerCapacity,
@@ -45,7 +53,7 @@ import {
 
 import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHighState, clearMetamourSignal as clearMetamourSignalState } from "../systems/metamourSystem.js?v=300";
 import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=300";
-import { getMonthlyLoopDebugSummary, forceMonthSummaryPending } from "../systems/monthlyLoopSystem.js?v=304";
+import { getMonthlyLoopDebugSummary, forceMonthSummaryPending } from "../systems/monthlyLoopSystem.js?v=305";
 function requireActiveState(actionName) {
   const state = getState();
 

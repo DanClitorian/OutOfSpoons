@@ -36,7 +36,7 @@ import {
   evaluateCriticalEvent,
   generateNextCriticalEvent,
   buildCriticalEventSummary
-} from "../../systems/criticalEventSystem.js?v=300";
+} from "../../systems/criticalEventSystem.js?v=305";
 import {
   ensurePatternState,
   recordPatternFromWeeklyResult,
@@ -50,7 +50,7 @@ import { buildWeeklyStaticNote } from "../../systems/staticSystem.js?v=270";
 
 import { buildWeeklyMetamourNote } from "../../systems/metamourSystem.js?v=300";
 import { buildWeeklyWorkNote } from "../../systems/workPressureSystem.js?v=300";
-import { evaluateMonthlyLoopAfterWeeklySummary, hasPendingMonthSummary } from "../../systems/monthlyLoopSystem.js?v=304";
+import { evaluateMonthlyLoopAfterWeeklySummary, hasPendingMonthSummary } from "../../systems/monthlyLoopSystem.js?v=305";
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
 
@@ -108,7 +108,7 @@ export function renderWeeklySummaryScreen(container) {
   grid.appendChild(buildCriticalEventCard(criticalSummary, state));
   root.appendChild(grid);
 
-  root.appendChild(buildFooter());
+  root.appendChild(buildFooter(state));
 
   container.appendChild(root);
 }
@@ -545,7 +545,14 @@ function buildUpcomingBlock({ eyebrowText, titleText, conditionText, daysLeftTex
 // Footer
 // --------------------------------------------------------------------
 
-function buildFooter() {
+// v0.30.5: buildFooter() odwoływało się do zmiennej `state`, która nie
+// była parametrem tej funkcji ani nie istniała w jej zasięgu (funkcja
+// jest zadeklarowana na poziomie modułu, nie zagnieżdżona w
+// renderWeeklySummaryScreen) — to powodowało ReferenceError przy każdym
+// kliknięciu przycisku "Rozpocznij kolejny tydzień". Naprawione przez
+// jawne przyjęcie `state` jako parametru (patrz też zmieniony call site
+// w renderWeeklySummaryScreen: buildFooter(state)).
+function buildFooter(state) {
   const footer = document.createElement("footer");
   footer.className = "oos-weekly-summary__footer";
 
