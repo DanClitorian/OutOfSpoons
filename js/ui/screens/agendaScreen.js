@@ -37,6 +37,16 @@
 // v0.18 zostaje całkowicie nietknięty. Stylowanie w osobnym, nowym
 // pliku css/daily-stakes-v0-32.css, scope'owanym do
 // body[data-game-screen="agenda"], więc nie wpływa na żaden inny ekran.
+//
+// v0.34: Relationship Model Foundation. Linia modelu relacji dodana do
+// NARRACJI agendy (buildAgendaNarrative), NIE do karty relationship
+// slotu — świadomy wybór: teksty modelu relacji są dłuższe niż
+// standardowe, krótkie opisy kart (SLOT_DESCRIPTIONS), a wszystkie 3
+// karty muszą zachować spójną wysokość. Narracja już ma miejsce na
+// zmienną długość tekstu (patrz Weekly Stake teaser powyżej), więc to
+// zero dodatkowego ryzyka strukturalnego, zgodnie z instrukcją
+// ticketu ("jeśli to zbyt ryzykowne strukturalnie, dodaj tylko do
+// narracji agendy, nie do kart").
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -61,6 +71,7 @@ import {
   createDecisionCard
 } from "../oosLayout.js";
 import { buildAgendaStakesBadge } from "../../systems/dailyStakesSystem.js?v=320";
+import { ensureRelationshipModelState, buildRelationshipModelAgendaLine } from "../../systems/relationshipModelSystem.js?v=340";
 
 const SLOT_ICONS = {
   obligation: "📌",
@@ -86,6 +97,10 @@ export function renderAgendaScreen(container) {
     return;
   }
 
+  // v0.34: Relationship Model Foundation. Wyłącznie lazy-init — brak
+  // dziennego przeliczenia/rolla, patrz komentarz w gameScreen.js.
+  ensureRelationshipModelState(state);
+
   const topbar = createTopBar(state, "agenda");
   const sidebar = createSidebar(state, "agenda");
 
@@ -94,7 +109,7 @@ export function renderAgendaScreen(container) {
     title: "Plan dnia"
   });
 
-  const narrative = createNarrativeStrip(buildAgendaNarrative(state));
+  const narrative = createNarrativeStrip(buildAgendaNarrative(state, availableItems));
 
   // v0.32: Game Feel / Daily Stakes Pass. Badge wstawiony jako
   // PIERWSZE dziecko WEWNĄTRZ .oos-narrative (przed paragrafem tekstu)
@@ -128,18 +143,32 @@ export function renderAgendaScreen(container) {
 // w tym miejscu — trochę krócej, mniejsze ryzyko ucinania długiego
 // teasera w wąskim pasku narracji. weeklySummaryScreen.js nadal używa
 // pełnego " i " (tam jest więcej miejsca).
-function buildAgendaNarrative(state) {
+//
+// v0.34: Relationship Model Foundation. Jeśli slot "relationship" jest
+// dziś JESZCZE DOSTĘPNY (nieukończony), dopisujemy jedno zdanie o
+// modelu relacji na końcu — znika samo, gdy gracz już zajmie się
+// relationship slotem tego dnia, więc nie robi się nachalne po fakcie.
+function buildAgendaNarrative(state, availableItems) {
   const base = "Wybierz, czym zajmiesz się teraz. Kolejność ma znaczenie.";
 
   ensureWeeklyChallengeState(state);
   const challenge = getCurrentWeeklyChallenge(state);
 
-  if (!challenge) {
-    return base;
+  let text = base;
+  if (challenge) {
+    const condition = formatWeeklyChallengeCondition(challenge).replace(/ i /g, " · ");
+    text = `${base} W tle wisi: ${challenge.title}. Warunek: ${condition}.`;
   }
 
-  const condition = formatWeeklyChallengeCondition(challenge).replace(/ i /g, " · ");
-  return `${base} W tle wisi: ${challenge.title}. Warunek: ${condition}.`;
+  const hasOpenRelationshipSlot = Array.isArray(availableItems) && availableItems.some((item) => item.slot === "relationship");
+  if (hasOpenRelationshipSlot) {
+    const relationshipModelLine = buildRelationshipModelAgendaLine(state);
+    if (relationshipModelLine) {
+      text = `${text} ${relationshipModelLine}`;
+    }
+  }
+
+  return text;
 }
 
 function buildAgendaCard(item, index, state) {

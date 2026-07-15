@@ -85,17 +85,23 @@
 // faktycznie zmieniło zawartość) — CELOWO NIE importuje
 // maskingDebtSystem.js samo. agendaScreen.js / weeklySummaryScreen.js
 // / monthSummaryScreen.js NIE zmieniły się w v0.33.
+//
+// v0.34: Relationship Model Foundation. gameScreen.js / agendaScreen.js
+// podbite do ?v=340 — oba FAKTYCZNIE importują teraz
+// relationshipModelSystem.js (nowy plik) i dostały nową linię
+// narracyjną. eventScreen.js / reflectionScreen.js / weeklySummaryScreen.js
+// / monthSummaryScreen.js NIE zmieniły się w v0.34.
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=330";
+import { renderGameScreen } from "./screens/gameScreen.js?v=340";
 import { renderEventScreen } from "./screens/eventScreen.js?v=330";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=330";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";
 import { appendVersionBadge } from "./versionBadge.js";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=320";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=340";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
 let appContainer = null;
 

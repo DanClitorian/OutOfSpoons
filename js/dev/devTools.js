@@ -38,6 +38,13 @@
 // ekrany dostały nowe query stringi). Żadna z istniejących funkcji NIE
 // została zmieniona.
 //
+// v0.34: Relationship Model Foundation — dodanych 6 helperów testowych
+// (showRelationshipModel, setRelationshipModelPoly/Mono/Open/
+// Ambiguous, setRelationshipModelClarity). Import uiManager.js podbity
+// do ?v=340 (uiManager.js znowu zmienił zawartość — 2 zmienione
+// ekrany dostały nowe query stringi). Żadna z istniejących funkcji NIE
+// została zmieniona.
+//
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
 // Partner Capacity / Pattern Pressure / Relationship Scars / Repair
 // Events / The Static bez ręcznego przeklikiwania wielu dni. Ten moduł:
@@ -51,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=330";
+import { showScreen } from "../ui/uiManager.js?v=340";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -76,6 +83,11 @@ import {
   ensureMaskingDebtState,
   getMaskingDebtDebugSummary
 } from "../systems/maskingDebtSystem.js?v=330";
+import {
+  getRelationshipModelDebugSummary,
+  setRelationshipModelType as setRelationshipModelTypeState,
+  setRelationshipModelClarity as setRelationshipModelClarityState
+} from "../systems/relationshipModelSystem.js?v=340";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -678,6 +690,94 @@ function clearMaskingDebt() {
   return getMaskingDebtDebugSummary(state);
 }
 
+// v0.34: Relationship Model Foundation. Wypisuje do konsoli type,
+// clarity, agreements i ostatnie 7 wpisów historii. Te dane NIGDY nie
+// trafiają do UI gracza jako liczby.
+function showRelationshipModel() {
+  const state = requireActiveState("showRelationshipModel()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getRelationshipModelDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak stanu gry.");
+    return null;
+  }
+
+  console.log(`[oosDev] Relationship Model: type=${summary.type}, clarity=${summary.clarity}`);
+  console.log("[oosDev] agreements:", summary.agreements);
+  console.log("[oosDev] Ostatnie 7 wpisów historii:");
+  console.table(summary.recentHistory);
+
+  return summary;
+}
+
+function setRelationshipModelMono() {
+  const state = requireActiveState("setRelationshipModelMono()");
+  if (!state) {
+    return null;
+  }
+
+  setRelationshipModelTypeState(state, "monogamy");
+  saveGame(state);
+
+  console.log("[oosDev] Relationship Model ustawiony na monogamy.");
+  return getRelationshipModelDebugSummary(state);
+}
+
+function setRelationshipModelPoly() {
+  const state = requireActiveState("setRelationshipModelPoly()");
+  if (!state) {
+    return null;
+  }
+
+  setRelationshipModelTypeState(state, "polyamory");
+  saveGame(state);
+
+  console.log("[oosDev] Relationship Model ustawiony na polyamory.");
+  return getRelationshipModelDebugSummary(state);
+}
+
+function setRelationshipModelOpen() {
+  const state = requireActiveState("setRelationshipModelOpen()");
+  if (!state) {
+    return null;
+  }
+
+  setRelationshipModelTypeState(state, "open");
+  saveGame(state);
+
+  console.log("[oosDev] Relationship Model ustawiony na open.");
+  return getRelationshipModelDebugSummary(state);
+}
+
+function setRelationshipModelAmbiguous() {
+  const state = requireActiveState("setRelationshipModelAmbiguous()");
+  if (!state) {
+    return null;
+  }
+
+  setRelationshipModelTypeState(state, "ambiguous");
+  saveGame(state);
+
+  console.log("[oosDev] Relationship Model ustawiony na ambiguous (niska clarity).");
+  return getRelationshipModelDebugSummary(state);
+}
+
+function setRelationshipModelClarity(value) {
+  const state = requireActiveState("setRelationshipModelClarity()");
+  if (!state) {
+    return null;
+  }
+
+  setRelationshipModelClarityState(state, value);
+  saveGame(state);
+
+  console.log(`[oosDev] Relationship Model clarity ustawiona na ${state.relationshipModel.clarity}.`);
+  return getRelationshipModelDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -707,6 +807,12 @@ if (typeof window !== "undefined") {
     recalculateDailyStakes,
     showMaskingDebt,
     setMaskingDebtHigh,
-    clearMaskingDebt
+    clearMaskingDebt,
+    showRelationshipModel,
+    setRelationshipModelMono,
+    setRelationshipModelPoly,
+    setRelationshipModelOpen,
+    setRelationshipModelAmbiguous,
+    setRelationshipModelClarity
   };
 }

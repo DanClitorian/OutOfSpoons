@@ -76,6 +76,10 @@ import {
   buildMorningMaskingDebtLine
 } from "../../systems/maskingDebtSystem.js?v=330";
 import {
+  ensureRelationshipModelState,
+  buildRelationshipModelMorningLine
+} from "../../systems/relationshipModelSystem.js?v=340";
+import {
   ensureStaticState,
   calculateDailyStatic,
   buildMorningStaticLine
@@ -179,6 +183,13 @@ export function renderGameScreen(container) {
     saveGame(state);
   }
 
+  // v0.34: Relationship Model Foundation. Wyłącznie lazy-init — ten
+  // system NIE ma dziennego przeliczenia/rolla jak Static/Metamour/
+  // Work/Daily Stakes (model relacji nie zmienia się sam z dnia na
+  // dzień, tylko przez świadome devTools albo przyszłe systemy), więc
+  // nie ma tu żadnego wzorca "already calculated today" ani saveGame.
+  ensureRelationshipModelState(state);
+
   const topbar = createTopBar(state, "game");
   const sidebar = createSidebar(state, "game");
 
@@ -260,9 +271,18 @@ export function renderGameScreen(container) {
 // / Pattern / Weekly Stake / Wielki Test / Static / Metamour / Work.
 // Zwraca null w większości poranków (dług < 3 nie generuje kary), więc
 // zwykle nic się nie zmienia w długości akapitu.
+//
+// v0.34: Relationship Model Foundation. Linia o niejasnych ustaleniach
+// dopisywana zaraz PO Masking Debt, PRZED Partnerem — dokładnie w
+// zaktualizowanej kolejności z ticketu: "Dziś: plan dnia." / Daily
+// Stakes / Masking Debt / Relationship Model / Partner Capacity /
+// Pattern / Weekly Stake / Wielki Test / Static / Metamour / Work.
+// Zwraca null, gdy model jest jasny (type !== "ambiguous" && clarity
+// >= 45) — czyli w WIĘKSZOŚCI poranków, celowo "nie spamuje".
 function buildMorningNarrative(state) {
   const stakesLine = buildMorningStakesLine(state);
   const maskingDebtLine = buildMorningMaskingDebtLine(state);
+  const relationshipModelLine = buildRelationshipModelMorningLine(state);
   const partnerTeaser = buildPartnerCapacityTeaser(state);
   const patternTeaser = buildPatternTeaser(state);
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
@@ -274,6 +294,7 @@ function buildMorningNarrative(state) {
   if (
     !stakesLine &&
     !maskingDebtLine &&
+    !relationshipModelLine &&
     !partnerTeaser &&
     !patternTeaser &&
     !weeklyTeaser &&
@@ -287,6 +308,7 @@ function buildMorningNarrative(state) {
     "Dziś: plan dnia.",
     stakesLine,
     maskingDebtLine,
+    relationshipModelLine,
     partnerTeaser,
     patternTeaser,
     weeklyTeaser,
