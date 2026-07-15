@@ -26,10 +26,14 @@
 // completedDay na wyniku Wielkiego Testu, potrzebne przez
 // monthlyLoopSystem.js) — import podbity do ?v=305. Sama logika tego
 // ekranu jest NIETKNIĘTA.
+//
+// v0.31: Content Expansion Pack 1. dayAgendaSystem.js zmienił WŁASNY
+// import eventData.js (9 nowych eventów) — import podbity do ?v=310.
+// Ten plik funkcjonalnie się nie zmienił.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=300";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=310";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,

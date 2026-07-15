@@ -13,17 +13,22 @@
 // NIEKLIKALNEGO komponentu (cursor:default, pointer-events:none, brak
 // hover) — i są bezpośrednim rodzeństwem przycisku CTA w jednym rzędzie
 // panelu akcji, więc są zawsze na tej samej osi.
+//
+// v0.31: Content Expansion Pack 1. eventData.js dostał 9 nowych
+// eventów, dayAgendaSystem.js zmienił WŁASNY import eventData.js —
+// oba importy podbite do ?v=310. Ten plik funkcjonalnie się nie
+// zmienił, to czysty cache-bust.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=300";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=310";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js?v=300";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js?v=300";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js?v=300";
 import { buildRelationshipRepairReflection } from "../../systems/relationshipRepairSystem.js?v=300";
 import { buildReflectionStaticLine } from "../../systems/staticSystem.js?v=300";
-import { eventPool } from "../../data/eventData.js?v=300";
+import { eventPool } from "../../data/eventData.js?v=310";
 import {
   createGameShell,
   createTopBar,

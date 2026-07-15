@@ -21,13 +21,13 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js?v=300";
+import { eventPool } from "../data/eventData.js?v=310";
 import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
 import { getWeightedEventForDay } from "./eventWeightSystem.js?v=300";
-import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=300";
+import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=310";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js?v=300";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js?v=300";
 import { applyRepairFromChoice } from "./relationshipRepairSystem.js?v=300";

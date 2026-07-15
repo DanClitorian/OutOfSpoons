@@ -22,6 +22,13 @@
 // WŁAŚNIE TEN plik (przez ensureDailyAgenda) faktycznie wybiera event
 // dla każdego slotu agendy, więc jego świeżość jest krytyczna dla
 // realnego działania ważenia eventów naprawczych, nie tylko kosmetyczna.
+//
+// v0.31: Content Expansion Pack 1. dayAgendaSystem.js znowu zmienił
+// WŁASNY import eventData.js (9 nowych eventów) — import podbity do
+// ?v=310. Przy okazji naprawiony zaległy, przestarzały ?v=260 (ten
+// import nie był bustowany od v0.26, mimo że dayAgendaSystem.js
+// zmieniał się od tamtej pory kilkukrotnie — czysta korekta, zero
+// zmian funkcjonalnych tego ekranu).
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
@@ -31,7 +38,7 @@ import {
   getAvailableAgendaItems,
   selectAgendaItem,
   getAgendaSlotLabel
-} from "../../systems/dayAgendaSystem.js?v=260";
+} from "../../systems/dayAgendaSystem.js?v=310";
 import {
   ensureWeeklyChallengeState,
   getCurrentWeeklyChallenge,

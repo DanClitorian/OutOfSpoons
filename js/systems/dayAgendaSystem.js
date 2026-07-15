@@ -3,8 +3,12 @@
 // v0.13: Daily Agenda Prototype.
 // Each day has three fixed slots: obligation, relationship and inner.
 // Slot order is fixed for now; player-controlled ordering can come later.
+//
+// v0.31: Content Expansion Pack 1. eventData.js dostał 9 nowych
+// eventów — import podbity do ?v=310. Ten plik funkcjonalnie się nie
+// zmienił, to czysty cache-bust.
 
-import { eventPool } from "../data/eventData.js?v=300";
+import { eventPool } from "../data/eventData.js?v=310";
 import { getWeightedEventForDay } from "./eventWeightSystem.js?v=300";
 
 const AGENDA_SLOT_ORDER = ["obligation", "relationship", "inner"];

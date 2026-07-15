@@ -57,17 +57,27 @@
 // "Rozpocznij kolejny tydzień") i monthSummaryScreen.js (cache-bust w
 // dół łańcucha). eventScreen.js / reflectionScreen.js / agendaScreen.js
 // NIE zmieniły się w v0.30.5 — zostają przy swoich aktualnych query.
+//
+// v0.31: Content Expansion Pack 1. gameScreen.js / eventScreen.js /
+// reflectionScreen.js / agendaScreen.js podbite do ?v=310 — wszystkie
+// 4 zależą (bezpośrednio albo przez dayCycle.js) od
+// dayAgendaSystem.js, które zmieniło WŁASNY import eventData.js (9
+// nowych eventów). weeklySummaryScreen.js i monthSummaryScreen.js NIE
+// importują eventData.js ani dayAgendaSystem.js — zostają NIETKNIĘTE,
+// zgodnie z jawnym zakazem w tickecie v0.31 ("nie ruszaj v0.30.5
+// stabilizacji poza cache-bustingiem, jeśli jest potrzebny" — tu nie
+// był potrzebny).
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=305";
-import { renderEventScreen } from "./screens/eventScreen.js?v=300";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=300";
+import { renderGameScreen } from "./screens/gameScreen.js?v=310";
+import { renderEventScreen } from "./screens/eventScreen.js?v=310";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=310";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";
 import { appendVersionBadge } from "./versionBadge.js";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=300";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=310";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
 let appContainer = null;
 

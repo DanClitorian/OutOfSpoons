@@ -698,7 +698,344 @@ export const eventPool = [
         resultText: "Cisza daje ulgę. Potem zaczyna wysyłać własne powiadomienia."
       }
     ]
-  }
+  },
   // CLEAN v0.29 work pressure events END
+
+  // CLEAN v0.31 content expansion events START
+  // v0.31: Content Expansion Pack 1. Wyłącznie nowa treść (9 eventów) w
+  // ramach już istniejących systemów — zero nowych pól mechanicznych,
+  // zero nowej logiki. Rozkład: 3 relationship/communication, 2
+  // inner/spoons/masking, 2 work/life pressure, 2 metamour/network.
+  // Wszystkie placeholdery ({partnerName}, {metamourName}) i pola
+  // (metamourEffect, workEffect) są już w pełni obsługiwane przez
+  // istniejące systemy od v0.28/v0.29 — ten blok tylko z nich korzysta.
+  {
+    id: "relationship_tone_mismatch",
+    title: "Ton, którego nie było",
+    tags: ["relationship", "communication", "tension"],
+    weightTags: ["low-trust", "tension", "relationship-tension"],
+    agendaSlots: ["relationship"],
+    description:
+      "{partnerName} odpowiada krótko. Może to zmęczenie. Może pośpiech. Może dokładnie ten ton, który twoje ciało zna lepiej niż rozsądek.",
+    choices: [
+      {
+        id: "ask_if_something_happened",
+        label: "Zapytać, czy coś się stało",
+        spoonsCost: 1,
+        trustChange: 2,
+        frustrationChange: -1,
+        resultText: "Pytanie nie oskarża. Dzięki temu odpowiedź nie musi od razu zakładać zbroi."
+      },
+      {
+        id: "assume_you_know",
+        label: "Założyć, że wiesz, o co chodzi",
+        spoonsCost: 0,
+        trustChange: -1,
+        frustrationChange: 3,
+        resultText: "Umysł dopisuje brakujące zdania. Ma świetny charakter pisma i fatalne intencje."
+      },
+      {
+        id: "postpone_but_name_it",
+        label: "Odłożyć rozmowę, ale nazwać to wprost",
+        spoonsCost: 1,
+        trustChange: 1,
+        frustrationChange: 0,
+        resultText: "Nie rozmawiacie teraz. Ale nie udajecie, że nic nie leży na stole."
+      }
+    ]
+  },
+  {
+    id: "relationship_small_request",
+    title: "Mała prośba w złym momencie",
+    tags: ["relationship", "support", "spoons"],
+    weightTags: ["low-spoons", "partner-capacity-low", "repair"],
+    agendaSlots: ["relationship"],
+    description:
+      "{partnerName} prosi o coś małego. W innym dniu byłoby to naprawdę małe. Dzisiaj ma rozmiar mebla na klatce schodowej.",
+    choices: [
+      {
+        id: "say_what_you_can_give",
+        label: "Powiedzieć, ile realnie możesz dziś dać",
+        spoonsCost: 1,
+        trustChange: 3,
+        frustrationChange: -1,
+        resultText: "Nie dajesz wszystkiego. Dajesz prawdę o dostępnej części siebie."
+      },
+      {
+        id: "agree_automatically",
+        label: "Zgodzić się automatycznie",
+        spoonsCost: 3,
+        trustChange: 1,
+        frustrationChange: 2,
+        resultText: "Zgoda wychodzi z ust szybciej niż reszta ciebie zdąży zaprotestować."
+      },
+      {
+        id: "snap_harder_than_needed",
+        label: "Odpowiedzieć ostrzej, niż trzeba",
+        spoonsCost: 0,
+        trustChange: -3,
+        frustrationChange: 4,
+        resultText: "Prośba była mała. Huk po niej już nie."
+      }
+    ]
+  },
+  {
+    id: "relationship_good_news_gap",
+    title: "Dobra wiadomość w złym ciele",
+    tags: ["relationship", "communication", "inner"],
+    weightTags: ["high-trust", "low-spoons", "avoidance"],
+    agendaSlots: ["relationship", "inner"],
+    description:
+      "{partnerName} dzieli się czymś dobrym. Chcesz się ucieszyć. Problem w tym, że twoje ciało nie dostało aktualizacji o radości.",
+    choices: [
+      {
+        id: "say_you_are_glad",
+        label: "Powiedzieć, że się cieszysz, choć nie umiesz tego pokazać",
+        spoonsCost: 1,
+        trustChange: 3,
+        frustrationChange: -1,
+        resultText: "Radość nie zawsze ma właściwą mimikę. Tym razem przynajmniej ma podpis."
+      },
+      {
+        id: "force_enthusiasm",
+        label: "Wymusić entuzjazm",
+        spoonsCost: 2,
+        trustChange: 0,
+        frustrationChange: 1,
+        resultText: "Występ jest przekonujący. Niestety publiczność siedzi też w twoim układzie nerwowym."
+      },
+      {
+        id: "change_the_subject",
+        label: "Zmienić temat",
+        spoonsCost: 0,
+        trustChange: -2,
+        frustrationChange: 2,
+        resultText: "Temat znika. Razem z nim znika coś małego, co chciało zostać zobaczone."
+      }
+    ]
+  },
+  {
+    id: "inner_masking_receipt",
+    title: "Paragon za funkcjonowanie",
+    tags: ["inner", "masking", "spoons"],
+    weightTags: ["low-spoons", "overextension", "avoidance"],
+    agendaSlots: ["inner"],
+    description:
+      "Przez większość dnia działałeś/aś jak osoba, która ma zapasową baterię w kieszeni. Wieczorem okazuje się, że to była atrapa.",
+    choices: [
+      {
+        id: "stop_performing_productivity",
+        label: "Przestać udawać produktywność",
+        spoonsCost: 0,
+        trustChange: 0,
+        frustrationChange: -1,
+        resultText: "Świat nie klaszcze. Świat też się nie wali. Dziwne, ale użyteczne odkrycie."
+      },
+      {
+        id: "push_one_more_thing",
+        label: "Docisnąć jeszcze jedną rzecz",
+        spoonsCost: 3,
+        trustChange: 0,
+        frustrationChange: 2,
+        resultText: "Jedna rzecz zostaje zrobiona. Ty trochę mniej."
+      },
+      {
+        id: "vanish_into_safe_stimulus",
+        label: "Zniknąć w bezpiecznym bodźcu",
+        spoonsCost: 0,
+        trustChange: -1,
+        frustrationChange: 1,
+        resultText: "Bodziec robi za koc gaśniczy. Nie rozwiązuje pożaru, ale przez chwilę nie widać płomieni."
+      }
+    ]
+  },
+  {
+    id: "inner_too_many_tabs",
+    title: "Za dużo otwartych kart",
+    tags: ["inner", "spoons", "static"],
+    weightTags: ["low-spoons", "high-frustration"],
+    agendaSlots: ["inner"],
+    description:
+      "W głowie masz otwarte karty, których nie da się zamknąć, bo każda twierdzi, że zawiera coś pilnego.",
+    choices: [
+      {
+        id: "write_three_and_let_go",
+        label: "Zapisać trzy rzeczy i odpuścić resztę na dziś",
+        spoonsCost: 1,
+        trustChange: 0,
+        frustrationChange: -2,
+        resultText: "Nie robisz porządku w życiu. Robisz mały spis zakładników."
+      },
+      {
+        id: "try_to_remember_everything",
+        label: "Próbować zapamiętać wszystko",
+        spoonsCost: 2,
+        trustChange: 0,
+        frustrationChange: 2,
+        resultText: "Pamięć obiecuje współpracę. Pamięć jest znana z optymizmu."
+      },
+      {
+        id: "ask_partner_to_help_choose",
+        label: "Poprosić {partnerName}, żeby pomógł/pomogła ci wybrać jedno",
+        spoonsCost: 1,
+        trustChange: 2,
+        frustrationChange: -1,
+        resultText: "To nie jest oddanie kontroli. To poproszenie o latarkę."
+      }
+    ]
+  },
+  {
+    id: "work_fake_flexibility",
+    title: "Elastyczność, która zgina ciebie",
+    tags: ["work", "boundaries", "obligation"],
+    weightTags: ["work-pressure", "overextension", "tension"],
+    agendaSlots: ["obligation"],
+    description:
+      "W pracy pada słowo „elastycznie”. Z jakiegoś powodu zawsze oznacza ono, że to ty masz zmienić kształt.",
+    choices: [
+      {
+        id: "clarify_availability_boundary",
+        label: "Doprecyzować granicę dostępności",
+        spoonsCost: 1,
+        trustChange: 0,
+        frustrationChange: -1,
+        workEffect: { pressureChange: 3, stabilityChange: 0, burnoutChange: -3 },
+        resultText: "Granica brzmi mniej spektakularnie niż bunt. Za to da się przy niej oddychać."
+      },
+      {
+        id: "agree_before_sentence_ends",
+        label: "Zgodzić się, zanim ktoś dokończy zdanie",
+        spoonsCost: 2,
+        trustChange: -1,
+        frustrationChange: 2,
+        workEffect: { pressureChange: -3, stabilityChange: 1, burnoutChange: 5 },
+        resultText: "Zespół docenia twoją elastyczność. Twoje ciało składa reklamację."
+      },
+      {
+        id: "move_tension_to_evening",
+        label: "Przenieść napięcie na wieczór",
+        spoonsCost: 0,
+        trustChange: -2,
+        frustrationChange: 3,
+        workEffect: { pressureChange: 1, stabilityChange: 0, burnoutChange: 2 },
+        resultText: "W pracy spokój. W domu przychodzi faktura za tę decyzję."
+      }
+    ]
+  },
+  {
+    id: "work_calendar_collision",
+    title: "Kolizja w kalendarzu",
+    tags: ["work", "relationship", "calendar", "obligation"],
+    weightTags: ["work-pressure", "relationship-tension", "tension"],
+    agendaSlots: ["obligation", "relationship"],
+    description:
+      "Spotkanie z pracy wpada dokładnie w miejsce, które miało być wspólnym czasem. Kalendarz nie wygląda na winnego. To podejrzane.",
+    choices: [
+      {
+        id: "warn_partner_immediately",
+        label: "Uprzedzić {partnerName} od razu",
+        spoonsCost: 1,
+        trustChange: 2,
+        frustrationChange: -1,
+        workEffect: { pressureChange: 1, stabilityChange: 0, burnoutChange: 0 },
+        resultText: "Nie naprawiasz kolizji. Ale nie robisz z niej zasadzki."
+      },
+      {
+        id: "quietly_try_to_reshuffle_everything",
+        label: "Najpierw spróbować wszystko przesunąć po cichu",
+        spoonsCost: 3,
+        trustChange: 0,
+        frustrationChange: 2,
+        workEffect: { pressureChange: 2, stabilityChange: 0, burnoutChange: 4 },
+        resultText: "Przez chwilę jesteś własnym działem logistyki. Potem dział składa wypowiedzenie."
+      },
+      {
+        id: "assume_it_will_work_out",
+        label: "Uznać, że jakoś to będzie",
+        spoonsCost: 0,
+        trustChange: -2,
+        frustrationChange: 3,
+        workEffect: { pressureChange: 3, stabilityChange: -1, burnoutChange: 2 },
+        resultText: "„Jakoś” zaczyna układać plan bez konsultacji z tobą."
+      }
+    ]
+  },
+  {
+    id: "metamour_social_overlap",
+    title: "Wspólny brzeg rozmowy",
+    tags: ["relationship", "metamour", "social", "communication"],
+    weightTags: ["metamour-signal", "tension", "low-trust"],
+    agendaSlots: ["relationship"],
+    description:
+      "W rozmowie pojawia się możliwość, że ty i {metamourName} będziecie w tej samej przestrzeni. Nie dramat. Bardziej małe przeciągnięcie kabla przez środek pokoju.",
+    choices: [
+      {
+        id: "ask_how_without_performance",
+        label: "Zapytać, jak zrobić to bez performansu",
+        spoonsCost: 2,
+        trustChange: 3,
+        frustrationChange: -1,
+        metamourEffect: { familiarityChange: 5, tensionChange: -4 },
+        resultText: "Nie ustalacie idealnej wersji siebie. Ustalacie wersję, która może oddychać."
+      },
+      {
+        id: "pretend_its_neutral",
+        label: "Udawać, że to zupełnie neutralne",
+        spoonsCost: 1,
+        trustChange: 0,
+        frustrationChange: 2,
+        metamourEffect: { familiarityChange: 0, tensionChange: 4 },
+        resultText: "Neutralność wychodzi całkiem dobrze, jeśli nikt nie patrzy na twoje ramiona."
+      },
+      {
+        id: "turn_it_into_loyalty_test",
+        label: "Zrobić z tego test lojalności",
+        spoonsCost: 2,
+        trustChange: -3,
+        frustrationChange: 5,
+        metamourEffect: { familiarityChange: 0, tensionChange: 8 },
+        resultText: "Test ma pytania, których nikt nie zgodził się pisać."
+      }
+    ]
+  },
+  {
+    id: "metamour_information_echo",
+    title: "Informacja z drugiej ręki",
+    tags: ["relationship", "metamour", "boundaries", "communication"],
+    weightTags: ["metamour-signal", "repair", "tension"],
+    agendaSlots: ["relationship"],
+    description:
+      "Dowiadujesz się czegoś o {metamourName} nie wprost, tylko bocznym wejściem. Sama informacja jest mała. Droga, którą przyszła, już mniej.",
+    choices: [
+      {
+        id: "talk_about_channel_not_blame",
+        label: "Porozmawiać o kanale informacji, nie o winie",
+        spoonsCost: 2,
+        trustChange: 3,
+        frustrationChange: -2,
+        metamourEffect: { familiarityChange: 3, tensionChange: -5 },
+        resultText: "Rozmowa zostaje przy mapie, zamiast szukać winnego kierowcy."
+      },
+      {
+        id: "ask_for_details_unsure_why",
+        label: "Zapytać o szczegóły, chociaż nie wiesz po co",
+        spoonsCost: 2,
+        trustChange: -1,
+        frustrationChange: 2,
+        metamourEffect: { familiarityChange: 5, tensionChange: 3 },
+        resultText: "Więcej danych nie zawsze robi więcej bezpieczeństwa. Czasem tylko ostrzejszy obraz."
+      },
+      {
+        id: "cut_the_topic_immediately",
+        label: "Uciąć temat natychmiast",
+        spoonsCost: 0,
+        trustChange: -1,
+        frustrationChange: 1,
+        metamourEffect: { familiarityChange: -2, tensionChange: 3 },
+        resultText: "Temat się kończy. Echo jeszcze chwilę chodzi po ścianach."
+      }
+    ]
+  }
+  // CLEAN v0.31 content expansion events END
 
 ];

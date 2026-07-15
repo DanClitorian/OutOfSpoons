@@ -21,6 +21,11 @@
 // Żadna funkcja devTools NIE zduplikowana, NIE zmieniona funkcjonalnie
 // poza tym cache-bustem.
 //
+// v0.31: Content Expansion Pack 1. uiManager.js znowu zmienił
+// zawartość (4 zmienione ekrany dostały nowe query stringi) — import
+// podbity do ?v=310. Żadna funkcja devTools NIE zmieniona (ten ticket
+// to wyłącznie nowa treść eventów, zero nowego systemu).
+//
 // DEV-ONLY helpery do testowania Weekly Stakes / Wielkiego Testu /
 // Partner Capacity / Pattern Pressure / Relationship Scars / Repair
 // Events / The Static bez ręcznego przeklikiwania wielu dni. Ten moduł:
@@ -34,7 +39,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=305";
+import { showScreen } from "../ui/uiManager.js?v=310";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {

@@ -18,17 +18,21 @@
 // v0.26: Repair Events. eventSystem.js znowu zmienił zawartość
 // (integracja naprawy blizn w applyChoice) — import podbity do ?v=260.
 // Sama logika dayCycle.js nadal NIETKNIĘTA.
+//
+// v0.31: Content Expansion Pack 1. eventSystem.js i dayAgendaSystem.js
+// oba zmieniły WŁASNE importy eventData.js (9 nowych eventów) — importy
+// podbite do ?v=310. Sama logika dayCycle.js nadal NIETKNIĘTA.
 
 import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
 import { regenerateSpoons } from "./spoonsSystem.js";
 import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=300";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=310";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
 import { ensureMorningEventState, resolveMorningEvents } from "./morningEventSystem.js";
-import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=300";
+import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=310";
 // v0.5: wpisy w state.log zyskały pole "consequences" (jawne, mechaniczne
 // skutki wyboru: spoonsChange/trustChange/frustrationChange), pokazywane
 // teraz graczowi na ekranie refleksji. To kolejna niekompatybilna zmiana

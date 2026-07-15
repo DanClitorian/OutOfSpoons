@@ -41,11 +41,16 @@
 // TYLKO jeśli intensity >= 2 (patrz staticSystem.js — czyste odczyty,
 // zero wpływu na dostępność kart czy tekst wyborów). Static jest
 // liczony raz dziennie w gameScreen.js — tu tylko go CZYTAMY.
+//
+// v0.31: Content Expansion Pack 1. dayCycle.js i dayAgendaSystem.js
+// oba zmieniły WŁASNE importy w dół łańcucha (eventSystem.js /
+// eventData.js — 9 nowych eventów) — importy podbite do ?v=310. Ten
+// plik funkcjonalnie się nie zmienił.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=300";
-import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=300";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=310";
+import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=310";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js?v=300";
 import { buildEventStaticLine } from "../../systems/staticSystem.js?v=300";
 import {
