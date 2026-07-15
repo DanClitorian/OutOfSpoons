@@ -9,3 +9,6 @@ apply_clean_*.py
 apply_hotfix_*.py
 *.zip
 Wklejony tekst*.txt
+
+# Local one-off updater scripts
+apply_*.py
