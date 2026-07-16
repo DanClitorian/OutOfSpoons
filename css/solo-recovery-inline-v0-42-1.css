@@ -1,0 +1,63 @@
+/* v0.42.1 solo recovery inline layout
+ *
+ * Tryb Solo / Rekonstrukcja używa teraz standardowego layoutu .oos-game.
+ * Ten plik styluje tylko karty wyboru w dolnym panelu, żeby nie wyglądały
+ * jak osobna tabelka poza grą.
+ */
+
+.oos-solo-choice {
+  min-height: 132px;
+  height: 100%;
+  width: 100%;
+  border: 2px solid rgba(93, 123, 144, 0.42);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.50), transparent 28%),
+    rgba(255, 252, 246, 0.88);
+  color: #3d2b1f;
+  padding: 18px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 3px 5px 14px -10px rgba(40, 50, 60, 0.45);
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.oos-solo-choice:hover {
+  transform: translateY(-1px);
+}
+
+.oos-solo-choice__title {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.18rem;
+  line-height: 1.12;
+  color: #3d2b1f;
+}
+
+.oos-solo-choice__text {
+  display: block;
+  font-size: 0.94rem;
+  line-height: 1.38;
+  color: #4a3c31;
+}
+
+.oos-solo-choice__meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6c7b86;
+}
+
+.oos-game.oos-screen-solo-recovery .oos-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+  .oos-game.oos-screen-solo-recovery .oos-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

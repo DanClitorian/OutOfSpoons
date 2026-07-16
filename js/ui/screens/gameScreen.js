@@ -102,7 +102,15 @@ import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine 
 import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine } from "../../systems/workPressureSystem.js?v=300";
 import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLine } from "../../systems/achievementSystem.js?v=400";
-import { ensureSoloRecoveryState, isSoloRecoveryActive, buildSoloMorningLine } from "../../systems/soloRecoverySystem.js?v=420";
+import {
+  ensureSoloRecoveryState,
+  isSoloRecoveryActive,
+  buildSoloMorningLine,
+  getSoloRecoveryChoices,
+  applySoloRecoveryChoice,
+  advanceSoloRecoveryDay,
+  getSoloRecoveryDebugSummary
+} from "../../systems/soloRecoverySystem.js?v=421";
 export function renderGameScreen(container) {
   const state = getState();
 
@@ -224,6 +232,11 @@ export function renderGameScreen(container) {
   ensureSoloRecoveryState(state);
   const isSolo = isSoloRecoveryActive(state);
 
+  if (isSolo) {
+    renderSoloRecoveryMorning(container, state);
+    return;
+  }
+
   const topbar = createTopBar(state, "game");
   const sidebar = createSidebar(state, "game");
 
@@ -324,6 +337,86 @@ export function renderGameScreen(container) {
 // Pattern / Weekly Stake / Wielki Test / Static / Metamour / Work.
 // Zwraca null, gdy model jest jasny (type !== "ambiguous" && clarity
 // >= 45) — czyli w WIĘKSZOŚCI poranków, celowo "nie spamuje".
+
+// v0.42.1: Solo / Rekonstrukcja jako normalny poranek w tym samym
+// layoucie gry. Bez osobnego klikania "wejdź w rekonstrukcję".
+function renderSoloRecoveryMorning(container, state) {
+  const topbar = createTopBar(state, "game");
+  const sidebar = createSidebar(state, "game");
+
+  const scene = createScenePanel({
+    modifier: "morning",
+    title: `Rekonstrukcja · Dzień ${state.day}`
+  });
+
+  const narrative = createNarrativeStrip(buildSoloRecoveryNarrative(state));
+  const actions = getSoloRecoveryChoices(state).map((choice) => createSoloRecoveryChoiceButton(state, choice));
+
+  const shell = createGameShell({
+    screenClass: "solo-recovery",
+    topbar,
+    sidebar,
+    scene,
+    narrative,
+    actions,
+    actionsVariant: "choices"
+  });
+
+  container.appendChild(shell);
+}
+
+function buildSoloRecoveryNarrative(state) {
+  const summary = getSoloRecoveryDebugSummary(state);
+  const line = buildSoloMorningLine(state);
+
+  if (!summary) {
+    return line || "Rekonstrukcja: dziś gra pyta, co zostało po relacji.";
+  }
+
+  const parts = [
+    "Dziś: rekonstrukcja.",
+    line,
+    `Dni osobno: ${summary.daysInSolitude}.`,
+    `Samowiedza: ${summary.selfKnowledge}.`,
+    `Integralność granic: ${summary.boundaryIntegrity}.`,
+    `Przeciążenie społeczne: ${summary.socialExhaustion}.`
+  ];
+
+  return parts.filter(Boolean).join(" ");
+}
+
+function createSoloRecoveryChoiceButton(state, choice) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "oos-solo-choice";
+
+  const title = document.createElement("span");
+  title.className = "oos-solo-choice__title";
+  title.textContent = choice.title;
+  button.appendChild(title);
+
+  const text = document.createElement("span");
+  text.className = "oos-solo-choice__text";
+  text.textContent = choice.text;
+  button.appendChild(text);
+
+  const meta = document.createElement("span");
+  meta.className = "oos-solo-choice__meta";
+  meta.textContent = choice.spoonsCost > 0 ? `Koszt: ${choice.spoonsCost}` : "Bez kosztu";
+  button.appendChild(meta);
+
+  button.addEventListener("click", () => {
+    const result = applySoloRecoveryChoice(state, choice.id);
+    if (result && result.applied) {
+      advanceSoloRecoveryDay(state);
+      saveGame(state);
+    }
+    showScreen("game");
+  });
+
+  return button;
+}
+
 function buildMorningNarrative(state) {
   const stakesLine = buildMorningStakesLine(state);
   const achievementLine = buildMorningAchievementLine(state);
