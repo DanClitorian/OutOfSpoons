@@ -351,7 +351,11 @@ function renderSoloRecoveryMorning(container, state) {
 
   const scene = createScenePanel({
     modifier: "morning",
-    title: `Rekonstrukcja · Dzień ${state.day}`
+    // v0.43.2: tytuł skrócony do samego "Rekonstrukcja" — dzień jest
+    // już widoczny w topbarze ("Dzień X · Poranek"), więc powtarzanie
+    // go w plakietce sceny tylko poszerzało pigułkę bez realnej
+    // wartości informacyjnej.
+    title: "Rekonstrukcja"
   });
 
   const narrative = createNarrativeStrip(buildSoloRecoveryNarrative(state));

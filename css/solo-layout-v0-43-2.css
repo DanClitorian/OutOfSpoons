@@ -1,0 +1,95 @@
+/* solo-layout-v0-43-2.css
+ *
+ * v0.43.2: Solo layout polish.
+ *
+ * DIAGNOZA (na podstawie realnego CSS, nie zgadywania): .oos-game ma
+ * SZTYWNY grid (grid-template-rows: 56px minmax(0,1fr) 210px) z
+ * overflow:hidden na całym shellu — to jest CELOWE i działa dobrze
+ * dla zwykłych kart eventów/agendy. Karty solo (.oos-solo-choice)
+ * miały jednak min-height:150px + brak line-clamp na tekście, a sam
+ * tekst wyborów solo jest dłuższy niż typowy opis karty (2-3 zdania).
+ * Efekt: karty nie mieściły się w sztywnym 210px wierszu akcji i były
+ * wizualnie ucinane przez overflow:hidden. Analogicznie sidebar solo
+ * miał zbyt duży padding na każdą pojedynczą metrykę.
+ *
+ * ROZWIĄZANIE: zamiast dokładać kolejną warstwę CSS na wierzch,
+ * bezpośrednio ściągamy rozmiary do już istniejącej, sprawdzonej
+ * konwencji tej gry — .oos-decision-card-title/-description w
+ * game-ui-v0-18.css ZAWSZE używają -webkit-line-clamp (2 linie) do
+ * gwarancji, że karta nigdy nie urośnie ponad dostępne miejsce. Karty
+ * solo dostają dokładnie ten sam mechanizm zamiast rosnąć swobodnie.
+ *
+ * Ten plik ładuje się jako OSTATNI z plików solo (po v0-42/v0-42-1/
+ * v0-42-2), więc bezpiecznie wygrywa w kaskadzie dla tych samych
+ * selektorów bez potrzeby edytowania starszych plików.
+ *
+ * Zero zmian w .oos-game/.oos-stage/.oos-actions globalnie — tylko
+ * właściwości WEWNĄTRZ już istniejących klas .oos-solo-*.
+ */
+
+/* --- Karty wyboru: mieszczą się w sztywnym wierszu akcji --- */
+
+.oos-solo-choice {
+  min-height: 0;
+  padding: 12px 14px;
+  gap: 6px;
+}
+
+.oos-solo-choice__title {
+  font-size: clamp(14px, 1.2vw, 17px);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oos-solo-choice__text {
+  font-size: clamp(11.5px, 1vw, 13px);
+  line-height: 1.32;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Do 5 kart (4 zwykłe + karta nowej relacji, gdy gotowa) w jednym
+ * rzędzie zamiast zawijania do drugiego wiersza, który nie zmieściłby
+ * się w sztywnym 210px wierszu akcji. */
+.oos-game--solo-recovery .oos-actions--flow {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  max-width: 1200px;
+}
+
+/* --- Sidebar: kompaktowe metryki zamiast pięciu osobnych, dużych kafli --- */
+
+.oos-solo-sidebar {
+  gap: 8px;
+}
+
+.oos-solo-sidebar__card {
+  padding: 10px 12px;
+}
+
+.oos-solo-sidebar__text {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oos-solo-stat {
+  padding: 8px 12px;
+  gap: 4px;
+}
+
+.oos-solo-stat__row {
+  gap: 8px;
+}
+
+.oos-solo-stat__track {
+  height: 6px;
+}
