@@ -101,6 +101,7 @@ import {
 import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=300";
 import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine } from "../../systems/workPressureSystem.js?v=300";
 import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
+import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLine } from "../../systems/achievementSystem.js?v=400";
 export function renderGameScreen(container) {
   const state = getState();
 
@@ -185,6 +186,18 @@ export function renderGameScreen(container) {
   const alreadyCalculatedStakesToday = stakesBeforeCalc && stakesBeforeCalc.day === state.day;
   calculateDailyStakes(state);
   if (!alreadyCalculatedStakesToday) {
+    saveGame(state);
+  }
+
+  // v0.40: Achievements / Milestones. Jedna ocena dziennie,
+  // idempotentna. System nie zmienia mechanik, tylko rozpoznaje
+  // kamienie milowe i zapisuje je w state.achievements.
+  ensureAchievementState(state);
+  const achievementsBeforeEval = state.achievements;
+  const alreadyEvaluatedAchievementsToday =
+    achievementsBeforeEval && achievementsBeforeEval.lastCheckedDay === state.day;
+  const achievementResult = evaluateAchievements(state);
+  if (!alreadyEvaluatedAchievementsToday || achievementResult.changed) {
     saveGame(state);
   }
 
@@ -298,6 +311,7 @@ export function renderGameScreen(container) {
 // >= 45) — czyli w WIĘKSZOŚCI poranków, celowo "nie spamuje".
 function buildMorningNarrative(state) {
   const stakesLine = buildMorningStakesLine(state);
+  const achievementLine = buildMorningAchievementLine(state);
   const maskingDebtLine = buildMorningMaskingDebtLine(state);
   const relationshipModelLine = buildRelationshipModelMorningLine(state);
   const conflictLine = buildMorningConflictLine(state);
@@ -311,6 +325,7 @@ function buildMorningNarrative(state) {
 
   if (
     !stakesLine &&
+    !achievementLine &&
     !maskingDebtLine &&
     !relationshipModelLine &&
     !conflictLine &&
@@ -326,6 +341,7 @@ function buildMorningNarrative(state) {
   const parts = [
     "Dziś: plan dnia.",
     stakesLine,
+    achievementLine,
     maskingDebtLine,
     relationshipModelLine,
     conflictLine,

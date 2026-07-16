@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=390";
+import { showScreen } from "../ui/uiManager.js?v=400";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -111,6 +111,11 @@ import {
   triggerSecrecyDiscovery as triggerSecrecyDiscoveryState,
   clearSecrecy as clearSecrecyState
 } from "../systems/secrecyConsequenceSystem.js?v=380";
+import {
+  getAchievementDebugSummary,
+  unlockTestAchievement as unlockTestAchievementState,
+  clearAchievements as clearAchievementsState
+} from "../systems/achievementSystem.js?v=400";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -1034,6 +1039,54 @@ function clearSecrecy() {
   return getSecrecyDebugSummary(state);
 }
 
+
+// v0.40: Achievements / Milestones Foundation.
+function showAchievements() {
+  const state = requireActiveState("showAchievements()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getAchievementDebugSummary(state);
+  console.table({
+    count: summary ? summary.count : null,
+    lastCheckedDay: summary ? summary.lastCheckedDay : null,
+    lastUnlockedDay: summary ? summary.lastUnlockedDay : null,
+    lastUnlockedId: summary ? summary.lastUnlockedId : null
+  });
+  if (summary) {
+    console.table(summary.unlocked);
+    console.table(summary.recentHistory);
+  }
+  return summary;
+}
+
+function unlockTestAchievement() {
+  const state = requireActiveState("unlockTestAchievement()");
+  if (!state) {
+    return null;
+  }
+
+  unlockTestAchievementState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Odblokowano testowe osiągnięcie.");
+  return getAchievementDebugSummary(state);
+}
+
+function clearAchievements() {
+  const state = requireActiveState("clearAchievements()");
+  if (!state) {
+    return null;
+  }
+
+  clearAchievementsState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Osiągnięcia wyczyszczone.");
+  return getAchievementDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -1084,6 +1137,9 @@ if (typeof window !== "undefined") {
     showSecrecy,
     setSecrecyHigh,
     triggerSecrecyDiscovery,
-    clearSecrecy
+    clearSecrecy,
+    showAchievements,
+    unlockTestAchievement,
+    clearAchievements
   };
 }
