@@ -1,0 +1,147 @@
+/* v0.42.2 solo template/sidebar polish
+ *
+ * Tryb rekonstrukcji ma wyglądać jak dalszy ciąg gry:
+ * - ten sam szkielet .oos-game,
+ * - boczny panel zamiast karty partnera,
+ * - statystyki jako kafelki/paski,
+ * - karty wyboru bez metadanych kosztu.
+ */
+
+.oos-game.oos-screen-solo-recovery .oos-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.oos-solo-sidebar {
+  grid-area: sidebar;
+  min-width: 0;
+  height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.oos-solo-sidebar__card {
+  border: 2px solid rgba(92, 64, 51, 0.28);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.45), transparent 28%),
+    rgba(255, 252, 246, 0.82);
+  box-shadow: 3px 5px 14px -10px rgba(60, 30, 10, 0.35);
+  padding: 14px;
+}
+
+.oos-solo-sidebar__kicker {
+  margin-bottom: 6px;
+  color: #6c7b86;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  font-weight: 800;
+}
+
+.oos-solo-sidebar__title {
+  margin: 0;
+  color: #3d2b1f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.24rem;
+  line-height: 1.12;
+}
+
+.oos-solo-sidebar__text {
+  margin: 8px 0 0;
+  color: #4a3c31;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.oos-solo-stat {
+  border: 2px solid rgba(92, 64, 51, 0.22);
+  border-radius: 16px;
+  background: rgba(255, 252, 246, 0.72);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.oos-solo-stat__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.oos-solo-stat__label {
+  color: #4a3c31;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.oos-solo-stat__value {
+  color: #3d2b1f;
+  font-size: 0.96rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.oos-solo-stat__track {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(92, 64, 51, 0.16);
+  overflow: hidden;
+}
+
+.oos-solo-stat__fill {
+  height: 100%;
+  width: var(--solo-stat-fill, 0%);
+  border-radius: inherit;
+  background: rgba(93, 123, 144, 0.66);
+}
+
+.oos-solo-stat--strain .oos-solo-stat__fill {
+  background: rgba(140, 90, 72, 0.66);
+}
+
+.oos-solo-choice {
+  min-height: 150px;
+  height: 100%;
+  width: 100%;
+  border: 2px solid rgba(92, 64, 51, 0.30);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255,255,255,0.50), transparent 28%),
+    rgba(255, 252, 246, 0.88);
+  color: #3d2b1f;
+  padding: 18px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 3px 5px 14px -10px rgba(60, 30, 10, 0.40);
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.oos-solo-choice:hover {
+  transform: translateY(-1px);
+}
+
+.oos-solo-choice__title {
+  display: block;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.18rem;
+  line-height: 1.12;
+  color: #3d2b1f;
+}
+
+.oos-solo-choice__text {
+  display: block;
+  font-size: 0.94rem;
+  line-height: 1.38;
+  color: #4a3c31;
+}
+
+@media (max-width: 1100px) {
+  .oos-game.oos-screen-solo-recovery .oos-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

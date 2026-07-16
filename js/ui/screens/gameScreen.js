@@ -342,7 +342,7 @@ export function renderGameScreen(container) {
 // layoucie gry. Bez osobnego klikania "wejdź w rekonstrukcję".
 function renderSoloRecoveryMorning(container, state) {
   const topbar = createTopBar(state, "game");
-  const sidebar = createSidebar(state, "game");
+  const sidebar = createSoloRecoverySidebar(state);
 
   const scene = createScenePanel({
     modifier: "morning",
@@ -365,30 +365,95 @@ function renderSoloRecoveryMorning(container, state) {
   container.appendChild(shell);
 }
 
-function buildSoloRecoveryNarrative(state) {
-  const summary = getSoloRecoveryDebugSummary(state);
-  const line = buildSoloMorningLine(state);
 
-  if (!summary) {
-    return line || "Rekonstrukcja: dziś gra pyta, co zostało po relacji.";
+function createSoloRecoverySidebar(state) {
+  const summary = getSoloRecoveryDebugSummary(state);
+
+  const sidebar = document.createElement("aside");
+  sidebar.className = "oos-sidebar oos-solo-sidebar";
+
+  const header = document.createElement("section");
+  header.className = "oos-solo-sidebar__card";
+
+  const kicker = document.createElement("div");
+  kicker.className = "oos-solo-sidebar__kicker";
+  kicker.textContent = "Tryb solo";
+  header.appendChild(kicker);
+
+  const title = document.createElement("h2");
+  title.className = "oos-solo-sidebar__title";
+  title.textContent = "Rekonstrukcja";
+  header.appendChild(title);
+
+  const text = document.createElement("p");
+  text.className = "oos-solo-sidebar__text";
+  text.textContent = "Po rozstaniu nie grasz o czyjeś zaufanie. Sprawdzasz, jakie granice i nawyki zabierzesz dalej.";
+  header.appendChild(text);
+
+  sidebar.appendChild(header);
+
+  sidebar.appendChild(createSoloStatCard("Dni osobno", summary ? summary.daysInSolitude : 0, null));
+  sidebar.appendChild(createSoloStatCard("Samowiedza", summary ? summary.selfKnowledge : 0, 12));
+  sidebar.appendChild(createSoloStatCard("Integralność granic", summary ? summary.boundaryIntegrity : 0, 100));
+  sidebar.appendChild(createSoloStatCard("Przeciążenie społeczne", summary ? summary.socialExhaustion : 0, 12, true));
+
+  return sidebar;
+}
+
+function createSoloStatCard(label, value, maxValue, isStrain = false) {
+  const card = document.createElement("section");
+  card.className = isStrain ? "oos-solo-stat oos-solo-stat--strain" : "oos-solo-stat";
+
+  const row = document.createElement("div");
+  row.className = "oos-solo-stat__row";
+
+  const labelEl = document.createElement("span");
+  labelEl.className = "oos-solo-stat__label";
+  labelEl.textContent = label;
+  row.appendChild(labelEl);
+
+  const valueEl = document.createElement("strong");
+  valueEl.className = "oos-solo-stat__value";
+  valueEl.textContent = String(value ?? 0);
+  row.appendChild(valueEl);
+
+  card.appendChild(row);
+
+  if (maxValue) {
+    const track = document.createElement("div");
+    track.className = "oos-solo-stat__track";
+
+    const fill = document.createElement("div");
+    fill.className = "oos-solo-stat__fill";
+    fill.style.setProperty("--solo-stat-fill", `${soloPercent(value, maxValue)}%`);
+    track.appendChild(fill);
+
+    card.appendChild(track);
   }
 
-  const parts = [
+  return card;
+}
+
+function soloPercent(value, maxValue) {
+  const number = Number(value || 0);
+  const max = Number(maxValue || 1);
+  return Math.max(0, Math.min(100, Math.round((number / max) * 100)));
+}
+
+function buildSoloRecoveryNarrative(state) {
+  const line = buildSoloMorningLine(state);
+
+  return [
     "Dziś: rekonstrukcja.",
     line,
-    `Dni osobno: ${summary.daysInSolitude}.`,
-    `Samowiedza: ${summary.selfKnowledge}.`,
-    `Integralność granic: ${summary.boundaryIntegrity}.`,
-    `Przeciążenie społeczne: ${summary.socialExhaustion}.`
-  ];
-
-  return parts.filter(Boolean).join(" ");
+    "Nie szukasz teraz następnej relacji. Wybierz, z czym zostaniesz sam na sam."
+  ].filter(Boolean).join(" ");
 }
 
 function createSoloRecoveryChoiceButton(state, choice) {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "oos-solo-choice";
+  button.className = "oos-solo-choice oos-choice-card";
 
   const title = document.createElement("span");
   title.className = "oos-solo-choice__title";
@@ -399,12 +464,6 @@ function createSoloRecoveryChoiceButton(state, choice) {
   text.className = "oos-solo-choice__text";
   text.textContent = choice.text;
   button.appendChild(text);
-
-  const meta = document.createElement("span");
-  meta.className = "oos-solo-choice__meta";
-  meta.textContent = choice.spoonsCost > 0 ? `Koszt: ${choice.spoonsCost}` : "Bez kosztu";
-  button.appendChild(meta);
-
   button.addEventListener("click", () => {
     const result = applySoloRecoveryChoice(state, choice.id);
     if (result && result.applied) {
