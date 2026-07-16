@@ -57,7 +57,7 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=330";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=360";
 import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=310";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js?v=300";
 import { buildEventStaticLine } from "../../systems/staticSystem.js?v=300";
@@ -118,8 +118,13 @@ function buildChoiceCard(choice, state, currentSpoons, forcedChoice) {
     statusText: isDisabled ? "niedostępne teraz" : isForced ? "ostatnia dostępna opcja" : null,
     disabled: isDisabled,
     onClick: () => {
-      resolveEvent(choice.id);
-      showScreen("reflection");
+      const result = resolveEvent(choice.id);
+
+      if (result && result.state && result.state.relationshipEnd && result.state.relationshipEnd.active) {
+        showScreen("relationshipEnd");
+      } else {
+        showScreen("reflection");
+      }
     }
   });
 }

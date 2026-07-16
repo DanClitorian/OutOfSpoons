@@ -95,7 +95,7 @@
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
 import { renderGameScreen } from "./screens/gameScreen.js?v=350";
-import { renderEventScreen } from "./screens/eventScreen.js?v=330";
+import { renderEventScreen } from "./screens/eventScreen.js?v=360";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=350";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
@@ -103,6 +103,7 @@ import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=30
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=340";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
+import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=360";
 let appContainer = null;
 
 const screens = {
@@ -121,6 +122,9 @@ const screens = {
   weeklySummary: renderWeeklySummaryScreen,
   monthSummary: renderMonthSummaryScreen,
   "month-summary": renderMonthSummaryScreen,
+  relationshipEnd: renderRelationshipEndScreen,
+  "relationship-end": renderRelationshipEndScreen,
+  gameOver: renderRelationshipEndScreen,
   agenda: renderAgendaScreen
 };
 

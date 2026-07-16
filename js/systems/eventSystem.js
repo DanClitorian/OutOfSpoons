@@ -35,6 +35,7 @@ import { applyMetamourEffectFromChoice, formatWithMetamourPlaceholders } from ".
 import { applyWorkEffectFromChoice } from "./workPressureSystem.js?v=300";
 import { applyMaskingDebtFromChoice } from "./maskingDebtSystem.js?v=330";
 import { applyConflictPressureFromChoice } from "./conflictEscalationSystem.js?v=350";
+import { evaluateRelationshipEndAfterChoice } from "./relationshipEndStateSystem.js?v=360";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -205,6 +206,21 @@ export function applyChoice(state, event, choiceId) {
     maskingDebtResult
   });
 
+  // v0.36: Relationship End States. Może ustawić state.relationshipEnd.active,
+  // ale nie dodaje romansu/zdrady i nie zmienia zasobów.
+  const relationshipEndResult = evaluateRelationshipEndAfterChoice(state, event, choice, {
+    effectiveTrustChange,
+    effectiveSpoonsCost,
+    fatigueDebt,
+    pressureResult,
+    scarResult,
+    repairResult,
+    metamourResult,
+    workResult,
+    maskingDebtResult,
+    conflictResult
+  });
+
   const resultText = formatWithMetamourPlaceholders(choice.resultText, state);
 
   // v0.5: spoonsChange to zawsze liczba ujemna (albo zero) — koszt
@@ -297,6 +313,14 @@ export function applyChoice(state, event, choiceId) {
       stateAfter: conflictResult.stateAfter,
       triggeredFight: conflictResult.triggeredFight,
       note: conflictResult.note
+    },
+    // v0.36: Relationship End State. Jeśli triggered=true, eventScreen
+    // przejdzie na ekran końca relacji zamiast zwykłej refleksji.
+    relationshipEndEffect: {
+      triggered: relationshipEndResult.triggered,
+      active: relationshipEndResult.active,
+      type: relationshipEndResult.type,
+      reason: relationshipEndResult.reason
     }
   });
 

@@ -33,7 +33,7 @@ import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
 import { regenerateSpoons } from "./spoonsSystem.js";
 import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=350";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=360";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
@@ -153,7 +153,13 @@ export function resolveEvent(choiceId) {
   const state = getState();
   const event = getCurrentEvent();
   const choice = applyChoice(state, event, choiceId);
-  state.phase = "reflection";
+
+  if (state.relationshipEnd && state.relationshipEnd.active) {
+    state.phase = "relationshipEnd";
+  } else {
+    state.phase = "reflection";
+  }
+
   return { state, choice };
 }
 

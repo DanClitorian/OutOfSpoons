@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=350";
+import { showScreen } from "../ui/uiManager.js?v=360";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -94,6 +94,12 @@ import {
   triggerConflictFight as triggerConflictFightState,
   clearConflict as clearConflictState
 } from "../systems/conflictEscalationSystem.js?v=350";
+import {
+  getRelationshipEndDebugSummary,
+  forceRelationshipBreakup as forceRelationshipBreakupState,
+  forceFinalFight as forceFinalFightState,
+  clearRelationshipEnd as clearRelationshipEndState
+} from "../systems/relationshipEndStateSystem.js?v=360";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -852,6 +858,60 @@ function clearConflict() {
   return getConflictDebugSummary(state);
 }
 
+
+// v0.36: Relationship End States. Dev-only podgląd i wymuszenie końca relacji.
+function showRelationshipEnd() {
+  const state = requireActiveState("showRelationshipEnd()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getRelationshipEndDebugSummary(state);
+  console.table(summary);
+  return summary;
+}
+
+function forceRelationshipBreakup() {
+  const state = requireActiveState("forceRelationshipBreakup()");
+  if (!state) {
+    return null;
+  }
+
+  forceRelationshipBreakupState(state);
+  saveGame(state);
+  showScreen("relationshipEnd");
+
+  console.log("[oosDev] Wymuszono end-state: breakup.");
+  return getRelationshipEndDebugSummary(state);
+}
+
+function forceFinalFight() {
+  const state = requireActiveState("forceFinalFight()");
+  if (!state) {
+    return null;
+  }
+
+  forceFinalFightState(state);
+  saveGame(state);
+  showScreen("relationshipEnd");
+
+  console.log("[oosDev] Wymuszono end-state: final-fight.");
+  return getRelationshipEndDebugSummary(state);
+}
+
+function clearRelationshipEnd() {
+  const state = requireActiveState("clearRelationshipEnd()");
+  if (!state) {
+    return null;
+  }
+
+  clearRelationshipEndState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Relationship end-state wyczyszczony.");
+  return getRelationshipEndDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -891,6 +951,10 @@ if (typeof window !== "undefined") {
     showConflict,
     setConflictHigh,
     triggerConflictFight,
-    clearConflict
+    clearConflict,
+    showRelationshipEnd,
+    forceRelationshipBreakup,
+    forceFinalFight,
+    clearRelationshipEnd
   };
 }
