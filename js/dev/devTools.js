@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=400";
+import { showScreen } from "../ui/uiManager.js?v=420";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -116,6 +116,12 @@ import {
   unlockTestAchievement as unlockTestAchievementState,
   clearAchievements as clearAchievementsState
 } from "../systems/achievementSystem.js?v=400";
+import {
+  enterSoloRecovery as enterSoloRecoveryState,
+  getSoloRecoveryDebugSummary,
+  setSelfKnowledgeHigh as setSelfKnowledgeHighState,
+  clearSoloRecovery as clearSoloRecoveryState
+} from "../systems/soloRecoverySystem.js?v=420";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -1087,6 +1093,73 @@ function clearAchievements() {
   return getAchievementDebugSummary(state);
 }
 
+
+// v0.42: Solo / Reconstruction Bridge.
+function showSoloRecovery() {
+  const state = requireActiveState("showSoloRecovery()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getSoloRecoveryDebugSummary(state);
+  console.table({
+    isSingle: summary ? summary.isSingle : null,
+    active: summary ? summary.active : null,
+    startedDay: summary ? summary.startedDay : null,
+    daysInSolitude: summary ? summary.daysInSolitude : null,
+    selfKnowledge: summary ? summary.selfKnowledge : null,
+    socialExhaustion: summary ? summary.socialExhaustion : null,
+    boundaryIntegrity: summary ? summary.boundaryIntegrity : null,
+    readyForNewRelationship: summary ? summary.readyForNewRelationship : null
+  });
+  if (summary) {
+    console.log("[oosDev] Lessons:", summary.lessons);
+    console.log("[oosDev] Last result:", summary.lastResult);
+    console.table(summary.recentHistory);
+  }
+  return summary;
+}
+
+function startSoloRecovery() {
+  const state = requireActiveState("startSoloRecovery()");
+  if (!state) {
+    return null;
+  }
+
+  enterSoloRecoveryState(state, "devtools");
+  saveGame(state);
+  showScreen("game");
+
+  console.log("[oosDev] Solo recovery aktywne.");
+  return getSoloRecoveryDebugSummary(state);
+}
+
+function setSelfKnowledgeHigh() {
+  const state = requireActiveState("setSelfKnowledgeHigh()");
+  if (!state) {
+    return null;
+  }
+
+  setSelfKnowledgeHighState(state);
+  saveGame(state);
+
+  console.log("[oosDev] SelfKnowledge ustawione wysoko.");
+  return getSoloRecoveryDebugSummary(state);
+}
+
+function clearSoloRecovery() {
+  const state = requireActiveState("clearSoloRecovery()");
+  if (!state) {
+    return null;
+  }
+
+  clearSoloRecoveryState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Solo recovery wyczyszczone.");
+  return getSoloRecoveryDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -1140,6 +1213,10 @@ if (typeof window !== "undefined") {
     clearSecrecy,
     showAchievements,
     unlockTestAchievement,
-    clearAchievements
+    clearAchievements,
+    showSoloRecovery,
+    startSoloRecovery,
+    setSelfKnowledgeHigh,
+    clearSoloRecovery
   };
 }

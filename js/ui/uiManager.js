@@ -94,7 +94,7 @@
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=410";
+import { renderGameScreen } from "./screens/gameScreen.js?v=420";
 import { renderEventScreen } from "./screens/eventScreen.js?v=370";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=390";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
@@ -103,8 +103,9 @@ import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=30
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=340";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
-import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=360";
+import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";
 import { renderAchievementsScreen } from "./screens/achievementsScreen.js?v=410";
+import { renderSoloRecoveryScreen } from "./screens/soloRecoveryScreen.js?v=420";
 let appContainer = null;
 
 const screens = {
@@ -128,6 +129,8 @@ const screens = {
   gameOver: renderRelationshipEndScreen,
   achievements: renderAchievementsScreen,
   achievement: renderAchievementsScreen,
+  soloRecovery: renderSoloRecoveryScreen,
+  "solo-recovery": renderSoloRecoveryScreen,
   agenda: renderAgendaScreen
 };
 

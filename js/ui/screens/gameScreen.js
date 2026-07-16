@@ -102,6 +102,7 @@ import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine 
 import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine } from "../../systems/workPressureSystem.js?v=300";
 import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLine } from "../../systems/achievementSystem.js?v=400";
+import { ensureSoloRecoveryState, isSoloRecoveryActive, buildSoloMorningLine } from "../../systems/soloRecoverySystem.js?v=420";
 export function renderGameScreen(container) {
   const state = getState();
 
@@ -220,6 +221,9 @@ export function renderGameScreen(container) {
     saveGame(state);
   }
 
+  ensureSoloRecoveryState(state);
+  const isSolo = isSoloRecoveryActive(state);
+
   const topbar = createTopBar(state, "game");
   const sidebar = createSidebar(state, "game");
 
@@ -230,7 +234,14 @@ export function renderGameScreen(container) {
 
   const narrative = createNarrativeStrip(buildMorningNarrative(state));
 
-  const cta = createCtaButton("Otwórz plan dnia", () => {
+  const cta = createCtaButton(isSolo ? "Wejdź w rekonstrukcję" : "Otwórz plan dnia", () => {
+    if (isSolo) {
+      ensureSoloRecoveryState(state);
+      saveGame(state);
+      showScreen("soloRecovery");
+      return;
+    }
+
     ensureDailyAgenda(state);
     saveGame(state);
     showScreen("agenda");
@@ -316,6 +327,7 @@ export function renderGameScreen(container) {
 function buildMorningNarrative(state) {
   const stakesLine = buildMorningStakesLine(state);
   const achievementLine = buildMorningAchievementLine(state);
+  const soloLine = buildSoloMorningLine(state);
   const maskingDebtLine = buildMorningMaskingDebtLine(state);
   const relationshipModelLine = buildRelationshipModelMorningLine(state);
   const conflictLine = buildMorningConflictLine(state);
@@ -330,6 +342,7 @@ function buildMorningNarrative(state) {
   if (
     !stakesLine &&
     !achievementLine &&
+    !soloLine &&
     !maskingDebtLine &&
     !relationshipModelLine &&
     !conflictLine &&
@@ -346,6 +359,7 @@ function buildMorningNarrative(state) {
     "Dziś: plan dnia.",
     stakesLine,
     achievementLine,
+    soloLine,
     maskingDebtLine,
     relationshipModelLine,
     conflictLine,

@@ -10,6 +10,7 @@ import {
   buildRelationshipEndSummary,
   markRelationshipEndSeen
 } from "../../systems/relationshipEndStateSystem.js?v=360";
+import { enterSoloRecovery } from "../../systems/soloRecoverySystem.js?v=420";
 
 export function renderRelationshipEndScreen(container) {
   const state = getState();
@@ -54,8 +55,21 @@ export function renderRelationshipEndScreen(container) {
   const actions = document.createElement("div");
   actions.className = "oos-relationship-end__actions";
 
+  const soloButton = document.createElement("button");
+  soloButton.className = "oos-relationship-end__button";
+  soloButton.textContent = "Kontynuuj jako singiel";
+  soloButton.addEventListener("click", () => {
+    if (state && summary) {
+      markRelationshipEndSeen(state);
+      enterSoloRecovery(state, "relationship-end-screen");
+      saveGame(state);
+    }
+    showScreen("game");
+  });
+  actions.appendChild(soloButton);
+
   const menuButton = document.createElement("button");
-  menuButton.className = "oos-relationship-end__button";
+  menuButton.className = "oos-relationship-end__button oos-relationship-end__button--ghost";
   menuButton.textContent = "Wróć do menu";
   menuButton.addEventListener("click", () => {
     if (state && summary) {
