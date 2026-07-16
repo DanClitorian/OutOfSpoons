@@ -1107,3 +1107,56 @@ eventPool.push({
   ]
 });
 // v0.37 romance interest event END
+
+// v0.39 relationship agreement event START
+eventPool.push({
+  id: "relationship_agreement_conversation",
+  title: "CZY MY NADAL WIEMY, NA CO SIĘ UMAWIAMY?",
+  tags: ["relationship", "agreement", "tension", "repair"],
+  weightTags: ["relationship", "tension", "repair"],
+  agendaSlots: ["relationship"],
+  description:
+    "Temat zasad wraca nie jako wielka deklaracja, tylko jako drobne napięcie pod zwykłą rozmową. Niby wiadomo, kim dla siebie jesteście. A jednak część rzeczy od dawna działa bardziej jak domysł niż ustalenie.",
+  choices: [
+    {
+      id: "name_agreements_plainly",
+      label: "Nazwać zasady bez robienia z tego procesu",
+      spoonsCost: 2,
+      trustChange: 1,
+      frustrationChange: 1,
+      resultText:
+        "Mówisz prosto, bez sądu i bez wielkiej przemowy. Nie wszystko robi się łatwe, ale przynajmniej część zasad przestaje mieszkać wyłącznie w domysłach.",
+      agreementAction: {
+        clarityChange: 18,
+        noteKind: "clarified"
+      }
+    },
+    {
+      id: "ask_if_model_still_fits",
+      label: "Zapytać, czy obecny układ nadal wam pasuje",
+      spoonsCost: 3,
+      trustChange: 2,
+      frustrationChange: 2,
+      resultText:
+        "To pytanie nie daje natychmiastowej odpowiedzi. Daje za to miejsce, w którym odpowiedź może się kiedyś pojawić bez udawania, że wszystko jest oczywiste.",
+      agreementAction: {
+        clarityChange: 10,
+        noteKind: "renegotiated"
+      }
+    },
+    {
+      id: "avoid_agreement_talk",
+      label: "Nie ruszać tego dzisiaj",
+      spoonsCost: 0,
+      trustChange: -1,
+      frustrationChange: 2,
+      resultText:
+        "Temat zostaje tam, gdzie był: pod spodem. Przez chwilę jest ciszej. To nie to samo, co spokojniej.",
+      agreementAction: {
+        clarityChange: -12,
+        noteKind: "avoided"
+      }
+    }
+  ]
+});
+// v0.39 relationship agreement event END

@@ -21,7 +21,7 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js?v=370";
+import { eventPool } from "../data/eventData.js?v=390";
 import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
@@ -38,6 +38,7 @@ import { applyConflictPressureFromChoice } from "./conflictEscalationSystem.js?v
 import { evaluateRelationshipEndAfterChoice } from "./relationshipEndStateSystem.js?v=360";
 import { applyRomanceInterestFromChoice } from "./romanceInterestSystem.js?v=370";
 import { applySecrecyConsequenceFromChoice } from "./secrecyConsequenceSystem.js?v=380";
+import { applyRelationshipAgreementFromChoice } from "./relationshipAgreementSystem.js?v=390";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -209,6 +210,10 @@ export function applyChoice(state, event, choiceId) {
     maskingDebtResult
   });
 
+  // v0.39: Relationship Agreements. Gameplayowa rozmowa o zasadach —
+  // modyfikuje clarity modelu relacji, nie zmienia automatycznie typu relacji.
+  const agreementResult = applyRelationshipAgreementFromChoice(state, event, choice);
+
   if (secrecyResult.trustChange) {
     modifyTrust(state, partnerId, secrecyResult.trustChange);
   }
@@ -245,6 +250,7 @@ export function applyChoice(state, event, choiceId) {
     maskingDebtResult,
     romanceResult,
     secrecyResult,
+    agreementResult,
     conflictResult
   });
 
@@ -330,6 +336,17 @@ export function applyChoice(state, event, choiceId) {
           amount: maskingDebtResult.amount,
           currentAfter: maskingDebtResult.currentAfter,
           text: maskingDebtResult.text
+        }
+      : { applied: false },
+    // v0.39: Relationship Agreement Conversation. Tylko log/reflection.
+    agreementEffect: agreementResult.applied
+      ? {
+          applied: true,
+          clarityBefore: agreementResult.clarityBefore,
+          clarityAfter: agreementResult.clarityAfter,
+          clarityChange: agreementResult.clarityChange,
+          modelType: agreementResult.modelType,
+          note: agreementResult.note
         }
       : { applied: false },
     // v0.38: Secrecy Consequences. Tylko log/reflection/devTools.
