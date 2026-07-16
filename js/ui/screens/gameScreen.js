@@ -110,7 +110,18 @@ import {
   applySoloRecoveryChoice,
   advanceSoloRecoveryDay,
   getSoloRecoveryDebugSummary
-} from "../../systems/soloRecoverySystem.js?v=430";
+} from "../../systems/soloRecoverySystem.js?v=440";
+import {
+  ensureDatingArcState,
+  isDatingArcActive,
+  startDatingArc,
+  getDatingArcChoices,
+  applyDatingArcChoice,
+  advanceDatingArcDay,
+  getDatingArcStageTitle,
+  buildDatingArcNarrativeLine,
+  getDatingArcDebugSummary
+} from "../../systems/datingArcSystem.js?v=440";
 export function renderGameScreen(container) {
   const state = getState();
 
@@ -227,6 +238,17 @@ export function renderGameScreen(container) {
   evaluateDailyConflictState(state);
   if (!alreadyEvaluatedConflictToday) {
     saveGame(state);
+  }
+
+  // v0.44: Dating Arc Foundation. Sprawdzane PRZED solo recovery —
+  // dating arc jest pod-etapem w trakcie okresu solo (isSingle
+  // pozostaje true), więc jego ekran ma pierwszeństwo, dopóki jest
+  // aktywny. Karta "Możliwość nowej relacji" w renderSoloRecoveryMorning
+  // już NIE tworzy partnera bezpośrednio — odpala startDatingArc().
+  ensureDatingArcState(state);
+  if (isDatingArcActive(state)) {
+    renderDatingArcMorning(container, state);
+    return;
   }
 
   ensureSoloRecoveryState(state);
@@ -400,6 +422,11 @@ function selectDailySoloChoices(state, choices) {
   return { selected, newRelationshipChoice };
 }
 
+// v0.44: Dating Arc Foundation. Kliknięcie tego CTA już NIE tworzy
+// partnera od razu (applySoloRecoveryChoice ze
+// start_new_relationship_seed) — odpala startDatingArc(), która
+// tworzy prospect i stage "signal". Partner powstaje dopiero na
+// końcu dating arcu, w stage "define-relationship".
 function createSoloNewRelationshipCta(state, choice) {
   const cta = document.createElement("button");
   cta.type = "button";
@@ -416,11 +443,8 @@ function createSoloNewRelationshipCta(state, choice) {
   cta.appendChild(text);
 
   cta.addEventListener("click", () => {
-    const result = applySoloRecoveryChoice(state, choice.id);
-    if (result && result.applied) {
-      advanceSoloRecoveryDay(state);
-      saveGame(state);
-    }
+    startDatingArc(state, "solo-recovery");
+    saveGame(state);
     showScreen("game");
   });
 
@@ -546,6 +570,116 @@ function createSoloRecoveryChoiceButton(state, choice) {
       advanceSoloRecoveryDay(state);
       saveGame(state);
     }
+    showScreen("game");
+  });
+
+  return button;
+}
+
+// v0.44: Dating Arc Foundation. Renderuje się w TYM SAMYM miejscu co
+// tryb solo (dispatch w renderGameScreen, przed sprawdzeniem solo) —
+// reużywa DOKŁADNIE tych samych klas co solo (oos-solo-sidebar,
+// oos-solo-sidebar__card, oos-solo-stats-panel, createSoloStatRow,
+// oos-solo-choice/oos-decision-card) — świadomie zero nowego, dużego
+// UI, zgodnie z ticketem. Sidebar partnera NIE pojawia się, dopóki
+// relacja nie zostanie naprawdę rozpoczęta (dating arc ma WŁASNY
+// sidebar, patrz createDatingArcSidebar).
+function renderDatingArcMorning(container, state) {
+  const topbar = createTopBar(state, "game");
+  const sidebar = createDatingArcSidebar(state);
+
+  const scene = createScenePanel({
+    modifier: "morning",
+    title: getDatingArcStageTitle(state)
+  });
+
+  const narrative = createNarrativeStrip(buildDatingArcNarrativeLine(state));
+  const actions = getDatingArcChoices(state).map((choice) => createDatingArcChoiceButton(state, choice));
+
+  const shell = createGameShell({
+    screenClass: "dating-arc",
+    topbar,
+    sidebar,
+    scene,
+    narrative,
+    actions,
+    actionsVariant: "flow"
+  });
+
+  container.appendChild(shell);
+}
+
+// Sidebar dating arcu — reużywa TYCH SAMYCH klas co sidebar solo
+// (oos-solo-sidebar/-card/-stats-panel), tylko z innymi danymi:
+// imię prospecta, etap, curiosity/compatibilitySignal/pacePressure/
+// redFlags jako kompaktowe paski (createSoloStatRow, patrz wyżej).
+// Zero nowego CSS potrzebnego dla samego layoutu.
+function createDatingArcSidebar(state) {
+  const summary = getDatingArcDebugSummary(state);
+
+  const sidebar = document.createElement("aside");
+  sidebar.className = "oos-sidebar oos-solo-sidebar";
+
+  const header = document.createElement("section");
+  header.className = "oos-solo-sidebar__card";
+
+  const kicker = document.createElement("div");
+  kicker.className = "oos-solo-sidebar__kicker";
+  kicker.textContent = "Nowy kontakt";
+  header.appendChild(kicker);
+
+  const title = document.createElement("h2");
+  title.className = "oos-solo-sidebar__title";
+  title.textContent = summary && summary.prospect ? summary.prospect.name : "Ktoś nowy";
+  header.appendChild(title);
+
+  const text = document.createElement("p");
+  text.className = "oos-solo-sidebar__text";
+  text.textContent = "To wciąż możliwość, nie zobowiązanie. Sprawdzasz, jak wchodzicie w kontakt.";
+  header.appendChild(text);
+
+  sidebar.appendChild(header);
+
+  const statsPanel = document.createElement("section");
+  statsPanel.className = "oos-solo-stats-panel";
+
+  statsPanel.appendChild(createSoloStatRow("Etap", getDatingArcStageTitle(state), null));
+  statsPanel.appendChild(createSoloStatRow("Ciekawość", summary ? summary.curiosity : 0, 10));
+  statsPanel.appendChild(createSoloStatRow("Zgodność", summary ? summary.compatibilitySignal : 0, 10));
+  statsPanel.appendChild(createSoloStatRow("Presja tempa", summary ? summary.pacePressure : 0, 10, true));
+  statsPanel.appendChild(createSoloStatRow("Sygnały ostrzegawcze", summary ? summary.redFlags : 0, 10, true));
+
+  sidebar.appendChild(statsPanel);
+
+  return sidebar;
+}
+
+// Karta wyboru dating arcu — DOKŁADNIE ta sama para klas co karty solo
+// (oos-solo-choice + oos-decision-card), więc dostaje tę samą
+// stylistykę bez żadnego nowego CSS. Po kliknięciu: aplikuje wybór,
+// przesuwa dzień (ten sam rytm co solo recovery) i wraca do
+// renderGameScreen — dispatch tam sam rozpozna, czy dating arc nadal
+// jest aktywny (kolejny etap), czy właśnie się rozstrzygnął (partner
+// powstał albo gracz wrócił do solo).
+function createDatingArcChoiceButton(state, choice) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "oos-solo-choice oos-decision-card";
+
+  const title = document.createElement("span");
+  title.className = "oos-solo-choice__title";
+  title.textContent = choice.title;
+  button.appendChild(title);
+
+  const text = document.createElement("span");
+  text.className = "oos-solo-choice__text";
+  text.textContent = choice.text;
+  button.appendChild(text);
+
+  button.addEventListener("click", () => {
+    applyDatingArcChoice(state, choice.id);
+    advanceDatingArcDay(state);
+    saveGame(state);
     showScreen("game");
   });
 

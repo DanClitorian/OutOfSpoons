@@ -19,7 +19,7 @@
 import {
   buildNewRelationshipSeedChoice,
   startNewRelationshipSeed
-} from "./newRelationshipSeedSystem.js?v=430";
+} from "./newRelationshipSeedSystem.js?v=440";
 
 const MAX_HISTORY = 40;
 

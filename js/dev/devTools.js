@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=420";
+import { showScreen } from "../ui/uiManager.js?v=440";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -121,11 +121,17 @@ import {
   getSoloRecoveryDebugSummary,
   setSelfKnowledgeHigh as setSelfKnowledgeHighState,
   clearSoloRecovery as clearSoloRecoveryState
-} from "../systems/soloRecoverySystem.js?v=430";
+} from "../systems/soloRecoverySystem.js?v=440";
 import {
   previewNewRelationshipSeed,
   startNewRelationshipSeed as startNewRelationshipSeedState
-} from "../systems/newRelationshipSeedSystem.js?v=430";
+} from "../systems/newRelationshipSeedSystem.js?v=440";
+import {
+  getDatingArcDebugSummary,
+  startDatingArc as startDatingArcState,
+  forceAdvanceDatingArcStage,
+  clearDatingArc as clearDatingArcState
+} from "../systems/datingArcSystem.js?v=440";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -1199,6 +1205,87 @@ function forceStartNewRelationship() {
   return result;
 }
 
+// v0.44: Dating Arc Foundation. Wypisuje do konsoli active, stage,
+// prospect i wszystkie liczniki (curiosity/compatibilitySignal/
+// pacePressure/redFlags). Te dane NIGDY nie trafiają do UI gracza jako
+// liczby — w grze widać tylko etap, imię prospecta i paski.
+function showDatingArc() {
+  const state = requireActiveState("showDatingArc()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getDatingArcDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak stanu gry.");
+    return null;
+  }
+
+  console.log(`[oosDev] Dating Arc: active=${summary.active}, stage=${summary.stage}`);
+  console.log("[oosDev] prospect:", summary.prospect);
+  console.log(
+    `[oosDev] curiosity=${summary.curiosity}, compatibilitySignal=${summary.compatibilitySignal}, ` +
+      `pacePressure=${summary.pacePressure}, redFlags=${summary.redFlags}, readiness=${summary.readiness}`
+  );
+  console.log("[oosDev] Ostatnie 10 wpisów historii:");
+  console.table(summary.recentHistory);
+
+  return summary;
+}
+
+// v0.44: Dating Arc Foundation. Rozpoczyna dating arc (stage=signal,
+// nowy prospect) — NIE tworzy partnera. Do debugowania działa
+// niezależnie od tego, czy solo recovery jest aktywne.
+function startDatingArc() {
+  const state = requireActiveState("startDatingArc()");
+  if (!state) {
+    return null;
+  }
+
+  startDatingArcState(state, "devtools");
+  saveGame(state);
+  showScreen("game");
+
+  console.log("[oosDev] Dating arc rozpoczęty.");
+  return getDatingArcDebugSummary(state);
+}
+
+// v0.44: Dating Arc Foundation. Przesuwa dating arc o jeden etap w
+// stałej kolejności (signal -> conversation -> boundary-check ->
+// first-meeting -> define-relationship), z pominięciem logiki wyboru
+// — wyłącznie do szybkiego dojścia do końcowego etapu bez klikania.
+function advanceDatingArcStage() {
+  const state = requireActiveState("advanceDatingArcStage()");
+  if (!state) {
+    return null;
+  }
+
+  const arc = forceAdvanceDatingArcStage(state);
+  if (!arc) {
+    console.warn("[oosDev] Dating arc nie jest aktywny.");
+    return null;
+  }
+
+  saveGame(state);
+  console.log(`[oosDev] Dating arc stage -> ${arc.stage}.`);
+  return getDatingArcDebugSummary(state);
+}
+
+// v0.44: Dating Arc Foundation. Resetuje dating arc do stanu
+// nieaktywnego — NIE dotyka soloRecovery ani partnera.
+function clearDatingArc() {
+  const state = requireActiveState("clearDatingArc()");
+  if (!state) {
+    return null;
+  }
+
+  clearDatingArcState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Dating arc wyczyszczony.");
+  return getDatingArcDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -1258,6 +1345,10 @@ if (typeof window !== "undefined") {
     setSelfKnowledgeHigh,
     clearSoloRecovery,
     showNewRelationshipSeed,
-    forceStartNewRelationship
+    forceStartNewRelationship,
+    showDatingArc,
+    startDatingArc,
+    advanceDatingArcStage,
+    clearDatingArc
   };
 }

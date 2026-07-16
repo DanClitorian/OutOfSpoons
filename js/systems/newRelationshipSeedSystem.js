@@ -16,6 +16,15 @@
 // state.partner + state.npcs[partner.id]. Dzięki temu wraca normalny
 // flow gry, a pełne spięcie z generatorem partnerów można dopracować
 // później bez ryzyka crasha.
+//
+// v0.44: Dating Arc Foundation. Cała logika tworzenia partnera
+// (archiwizacja, stat calc, relationship model, baggage, resety) jest
+// teraz wydzielona do wspólnej, wewnętrznej finalizeNewRelationship()
+// — startNewRelationshipSeed() (poniżej, NIETKNIĘTA w zachowaniu,
+// nadal losuje z CANDIDATES) i nowa startNewRelationshipFromProspect()
+// (dla datingArcSystem.js — tworzy partnera z KONKRETNEGO prospecta,
+// z którym gracz przeszedł cały dating arc, nie z losowego kandydata)
+// obie wywołują TĘ SAMĄ, bezpieczną ścieżkę.
 
 const CANDIDATES = [
   {
@@ -100,9 +109,43 @@ export function startNewRelationshipSeed(state, source = "solo-recovery") {
     return { started: false, reason: buildReadinessReason(state) };
   }
 
+  const candidate = pickCandidate(state);
+  return finalizeNewRelationship(state, candidate, source);
+}
+
+/**
+ * v0.44: Dating Arc Foundation. Tworzy partnera na podstawie
+ * KONKRETNEGO prospecta z datingArcSystem.js — ta sama osoba, z którą
+ * gracz przeszedł cały dating arc, nie losowy kandydat z CANDIDATES.
+ * Reużywa DOKŁADNIE tej samej, bezpiecznej logiki
+ * (finalizeNewRelationship) co startNewRelationshipSeed() powyżej.
+ * NIE gatekeeperuje przez canStartNewRelationship() — w momencie
+ * wywołania gracz jest już w końcowym etapie dating arc, który sam w
+ * sobie jest dowodem gotowości; ponowne bramkowanie ryzykowałoby
+ * ślepy zaułek bez dobrego powodu.
+ */
+export function startNewRelationshipFromProspect(state, prospect, source = "dating-arc") {
+  if (!state || !state.player || !prospect) {
+    return { started: false, reason: "Brak danych do rozpoczęcia relacji." };
+  }
+
+  const candidate = {
+    name: prospect.name,
+    pronouns: prospect.pronouns,
+    roleLabel: prospect.roleLabel || "nowy partner",
+    relationshipLabel: "nowa relacja",
+    texture: prospect.contrastToPreviousRelationship || prospect.communicationStyle || "nieznany jeszcze rytm"
+  };
+
+  return finalizeNewRelationship(state, candidate, source);
+}
+
+// Wspólna, bezpieczna ścieżka tworzenia partnera — wydzielona z
+// oryginalnego ciała startNewRelationshipSeed() w v0.44, zachowanie
+// IDENTYCZNE jak wcześniej dla tej funkcji (zweryfikowane testem).
+function finalizeNewRelationship(state, candidate, source) {
   const solo = state.soloRecovery || {};
   const oldPartnerSnapshot = snapshotPartner(state);
-  const candidate = pickCandidate(state);
   const newPartnerId = `partner_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
   const startStats = calculateStartStats(state, solo);
 
