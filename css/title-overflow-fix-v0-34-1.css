@@ -1,0 +1,81 @@
+/* v0.34.1 title overflow fix
+ *
+ * Naprawia ucinanie tytułów scen/eventów w belce/plakietce przez ellipsis.
+ * Ten plik jest celowo CSS-only i addytywny: nie zmienia mechanik,
+ * nie zmienia layoutu .oos-game globalnie, nie usuwa istniejących styli.
+ */
+
+body[data-game-screen] .oos-stage [class*="title"],
+body[data-game-screen] .oos-stage [class*="heading"],
+body[data-game-screen] .oos-stage [class*="plaque"],
+body[data-game-screen] .oos-scene [class*="title"],
+body[data-game-screen] .oos-scene [class*="heading"],
+body[data-game-screen] .oos-scene [class*="plaque"],
+body[data-game-screen] .oos-scene-title,
+body[data-game-screen] .oos-scene-heading,
+body[data-game-screen] .oos-stage-title,
+body[data-game-screen] .oos-title-plaque,
+body[data-game-screen] .oos-wood-plaque {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  -webkit-box-orient: initial !important;
+
+  width: auto !important;
+  max-width: min(760px, calc(100% - 48px)) !important;
+  height: auto !important;
+  min-height: 48px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+
+  box-sizing: border-box !important;
+  padding-block: 10px !important;
+  padding-inline: 28px !important;
+
+  line-height: 1.12 !important;
+  text-align: center !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+}
+
+/* Jeżeli ellipsis siedzi na wewnętrznym span/div, zdejmij go też z dziecka. */
+body[data-game-screen] .oos-stage [class*="title"] > *,
+body[data-game-screen] .oos-stage [class*="heading"] > *,
+body[data-game-screen] .oos-stage [class*="plaque"] > *,
+body[data-game-screen] .oos-scene [class*="title"] > *,
+body[data-game-screen] .oos-scene [class*="heading"] > *,
+body[data-game-screen] .oos-scene [class*="plaque"] > *,
+body[data-game-screen] .oos-scene-title > *,
+body[data-game-screen] .oos-scene-heading > *,
+body[data-game-screen] .oos-stage-title > *,
+body[data-game-screen] .oos-title-plaque > *,
+body[data-game-screen] .oos-wood-plaque > * {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Długie tytuły na ekranie eventu mogą potrzebować odrobinę mniejszego fontu,
+ * zamiast obcinania. Clamp zostawia duże tytuły na desktopie, ale pomaga
+ * przy bardzo długich polskich tekstach. */
+body[data-game-screen="event"] .oos-stage [class*="title"],
+body[data-game-screen="event"] .oos-stage [class*="heading"],
+body[data-game-screen="event"] .oos-stage [class*="plaque"],
+body[data-game-screen="event"] .oos-scene [class*="title"],
+body[data-game-screen="event"] .oos-scene [class*="heading"],
+body[data-game-screen="event"] .oos-scene [class*="plaque"],
+body[data-game-screen="event"] .oos-scene-title,
+body[data-game-screen="event"] .oos-scene-heading,
+body[data-game-screen="event"] .oos-stage-title,
+body[data-game-screen="event"] .oos-title-plaque {
+  font-size: clamp(1.35rem, 2.05vw, 2.05rem) !important;
+}
