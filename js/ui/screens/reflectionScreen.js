@@ -43,6 +43,7 @@ import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=300";
 import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=300";
 import { buildReflectionStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 import { buildReflectionMaskingDebtLine } from "../../systems/maskingDebtSystem.js?v=330";
+import { buildReflectionConflictLine } from "../../systems/conflictEscalationSystem.js?v=350";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -145,6 +146,7 @@ export function renderReflectionScreen(container, data) {
   // ("masking debt +1"). buildReflectionMaskingDebtLine() zwraca null
   // w normalnym przypadku (wybór niemaskujący).
   const maskingDebtText = buildReflectionMaskingDebtLine(state, lastEntry);
+  const conflictText = buildReflectionConflictLine(state, lastEntry);
 
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
@@ -171,7 +173,8 @@ export function renderReflectionScreen(container, data) {
       metamourText,
       workText,
       stakesText,
-      maskingDebtText
+      maskingDebtText,
+      conflictText
     )
   );
 
@@ -236,7 +239,8 @@ function buildNarrativeText(
   metamourText,
   workText,
   stakesText,
-  maskingDebtText
+  maskingDebtText,
+  conflictText
 ) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
   const parts = [
@@ -250,7 +254,8 @@ function buildNarrativeText(
     metamourText,
     workText,
     stakesText,
-    maskingDebtText
+    maskingDebtText,
+    conflictText
   ].filter(Boolean);
   return parts.join(" ");
 }

@@ -80,6 +80,11 @@ import {
   buildRelationshipModelMorningLine
 } from "../../systems/relationshipModelSystem.js?v=340";
 import {
+  ensureConflictEscalationState,
+  evaluateDailyConflictState,
+  buildMorningConflictLine
+} from "../../systems/conflictEscalationSystem.js?v=350";
+import {
   ensureStaticState,
   calculateDailyStatic,
   buildMorningStaticLine
@@ -190,6 +195,18 @@ export function renderGameScreen(container) {
   // nie ma tu żadnego wzorca "already calculated today" ani saveGame.
   ensureRelationshipModelState(state);
 
+  // v0.35: Conflict Escalation Foundation. Jedna ewaluacja dziennie,
+  // idempotentna. System nie kończy gry i nie zmienia zasobów — tylko
+  // zapisuje stan napięcia relacyjnego, który UI może przeczytać.
+  ensureConflictEscalationState(state);
+  const conflictBeforeEval = state.partner ? state.partner.conflict : null;
+  const alreadyEvaluatedConflictToday =
+    conflictBeforeEval && conflictBeforeEval.lastEvaluatedDay === state.day;
+  evaluateDailyConflictState(state);
+  if (!alreadyEvaluatedConflictToday) {
+    saveGame(state);
+  }
+
   const topbar = createTopBar(state, "game");
   const sidebar = createSidebar(state, "game");
 
@@ -283,6 +300,7 @@ function buildMorningNarrative(state) {
   const stakesLine = buildMorningStakesLine(state);
   const maskingDebtLine = buildMorningMaskingDebtLine(state);
   const relationshipModelLine = buildRelationshipModelMorningLine(state);
+  const conflictLine = buildMorningConflictLine(state);
   const partnerTeaser = buildPartnerCapacityTeaser(state);
   const patternTeaser = buildPatternTeaser(state);
   const weeklyTeaser = buildWeeklyStakeTeaser(state);
@@ -295,6 +313,7 @@ function buildMorningNarrative(state) {
     !stakesLine &&
     !maskingDebtLine &&
     !relationshipModelLine &&
+    !conflictLine &&
     !partnerTeaser &&
     !patternTeaser &&
     !weeklyTeaser &&
@@ -309,6 +328,7 @@ function buildMorningNarrative(state) {
     stakesLine,
     maskingDebtLine,
     relationshipModelLine,
+    conflictLine,
     partnerTeaser,
     patternTeaser,
     weeklyTeaser,

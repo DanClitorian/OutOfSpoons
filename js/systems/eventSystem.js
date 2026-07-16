@@ -34,6 +34,7 @@ import { applyRepairFromChoice } from "./relationshipRepairSystem.js?v=300";
 import { applyMetamourEffectFromChoice, formatWithMetamourPlaceholders } from "./metamourSystem.js?v=300";
 import { applyWorkEffectFromChoice } from "./workPressureSystem.js?v=300";
 import { applyMaskingDebtFromChoice } from "./maskingDebtSystem.js?v=330";
+import { applyConflictPressureFromChoice } from "./conflictEscalationSystem.js?v=350";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -190,6 +191,20 @@ export function applyChoice(state, event, choiceId) {
   // dopiero rano, przez resolveMorningMaskingDebt() w gameScreen.js.
   const maskingDebtResult = applyMaskingDebtFromChoice(state, event, choice);
 
+  // v0.35: Conflict Escalation. Nie zmienia spoons/trust/frustration —
+  // zapisuje tylko narastanie lub obniżenie napięcia relacyjnego.
+  const conflictResult = applyConflictPressureFromChoice(state, event, choice, {
+    effectiveTrustChange,
+    effectiveSpoonsCost,
+    fatigueDebt,
+    pressureResult,
+    scarResult,
+    repairResult,
+    metamourResult,
+    workResult,
+    maskingDebtResult
+  });
+
   const resultText = formatWithMetamourPlaceholders(choice.resultText, state);
 
   // v0.5: spoonsChange to zawsze liczba ujemna (albo zero) — koszt
@@ -273,7 +288,16 @@ export function applyChoice(state, event, choiceId) {
           currentAfter: maskingDebtResult.currentAfter,
           text: maskingDebtResult.text
         }
-      : { applied: false }
+      : { applied: false },
+    // v0.35: Conflict Escalation. Tylko log/devTools/reflection —
+    // żadnych liczb w UI gracza i żadnego game over w tej wersji.
+    conflictEffect: {
+      applied: conflictResult.applied,
+      delta: conflictResult.delta,
+      stateAfter: conflictResult.stateAfter,
+      triggeredFight: conflictResult.triggeredFight,
+      note: conflictResult.note
+    }
   });
 
   completeCurrentAgendaItem(state);

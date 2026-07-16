@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=340";
+import { showScreen } from "../ui/uiManager.js?v=350";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -88,6 +88,12 @@ import {
   setRelationshipModelType as setRelationshipModelTypeState,
   setRelationshipModelClarity as setRelationshipModelClarityState
 } from "../systems/relationshipModelSystem.js?v=340";
+import {
+  getConflictDebugSummary,
+  setConflictHigh as setConflictHighState,
+  triggerConflictFight as triggerConflictFightState,
+  clearConflict as clearConflictState
+} from "../systems/conflictEscalationSystem.js?v=350";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -778,6 +784,74 @@ function setRelationshipModelClarity(value) {
   return getRelationshipModelDebugSummary(state);
 }
 
+
+// v0.35: Conflict Escalation Foundation. Dev-only podgląd napięcia relacyjnego.
+function showConflict() {
+  const state = requireActiveState("showConflict()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getConflictDebugSummary(state);
+  if (!summary) {
+    console.warn("[oosDev] Brak partnera albo konfliktu w stanie gry.");
+    return null;
+  }
+
+  console.table({
+    current: summary.current,
+    volatility: summary.volatility,
+    state: summary.state,
+    lastEvaluatedDay: summary.lastEvaluatedDay,
+    lastConflictDay: summary.lastConflictDay
+  });
+  console.log("[oosDev] Pressure:", summary.pressure);
+  console.log("[oosDev] Last conflict event:", summary.lastConflictEvent);
+  console.log("[oosDev] Ostatnie wpisy historii:");
+  console.table(summary.recentHistory);
+
+  return summary;
+}
+
+function setConflictHigh() {
+  const state = requireActiveState("setConflictHigh()");
+  if (!state) {
+    return null;
+  }
+
+  setConflictHighState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Conflict ustawiony wysoko: critical.");
+  return getConflictDebugSummary(state);
+}
+
+function triggerConflictFight() {
+  const state = requireActiveState("triggerConflictFight()");
+  if (!state) {
+    return null;
+  }
+
+  triggerConflictFightState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Conflict ustawiony na fight. To NIE kończy gry w v0.35.");
+  return getConflictDebugSummary(state);
+}
+
+function clearConflict() {
+  const state = requireActiveState("clearConflict()");
+  if (!state) {
+    return null;
+  }
+
+  clearConflictState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Conflict wyczyszczony: calm.");
+  return getConflictDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -813,6 +887,10 @@ if (typeof window !== "undefined") {
     setRelationshipModelPoly,
     setRelationshipModelOpen,
     setRelationshipModelAmbiguous,
-    setRelationshipModelClarity
+    setRelationshipModelClarity,
+    showConflict,
+    setConflictHigh,
+    triggerConflictFight,
+    clearConflict
   };
 }
