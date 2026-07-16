@@ -9,7 +9,7 @@
 // showRelationshipModel, setRelationshipModelMono/Poly/Open/Ambiguous,
 // setRelationshipModelClarity).
 
-import { initUI, showScreen } from "./ui/uiManager.js?v=400";
+import { initUI, showScreen } from "./ui/uiManager.js?v=410";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia

@@ -236,13 +236,17 @@ export function renderGameScreen(container) {
     showScreen("agenda");
   });
 
+  const achievementsCta = createCtaButton("Osiągnięcia", () => {
+    showScreen("achievements");
+  });
+
   const shell = createGameShell({
     screenClass: "morning",
     topbar,
     sidebar,
     scene,
     narrative,
-    actions: [cta],
+    actions: [cta, achievementsCta],
     actionsVariant: "single"
   });
 
