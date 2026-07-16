@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=360";
+import { showScreen } from "../ui/uiManager.js?v=370";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -100,6 +100,11 @@ import {
   forceFinalFight as forceFinalFightState,
   clearRelationshipEnd as clearRelationshipEndState
 } from "../systems/relationshipEndStateSystem.js?v=360";
+import {
+  buildRomanceDebugSummary,
+  setRomanceHigh as setRomanceHighState,
+  clearRomance as clearRomanceState
+} from "../systems/romanceInterestSystem.js?v=370";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -912,6 +917,55 @@ function clearRelationshipEnd() {
   return getRelationshipEndDebugSummary(state);
 }
 
+
+// v0.37: Romance Interest Prototype. Dev-only podgląd fascynacji/sekretu.
+function showRomance() {
+  const state = requireActiveState("showRomance()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = buildRomanceDebugSummary(state);
+  console.table({
+    attraction: summary ? summary.attraction : null,
+    secrecy: summary ? summary.secrecy : null,
+    boundaryRisk: summary ? summary.boundaryRisk : null,
+    targetName: summary ? summary.targetName : null,
+    lastActionDay: summary ? summary.lastActionDay : null
+  });
+  if (summary) {
+    console.log("[oosDev] Last classification:", summary.lastClassification);
+    console.table(summary.recentHistory);
+  }
+  return summary;
+}
+
+function setRomanceHigh() {
+  const state = requireActiveState("setRomanceHigh()");
+  if (!state) {
+    return null;
+  }
+
+  setRomanceHighState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Romance ustawione wysoko: attraction/secrecy.");
+  return buildRomanceDebugSummary(state);
+}
+
+function clearRomance() {
+  const state = requireActiveState("clearRomance()");
+  if (!state) {
+    return null;
+  }
+
+  clearRomanceState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Romance wyczyszczone.");
+  return buildRomanceDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -955,6 +1009,9 @@ if (typeof window !== "undefined") {
     showRelationshipEnd,
     forceRelationshipBreakup,
     forceFinalFight,
-    clearRelationshipEnd
+    clearRelationshipEnd,
+    showRomance,
+    setRomanceHigh,
+    clearRomance
   };
 }

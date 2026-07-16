@@ -21,7 +21,7 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js?v=310";
+import { eventPool } from "../data/eventData.js?v=370";
 import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
@@ -36,6 +36,7 @@ import { applyWorkEffectFromChoice } from "./workPressureSystem.js?v=300";
 import { applyMaskingDebtFromChoice } from "./maskingDebtSystem.js?v=330";
 import { applyConflictPressureFromChoice } from "./conflictEscalationSystem.js?v=350";
 import { evaluateRelationshipEndAfterChoice } from "./relationshipEndStateSystem.js?v=360";
+import { applyRomanceInterestFromChoice } from "./romanceInterestSystem.js?v=370";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -192,6 +193,10 @@ export function applyChoice(state, event, choiceId) {
   // dopiero rano, przez resolveMorningMaskingDebt() w gameScreen.js.
   const maskingDebtResult = applyMaskingDebtFromChoice(state, event, choice);
 
+  // v0.37: Romance Interest. Nie kończy gry i nie nazywa automatycznie
+  // fascynacji zdradą. Klasyfikacja zależy od Relationship Model.
+  const romanceResult = applyRomanceInterestFromChoice(state, event, choice);
+
   // v0.35: Conflict Escalation. Nie zmienia spoons/trust/frustration —
   // zapisuje tylko narastanie lub obniżenie napięcia relacyjnego.
   const conflictResult = applyConflictPressureFromChoice(state, event, choice, {
@@ -218,6 +223,7 @@ export function applyChoice(state, event, choiceId) {
     metamourResult,
     workResult,
     maskingDebtResult,
+    romanceResult,
     conflictResult
   });
 
@@ -303,6 +309,20 @@ export function applyChoice(state, event, choiceId) {
           amount: maskingDebtResult.amount,
           currentAfter: maskingDebtResult.currentAfter,
           text: maskingDebtResult.text
+        }
+      : { applied: false },
+    // v0.37: Romance Interest. Tylko log/devTools/przyszłe systemy.
+    romanceEffect: romanceResult.applied
+      ? {
+          applied: true,
+          actionType: romanceResult.actionType,
+          disclosed: romanceResult.disclosed,
+          askedFirst: romanceResult.askedFirst,
+          attractionAfter: romanceResult.attractionAfter,
+          secrecyAfter: romanceResult.secrecyAfter,
+          boundaryRisk: romanceResult.boundaryRisk,
+          classification: romanceResult.classification,
+          note: romanceResult.note
         }
       : { applied: false },
     // v0.35: Conflict Escalation. Tylko log/devTools/reflection —

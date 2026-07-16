@@ -1039,3 +1039,71 @@ export const eventPool = [
   // CLEAN v0.31 content expansion events END
 
 ];
+
+// v0.37 romance interest event START
+eventPool.push({
+  id: "outside_attention_message",
+  title: "KTOŚ PISZE W INNYM TONIE",
+  tags: ["relationship", "inner", "romance", "tension"],
+  weightTags: ["relationship", "tension", "avoidance"],
+  agendaSlots: ["relationship", "inner"],
+  description:
+    "Na ekranie telefonu pojawia się wiadomość od osoby, z którą rozmowy ostatnio robią się za łatwe. Nie ma w tym jeszcze wielkiej historii. Jest za to ten mały moment, w którym wiesz, że możesz pójść w różne strony.",
+  choices: [
+    {
+      id: "name_it_to_partner",
+      label: "Powiedzieć partnerowi, że coś cię zaciekawiło",
+      spoonsCost: 2,
+      trustChange: 1,
+      frustrationChange: 1,
+      resultText:
+        "Mówisz to bez fajerwerków i bez teatralnej spowiedzi. Sama fascynacja nie znika, ale przestaje być rzeczą, którą trzeba chować pod językiem.",
+      romanceAction: {
+        type: "disclosure",
+        disclosed: true,
+        askedFirst: true,
+        attractionChange: 1,
+        secrecyChange: -2,
+        targetName: "Ktoś nowy",
+        noteKind: "open"
+      }
+    },
+    {
+      id: "reply_in_secret",
+      label: "Odpisać i zostawić to dla siebie",
+      spoonsCost: 1,
+      trustChange: -1,
+      frustrationChange: 2,
+      resultText:
+        "Odpisujesz lekko, prawie niewinnie. Właśnie dlatego tak łatwo schować ten gest pod zwykłym dniem.",
+      romanceAction: {
+        type: "flirt",
+        disclosed: false,
+        askedFirst: false,
+        attractionChange: 2,
+        secrecyChange: 2,
+        targetName: "Ktoś nowy",
+        noteKind: "secret"
+      }
+    },
+    {
+      id: "do_not_reply_today",
+      label: "Nie odpowiadać dzisiaj",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Odkładasz telefon ekranem do dołu. To pomaga na kilka godzin. Nie rozwiązuje pytania, dlaczego serce zdążyło już zrobić krok.",
+      romanceAction: {
+        type: "flirt",
+        disclosed: false,
+        askedFirst: false,
+        attractionChange: 1,
+        secrecyChange: 1,
+        targetName: "Ktoś nowy",
+        noteKind: "postponed"
+      }
+    }
+  ]
+});
+// v0.37 romance interest event END

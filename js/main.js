@@ -9,12 +9,12 @@
 // showRelationshipModel, setRelationshipModelMono/Poly/Open/Ambiguous,
 // setRelationshipModelClarity).
 
-import { initUI, showScreen } from "./ui/uiManager.js?v=360";
+import { initUI, showScreen } from "./ui/uiManager.js?v=370";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
 // w normalnym gameplayu, dopóki nie zostanie ręcznie wywołane z konsoli.
-import "./dev/devTools.js?v=360";
+import "./dev/devTools.js?v=370";
 
 document.addEventListener("DOMContentLoaded", () => {
   initUI("app");
