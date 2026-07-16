@@ -247,14 +247,14 @@ export function renderGameScreen(container) {
 
   const narrative = createNarrativeStrip(buildMorningNarrative(state));
 
-  const cta = createCtaButton(isSolo ? "Wejdź w rekonstrukcję" : "Otwórz plan dnia", () => {
-    if (isSolo) {
-      ensureSoloRecoveryState(state);
-      saveGame(state);
-      showScreen("soloRecovery");
-      return;
-    }
-
+  // v0.43.1: usunięty martwy kod — ta gałąź jest osiągana WYŁĄCZNIE
+  // gdy isSolo === false (przy isSolo === true funkcja zwróciła już
+  // wcześniej, patrz renderSoloRecoveryMorning powyżej), więc gałąź
+  // "isSolo ? ... : ..." nigdy się nie wykonywała. Wcześniej prowadziła
+  // też do showScreen("soloRecovery") — nieosiągalnego, oderwanego od
+  // reszty gry ekranu (soloRecoveryScreen.js), którego dotyczyła ta
+  // poprawka.
+  const cta = createCtaButton("Otwórz plan dnia", () => {
     ensureDailyAgenda(state);
     saveGame(state);
     showScreen("agenda");
@@ -338,8 +338,13 @@ export function renderGameScreen(container) {
 // Zwraca null, gdy model jest jasny (type !== "ambiguous" && clarity
 // >= 45) — czyli w WIĘKSZOŚCI poranków, celowo "nie spamuje".
 
-// v0.42.1: Solo / Rekonstrukcja jako normalny poranek w tym samym
-// layoucie gry. Bez osobnego klikania "wejdź w rekonstrukcję".
+// v0.43.1: Solo Template Redesign. actionsVariant zmieniony z "choices"
+// (klasa .oos-actions--choices NIE MIAŁA żadnej reguły CSS — karty
+// solo dziedziczyły domyślny display:flex z .oos-actions, co dawało
+// ciasny, niedopasowany układ) na "flow" — DOKŁADNIE ten sam,
+// istniejący wariant, którego eventScreen.js już używa dla 2-4 kart
+// wyboru (grid, auto-fit, minmax(230px, 1fr)). To jedna linia zmiany,
+// zero nowego CSS potrzebnego do samego layoutu siatki.
 function renderSoloRecoveryMorning(container, state) {
   const topbar = createTopBar(state, "game");
   const sidebar = createSoloRecoverySidebar(state);
@@ -359,7 +364,7 @@ function renderSoloRecoveryMorning(container, state) {
     scene,
     narrative,
     actions,
-    actionsVariant: "choices"
+    actionsVariant: "flow"
   });
 
   container.appendChild(shell);
@@ -453,7 +458,14 @@ function buildSoloRecoveryNarrative(state) {
 function createSoloRecoveryChoiceButton(state, choice) {
   const button = document.createElement("button");
   button.type = "button";
-  button.className = "oos-solo-choice oos-choice-card";
+  // v0.43.1: "oos-choice-card" nie istniało w żadnym pliku CSS —
+  // literówka względem realnej, współdzielonej klasy kart wyboru
+  // "oos-decision-card". Karty solo dostają teraz TĘ SAMĄ bazową
+  // stylistykę (obramowanie, gradient, hover lift, focus ring) co
+  // zwykłe karty eventów/agendy — .oos-solo-choice (załadowana
+  // później w kaskadzie) nadpisuje tylko to, co faktycznie ma być
+  // inne (rozmiar, tło, siatka wewnętrzna).
+  button.className = "oos-solo-choice oos-decision-card";
 
   const title = document.createElement("span");
   title.className = "oos-solo-choice__title";

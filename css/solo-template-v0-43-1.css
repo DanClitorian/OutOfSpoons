@@ -1,0 +1,51 @@
+/* solo-template-v0-43-1.css
+ *
+ * v0.43.1: Solo Template Redesign hotfix.
+ *
+ * PROBLEM: tryb solo/rekonstrukcja UŻYWAŁ już wspólnego szkieletu gry
+ * (createGameShell/createTopBar/createScenePanel/createNarrativeStrip,
+ * patrz gameScreen.js#renderSoloRecoveryMorning od v0.42.1) — ale DWA
+ * konkretne błędy sprawiały, że wyglądał jak osobna, "tabelkowa"
+ * mini-aplikacja, mimo poprawnej struktury DOM:
+ *
+ *   1. actionsVariant: "choices" nie miało ŻADNEJ reguły CSS (klasa
+ *      .oos-actions--choices nigdzie nie istniała w projekcie) — karty
+ *      solo dziedziczyły surowy display:flex z bazowego .oos-actions
+ *      zamiast siatki, dając ciasny, niedopasowany układ 4 kart.
+ *      NAPRAWIONE W JS (nie tutaj): actionsVariant zmieniony na
+ *      "flow" — dokładnie ten sam, już istniejący i sprawdzony
+ *      wariant, którego eventScreen.js używa dla 2-4 kart wyboru
+ *      (grid, auto-fit, minmax(230px, 1fr)).
+ *
+ *   2. createSoloRecoveryChoiceButton() ustawiał klasę
+ *      "oos-choice-card" — literówka, ta klasa nie istniała w ŻADNYM
+ *      pliku CSS w projekcie. NAPRAWIONE W JS (nie tutaj): zmieniona
+ *      na realną, współdzieloną klasę "oos-decision-card" (ta sama,
+ *      której używają karty eventów/agendy), więc karty solo dostają
+ *      tę samą bazową stylistykę: obramowanie, gradient, hover lift,
+ *      focus ring.
+ *
+ * Ten plik jest CELOWO mały — większość realnej naprawy stała się w
+ * JS (patrz js/ui/screens/gameScreen.js), nie w CSS. Dwie reguły
+ * poniżej to:
+ *   - bezpiecznik przeciwko typowej pułapce CSS grid (przycisk-dziecko
+ *     grida bez min-width:0 może wymusić przepełnienie szerokości
+ *     przez długi tekst opisu),
+ *   - dopasowanie stanu :focus-visible do reszty kart w grze (karty
+ *     solo łączą .oos-solo-choice + .oos-decision-card, ale
+ *     .oos-decision-card:focus-visible jest zdefiniowane wcześniej w
+ *     kaskadzie niż .oos-solo-choice, więc dla pewności powtarzamy tu
+ *     regułę z tymi samymi zmiennymi CSS gry).
+ *
+ * Nie zmienia .oos-game layout globalnie. Nie usuwa narrative-fix ani
+ * daily-stakes CSS. Nie dotyka żadnego innego ekranu.
+ */
+
+.oos-actions--flow > .oos-solo-choice {
+  min-width: 0;
+}
+
+.oos-solo-choice:focus-visible {
+  outline: 2px solid var(--oos-gold);
+  outline-offset: 2px;
+}

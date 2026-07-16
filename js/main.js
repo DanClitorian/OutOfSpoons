@@ -3,13 +3,12 @@
 // Nie zawiera logiki gry ani logiki UI — tylko uruchamia aplikację
 // i pokazuje pierwszy ekran (menu główne).
 //
-// v0.34: Relationship Model Foundation. Cache-bust (?v=340) na
-// imporcie uiManager.js (zmienił zawartość — 2 zmienione ekrany
-// dostały nowe query stringi) i devTools.js (6 nowych helperów:
-// showRelationshipModel, setRelationshipModelMono/Poly/Open/Ambiguous,
-// setRelationshipModelClarity).
+// v0.43.1: Solo Template Redesign. Cache-bust (?v=431) na imporcie
+// uiManager.js (zmienił zawartość — gameScreen.js dostał nowy query
+// string). devTools.js NIE zmienił się w v0.43.1 — zostaje przy
+// swoim aktualnym query.
 
-import { initUI, showScreen } from "./ui/uiManager.js?v=430";
+import { initUI, showScreen } from "./ui/uiManager.js?v=431";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
