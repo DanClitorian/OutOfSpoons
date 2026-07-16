@@ -37,6 +37,7 @@ import { applyMaskingDebtFromChoice } from "./maskingDebtSystem.js?v=330";
 import { applyConflictPressureFromChoice } from "./conflictEscalationSystem.js?v=350";
 import { evaluateRelationshipEndAfterChoice } from "./relationshipEndStateSystem.js?v=360";
 import { applyRomanceInterestFromChoice } from "./romanceInterestSystem.js?v=370";
+import { applySecrecyConsequenceFromChoice } from "./secrecyConsequenceSystem.js?v=380";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -197,6 +198,25 @@ export function applyChoice(state, event, choiceId) {
   // fascynacji zdradą. Klasyfikacja zależy od Relationship Model.
   const romanceResult = applyRomanceInterestFromChoice(state, event, choice);
 
+  // v0.38: Secrecy Consequences. Większość efektu jest wewnętrzna.
+  // Trust/frustration zmieniają się dopiero, jeśli sekret zostanie zauważony
+  // albo jeśli ujawnienie realnie zmieni temperaturę relacji.
+  const secrecyResult = applySecrecyConsequenceFromChoice(state, event, choice, {
+    romanceResult,
+    effectiveTrustChange,
+    scarResult,
+    repairResult,
+    maskingDebtResult
+  });
+
+  if (secrecyResult.trustChange) {
+    modifyTrust(state, partnerId, secrecyResult.trustChange);
+  }
+
+  if (secrecyResult.frustrationChange) {
+    modifyFrustration(state, partnerId, secrecyResult.frustrationChange);
+  }
+
   // v0.35: Conflict Escalation. Nie zmienia spoons/trust/frustration —
   // zapisuje tylko narastanie lub obniżenie napięcia relacyjnego.
   const conflictResult = applyConflictPressureFromChoice(state, event, choice, {
@@ -224,6 +244,7 @@ export function applyChoice(state, event, choiceId) {
     workResult,
     maskingDebtResult,
     romanceResult,
+    secrecyResult,
     conflictResult
   });
 
@@ -309,6 +330,19 @@ export function applyChoice(state, event, choiceId) {
           amount: maskingDebtResult.amount,
           currentAfter: maskingDebtResult.currentAfter,
           text: maskingDebtResult.text
+        }
+      : { applied: false },
+    // v0.38: Secrecy Consequences. Tylko log/reflection/devTools.
+    secrecyEffect: secrecyResult.applied
+      ? {
+          applied: true,
+          currentAfter: secrecyResult.currentAfter,
+          suspicionAfter: secrecyResult.suspicionAfter,
+          breachRisk: secrecyResult.breachRisk,
+          discovered: secrecyResult.discovered,
+          trustChange: secrecyResult.trustChange,
+          frustrationChange: secrecyResult.frustrationChange,
+          note: secrecyResult.note
         }
       : { applied: false },
     // v0.37: Romance Interest. Tylko log/devTools/przyszłe systemy.

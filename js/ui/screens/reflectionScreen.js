@@ -44,6 +44,7 @@ import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=300";
 import { buildReflectionStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 import { buildReflectionMaskingDebtLine } from "../../systems/maskingDebtSystem.js?v=330";
 import { buildReflectionConflictLine } from "../../systems/conflictEscalationSystem.js?v=350";
+import { buildReflectionSecrecyLine } from "../../systems/secrecyConsequenceSystem.js?v=380";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -147,6 +148,7 @@ export function renderReflectionScreen(container, data) {
   // w normalnym przypadku (wybór niemaskujący).
   const maskingDebtText = buildReflectionMaskingDebtLine(state, lastEntry);
   const conflictText = buildReflectionConflictLine(state, lastEntry);
+  const secrecyText = buildReflectionSecrecyLine(state, lastEntry);
 
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
@@ -174,7 +176,8 @@ export function renderReflectionScreen(container, data) {
       workText,
       stakesText,
       maskingDebtText,
-      conflictText
+      conflictText,
+      secrecyText
     )
   );
 
@@ -240,7 +243,8 @@ function buildNarrativeText(
   workText,
   stakesText,
   maskingDebtText,
-  conflictText
+  conflictText,
+  secrecyText
 ) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
   const parts = [
@@ -255,7 +259,8 @@ function buildNarrativeText(
     workText,
     stakesText,
     maskingDebtText,
-    conflictText
+    conflictText,
+    secrecyText
   ].filter(Boolean);
   return parts.join(" ");
 }

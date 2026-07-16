@@ -96,7 +96,7 @@ import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
 import { renderGameScreen } from "./screens/gameScreen.js?v=350";
 import { renderEventScreen } from "./screens/eventScreen.js?v=370";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=350";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=380";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";

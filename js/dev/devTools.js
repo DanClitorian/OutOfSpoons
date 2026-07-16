@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=370";
+import { showScreen } from "../ui/uiManager.js?v=380";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -105,6 +105,12 @@ import {
   setRomanceHigh as setRomanceHighState,
   clearRomance as clearRomanceState
 } from "../systems/romanceInterestSystem.js?v=370";
+import {
+  getSecrecyDebugSummary,
+  setSecrecyHigh as setSecrecyHighState,
+  triggerSecrecyDiscovery as triggerSecrecyDiscoveryState,
+  clearSecrecy as clearSecrecyState
+} from "../systems/secrecyConsequenceSystem.js?v=380";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -966,6 +972,68 @@ function clearRomance() {
   return buildRomanceDebugSummary(state);
 }
 
+
+// v0.38: Secrecy Consequences. Dev-only podgląd sekretu/przekroczenia ustaleń.
+function showSecrecy() {
+  const state = requireActiveState("showSecrecy()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getSecrecyDebugSummary(state);
+  console.table({
+    current: summary ? summary.current : null,
+    suspicion: summary ? summary.suspicion : null,
+    breachRisk: summary ? summary.breachRisk : null,
+    lastAppliedDay: summary ? summary.lastAppliedDay : null,
+    lastDiscoveryDay: summary ? summary.lastDiscoveryDay : null
+  });
+  if (summary) {
+    console.log("[oosDev] Last effect:", summary.lastEffect);
+    console.table(summary.recentHistory);
+  }
+  return summary;
+}
+
+function setSecrecyHigh() {
+  const state = requireActiveState("setSecrecyHigh()");
+  if (!state) {
+    return null;
+  }
+
+  setSecrecyHighState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Secrecy ustawione wysoko.");
+  return getSecrecyDebugSummary(state);
+}
+
+function triggerSecrecyDiscovery() {
+  const state = requireActiveState("triggerSecrecyDiscovery()");
+  if (!state) {
+    return null;
+  }
+
+  triggerSecrecyDiscoveryState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Wymuszono zauważenie sekretu.");
+  return getSecrecyDebugSummary(state);
+}
+
+function clearSecrecy() {
+  const state = requireActiveState("clearSecrecy()");
+  if (!state) {
+    return null;
+  }
+
+  clearSecrecyState(state);
+  saveGame(state);
+
+  console.log("[oosDev] Secrecy wyczyszczone.");
+  return getSecrecyDebugSummary(state);
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -1012,6 +1080,10 @@ if (typeof window !== "undefined") {
     clearRelationshipEnd,
     showRomance,
     setRomanceHigh,
-    clearRomance
+    clearRomance,
+    showSecrecy,
+    setSecrecyHigh,
+    triggerSecrecyDiscovery,
+    clearSecrecy
   };
 }
