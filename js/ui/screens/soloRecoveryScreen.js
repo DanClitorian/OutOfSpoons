@@ -13,7 +13,7 @@ import {
   applySoloRecoveryChoice,
   advanceSoloRecoveryDay,
   getSoloRecoveryDebugSummary
-} from "../../systems/soloRecoverySystem.js?v=420";
+} from "../../systems/soloRecoverySystem.js?v=430";
 
 export function renderSoloRecoveryScreen(container) {
   const state = getState();

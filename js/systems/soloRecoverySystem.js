@@ -16,6 +16,11 @@
 // aktywnego obiektu partnera. Nowa relacja może zostać dodana dopiero
 // w kolejnym update.
 
+import {
+  buildNewRelationshipSeedChoice,
+  startNewRelationshipSeed
+} from "./newRelationshipSeedSystem.js?v=430";
+
 const MAX_HISTORY = 40;
 
 const CHOICES = [
@@ -167,13 +172,32 @@ export function enterSoloRecovery(state, source = "relationship-end") {
 
 export function getSoloRecoveryChoices(state) {
   ensureSoloRecoveryState(state);
-  return CHOICES.map((choice) => ({ ...choice }));
+  const choices = CHOICES.map((choice) => ({ ...choice }));
+  const newRelationshipChoice = buildNewRelationshipSeedChoice(state);
+
+  if (newRelationshipChoice) {
+    choices.push(newRelationshipChoice);
+  }
+
+  return choices;
 }
 
 export function applySoloRecoveryChoice(state, choiceId) {
   const solo = ensureSoloRecoveryState(state);
   if (!solo || !solo.active) {
     return { applied: false, reason: "Solo recovery is not active." };
+  }
+
+  if (choiceId === "start_new_relationship_seed") {
+    const result = startNewRelationshipSeed(state);
+
+    return {
+      applied: result.started === true,
+      startsNewRelationship: result.started === true,
+      reason: result.reason || null,
+      partner: result.partner || null,
+      partnerStats: result.partnerStats || null
+    };
   }
 
   const choice = CHOICES.find((item) => item.id === choiceId);

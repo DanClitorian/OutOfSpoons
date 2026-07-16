@@ -110,7 +110,7 @@ import {
   applySoloRecoveryChoice,
   advanceSoloRecoveryDay,
   getSoloRecoveryDebugSummary
-} from "../../systems/soloRecoverySystem.js?v=421";
+} from "../../systems/soloRecoverySystem.js?v=430";
 export function renderGameScreen(container) {
   const state = getState();
 

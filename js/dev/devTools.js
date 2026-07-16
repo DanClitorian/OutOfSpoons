@@ -121,7 +121,11 @@ import {
   getSoloRecoveryDebugSummary,
   setSelfKnowledgeHigh as setSelfKnowledgeHighState,
   clearSoloRecovery as clearSoloRecoveryState
-} from "../systems/soloRecoverySystem.js?v=420";
+} from "../systems/soloRecoverySystem.js?v=430";
+import {
+  previewNewRelationshipSeed,
+  startNewRelationshipSeed as startNewRelationshipSeedState
+} from "../systems/newRelationshipSeedSystem.js?v=430";
 function requireActiveState(actionName) {
   const state = getState();
 
@@ -1160,6 +1164,41 @@ function clearSoloRecovery() {
   return getSoloRecoveryDebugSummary(state);
 }
 
+
+// v0.43: New Relationship Seed.
+function showNewRelationshipSeed() {
+  const state = requireActiveState("showNewRelationshipSeed()");
+  if (!state) {
+    return null;
+  }
+
+  const preview = previewNewRelationshipSeed(state);
+  console.table({
+    canStart: preview.canStart,
+    daysInSolitude: preview.daysInSolitude,
+    selfKnowledge: preview.selfKnowledge,
+    boundaryIntegrity: preview.boundaryIntegrity,
+    socialExhaustion: preview.socialExhaustion
+  });
+  console.log("[oosDev] Reason:", preview.reason);
+  console.log("[oosDev] Lessons:", preview.lessons);
+  return preview;
+}
+
+function forceStartNewRelationship() {
+  const state = requireActiveState("forceStartNewRelationship()");
+  if (!state) {
+    return null;
+  }
+
+  const result = startNewRelationshipSeedState(state, "devtools");
+  saveGame(state);
+  showScreen("game");
+
+  console.log("[oosDev] New relationship seed:", result);
+  return result;
+}
+
 if (typeof window !== "undefined") {
   window.oosDev = {
     getState: safeGetState,
@@ -1217,6 +1256,8 @@ if (typeof window !== "undefined") {
     showSoloRecovery,
     startSoloRecovery,
     setSelfKnowledgeHigh,
-    clearSoloRecovery
+    clearSoloRecovery,
+    showNewRelationshipSeed,
+    forceStartNewRelationship
   };
 }
