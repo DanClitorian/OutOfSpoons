@@ -1,0 +1,200 @@
+/* solo-composition-v0-43-3.css
+ *
+ * v0.43.3: Solo Recovery Composition.
+ *
+ * v0.43.1/v0.43.2 próbowały dopasować 5 pełnowymiarowych kart do
+ * sztywnego 210px wiersza akcji (.oos-game grid-template-rows: 56px
+ * minmax(0,1fr) 210px, overflow:hidden) przez same CSS — to się nie
+ * skalowało. v0.43.3 zmienia KOMPOZYCJĘ w JS
+ * (js/ui/screens/gameScreen.js): max 3 karty naraz (deterministyczna
+ * dzienna rotacja, bez ingerencji w soloRecoverySystem.js) + karta
+ * nowej relacji jako osobny, wąski CTA wewnątrz paska narracji, nie
+ * piąta karta w rzędzie. Ten plik opisuje NOWE, celowo inaczej
+ * nazwane klasy (.oos-solo-stat-row zamiast .oos-solo-stat,
+ * .oos-solo-new-relationship-cta) — nie przebija starej kaskady z
+ * v0-42/v0-42-1/v0-42-2/v0-43-1/v0-43-2, tylko stylizuje strukturę,
+ * która jest teraz faktycznie inna.
+ *
+ * Budżet wysokości (z realnego, sztywnego grida .oos-game):
+ *   - .oos-scene: capped na 34vh (mniejsza niż automatyczny 1fr),
+ *     zostawia więcej miejsca dla narracji + CTA,
+ *   - .oos-narrative: rośnie do treści (1 krótkie zdanie + opcjonalny
+ *     wąski CTA, oba dużo krótsze niż poprzednio),
+ *   - .oos-actions (sztywne 210px): dokładnie 3 karty w jednym
+ *     rzędzie, z line-clamp na tytule/opisie jako gwarancją, że karta
+ *     nigdy nie urośnie ponad dostępne miejsce (dokładnie ta sama
+ *     konwencja co .oos-decision-card-title/-description w
+ *     game-ui-v0-18.css).
+ *
+ * Sidebar: JEDEN skonsolidowany panel statystyk (nie 4 osobne, duże
+ * kafle) z max-height:38% wysokości sidebaru — reszta to karta
+ * nagłówkowa "Rekonstrukcja".
+ */
+
+/* --- Scena: mniejsza, nie zjada przestrzeni --- */
+
+.oos-game--solo-recovery .oos-scene {
+  max-height: 34vh;
+}
+
+/* --- Narracja: pionowy stos (1 zdanie + opcjonalny CTA) --- */
+
+.oos-game--solo-recovery .oos-narrative {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.oos-solo-new-relationship-cta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  width: 100%;
+  padding: 7px 14px;
+  border: 2px solid var(--oos-gold);
+  border-radius: 999px;
+  background: rgba(192, 138, 62, 0.14);
+  color: var(--oos-ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.oos-solo-new-relationship-cta:hover {
+  background: rgba(192, 138, 62, 0.22);
+}
+
+.oos-solo-new-relationship-cta:focus-visible {
+  outline: 2px solid var(--oos-gold);
+  outline-offset: 2px;
+}
+
+.oos-solo-new-relationship-cta__label {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--oos-gold);
+}
+
+.oos-solo-new-relationship-cta__text {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* --- Karty: dokładnie 3, kompaktowe, gwarantowany fit w 210px --- */
+
+.oos-game--solo-recovery .oos-actions--flow {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 900px;
+}
+
+.oos-solo-choice {
+  min-height: 0;
+  padding: 12px 14px;
+  gap: 6px;
+}
+
+.oos-solo-choice__title {
+  font-size: clamp(14px, 1.2vw, 17px);
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oos-solo-choice__text {
+  font-size: clamp(12px, 1vw, 13.5px);
+  line-height: 1.32;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- Sidebar: jeden skonsolidowany panel statystyk, max 38% wysokości --- */
+
+.oos-solo-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  min-height: 0;
+}
+
+.oos-solo-sidebar__card {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 14px;
+}
+
+.oos-solo-sidebar__text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oos-solo-stats-panel {
+  flex: 0 0 auto;
+  max-height: 38%;
+  overflow: hidden;
+
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  padding: 10px 14px;
+  border: 2px solid rgba(92, 64, 51, 0.20);
+  border-radius: 14px;
+  background: rgba(255, 252, 246, 0.6);
+}
+
+.oos-solo-stat-row {
+  display: grid;
+  gap: 3px;
+}
+
+.oos-solo-stat-row__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.oos-solo-stat-row__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--oos-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.oos-solo-stat-row__value {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--oos-ink);
+}
+
+.oos-solo-stat-row__track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(92, 64, 51, 0.14);
+  overflow: hidden;
+}
+
+.oos-solo-stat-row__fill {
+  height: 100%;
+  width: var(--solo-stat-fill, 0%);
+  border-radius: inherit;
+  background: rgba(93, 123, 144, 0.62);
+}
+
+.oos-solo-stat-row--strain .oos-solo-stat-row__fill {
+  background: rgba(140, 90, 72, 0.62);
+}

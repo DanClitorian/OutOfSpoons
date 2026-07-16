@@ -338,28 +338,35 @@ export function renderGameScreen(container) {
 // Zwraca null, gdy model jest jasny (type !== "ambiguous" && clarity
 // >= 45) — czyli w WIĘKSZOŚCI poranków, celowo "nie spamuje".
 
-// v0.43.1: Solo Template Redesign. actionsVariant zmieniony z "choices"
-// (klasa .oos-actions--choices NIE MIAŁA żadnej reguły CSS — karty
-// solo dziedziczyły domyślny display:flex z .oos-actions, co dawało
-// ciasny, niedopasowany układ) na "flow" — DOKŁADNIE ten sam,
-// istniejący wariant, którego eventScreen.js już używa dla 2-4 kart
-// wyboru (grid, auto-fit, minmax(230px, 1fr)). To jedna linia zmiany,
-// zero nowego CSS potrzebnego do samego layoutu siatki.
+// v0.43.3: Solo Recovery Composition. Poprzednie podejście (v0.43.1/
+// v0.43.2) próbowało dopasować 5 pełnowymiarowych kart do sztywnego
+// 210px wiersza akcji przez samo CSS — to się nie skalowało. Zamiast
+// tego: pokazujemy MAKSYMALNIE 3 karty naraz (deterministyczna rotacja
+// dzienna, patrz selectDailySoloChoices — soloRecoverySystem.js NIE
+// jest tu ruszany, wybieramy tylko, KTÓRE z już istniejących opcji
+// pokazać dziś), a kartę wejścia w nową relację pokazujemy jako
+// osobny, wąski, wyróżniony CTA WEWNĄTRZ paska narracji (nie jako
+// piąta karta w tym samym rzędzie) — dokładnie ten sam, sprawdzony
+// wzorzec wstawiania elementu do .oos-narrative, którego użyto już
+// dla badge'a Daily Stakes w v0.32.
 function renderSoloRecoveryMorning(container, state) {
   const topbar = createTopBar(state, "game");
   const sidebar = createSoloRecoverySidebar(state);
 
   const scene = createScenePanel({
     modifier: "morning",
-    // v0.43.2: tytuł skrócony do samego "Rekonstrukcja" — dzień jest
-    // już widoczny w topbarze ("Dzień X · Poranek"), więc powtarzanie
-    // go w plakietce sceny tylko poszerzało pigułkę bez realnej
-    // wartości informacyjnej.
     title: "Rekonstrukcja"
   });
 
   const narrative = createNarrativeStrip(buildSoloRecoveryNarrative(state));
-  const actions = getSoloRecoveryChoices(state).map((choice) => createSoloRecoveryChoiceButton(state, choice));
+
+  const { selected, newRelationshipChoice } = selectDailySoloChoices(state, getSoloRecoveryChoices(state));
+
+  if (newRelationshipChoice) {
+    narrative.insertBefore(createSoloNewRelationshipCta(state, newRelationshipChoice), narrative.firstChild);
+  }
+
+  const actions = selected.map((choice) => createSoloRecoveryChoiceButton(state, choice));
 
   const shell = createGameShell({
     screenClass: "solo-recovery",
@@ -374,7 +381,57 @@ function renderSoloRecoveryMorning(container, state) {
   container.appendChild(shell);
 }
 
+// Wybiera, KTÓRE opcje solo pokazać dziś (max 3), i osobno kartę
+// wejścia w nową relację, jeśli dostępna. CZYSTA funkcja widoku — nie
+// zmienia state.soloRecovery, nie dotyka soloRecoverySystem.js. Jeśli
+// opcji bazowych jest więcej niż 3 (obecnie: 4), dzień gry decyduje,
+// która jedna jest dziś pominięta — więc gracz widzi rotującą trójkę,
+// nie zawsze te same 3 karty.
+function selectDailySoloChoices(state, choices) {
+  const newRelationshipChoice = choices.find((choice) => choice.id === "start_new_relationship_seed") || null;
+  const baseChoices = choices.filter((choice) => choice.id !== "start_new_relationship_seed");
 
+  let selected = baseChoices;
+  if (baseChoices.length > 3) {
+    const skipIndex = state.day % baseChoices.length;
+    selected = baseChoices.filter((_, index) => index !== skipIndex);
+  }
+
+  return { selected, newRelationshipChoice };
+}
+
+function createSoloNewRelationshipCta(state, choice) {
+  const cta = document.createElement("button");
+  cta.type = "button";
+  cta.className = "oos-solo-new-relationship-cta";
+
+  const label = document.createElement("span");
+  label.className = "oos-solo-new-relationship-cta__label";
+  label.textContent = "Możliwość nowej relacji";
+  cta.appendChild(label);
+
+  const text = document.createElement("span");
+  text.className = "oos-solo-new-relationship-cta__text";
+  text.textContent = choice.title;
+  cta.appendChild(text);
+
+  cta.addEventListener("click", () => {
+    const result = applySoloRecoveryChoice(state, choice.id);
+    if (result && result.applied) {
+      advanceSoloRecoveryDay(state);
+      saveGame(state);
+    }
+    showScreen("game");
+  });
+
+  return cta;
+}
+
+// v0.43.3: sidebar przebudowany na JEDEN skonsolidowany panel statystyk
+// (oos-solo-stats-panel + kompaktowe wiersze oos-solo-stat-row) zamiast
+// czterech osobnych, dużych, obramowanych kafli. Nowe nazwy klas
+// (celowo różne od starego .oos-solo-stat z v0.42.2/v0.43.2) — żeby
+// nowy, ciasny styl nie musiał przebijać się przez starą kaskadę.
 function createSoloRecoverySidebar(state) {
   const summary = getSoloRecoveryDebugSummary(state);
 
@@ -396,51 +453,56 @@ function createSoloRecoverySidebar(state) {
 
   const text = document.createElement("p");
   text.className = "oos-solo-sidebar__text";
-  text.textContent = "Po rozstaniu nie grasz o czyjeś zaufanie. Sprawdzasz, jakie granice i nawyki zabierzesz dalej.";
+  text.textContent = "Po rozstaniu nie grasz o czyjeś zaufanie. Sprawdzasz, co zabierzesz dalej.";
   header.appendChild(text);
 
   sidebar.appendChild(header);
 
-  sidebar.appendChild(createSoloStatCard("Dni osobno", summary ? summary.daysInSolitude : 0, null));
-  sidebar.appendChild(createSoloStatCard("Samowiedza", summary ? summary.selfKnowledge : 0, 12));
-  sidebar.appendChild(createSoloStatCard("Integralność granic", summary ? summary.boundaryIntegrity : 0, 100));
-  sidebar.appendChild(createSoloStatCard("Przeciążenie społeczne", summary ? summary.socialExhaustion : 0, 12, true));
+  const statsPanel = document.createElement("section");
+  statsPanel.className = "oos-solo-stats-panel";
+
+  statsPanel.appendChild(createSoloStatRow("Dni osobno", summary ? summary.daysInSolitude : 0, null));
+  statsPanel.appendChild(createSoloStatRow("Samowiedza", summary ? summary.selfKnowledge : 0, 12));
+  statsPanel.appendChild(createSoloStatRow("Integralność granic", summary ? summary.boundaryIntegrity : 0, 100));
+  statsPanel.appendChild(createSoloStatRow("Przeciążenie społeczne", summary ? summary.socialExhaustion : 0, 12, true));
+
+  sidebar.appendChild(statsPanel);
 
   return sidebar;
 }
 
-function createSoloStatCard(label, value, maxValue, isStrain = false) {
-  const card = document.createElement("section");
-  card.className = isStrain ? "oos-solo-stat oos-solo-stat--strain" : "oos-solo-stat";
-
+function createSoloStatRow(label, value, maxValue, isStrain = false) {
   const row = document.createElement("div");
-  row.className = "oos-solo-stat__row";
+  row.className = isStrain ? "oos-solo-stat-row oos-solo-stat-row--strain" : "oos-solo-stat-row";
+
+  const top = document.createElement("div");
+  top.className = "oos-solo-stat-row__top";
 
   const labelEl = document.createElement("span");
-  labelEl.className = "oos-solo-stat__label";
+  labelEl.className = "oos-solo-stat-row__label";
   labelEl.textContent = label;
-  row.appendChild(labelEl);
+  top.appendChild(labelEl);
 
   const valueEl = document.createElement("strong");
-  valueEl.className = "oos-solo-stat__value";
+  valueEl.className = "oos-solo-stat-row__value";
   valueEl.textContent = String(value ?? 0);
-  row.appendChild(valueEl);
+  top.appendChild(valueEl);
 
-  card.appendChild(row);
+  row.appendChild(top);
 
   if (maxValue) {
     const track = document.createElement("div");
-    track.className = "oos-solo-stat__track";
+    track.className = "oos-solo-stat-row__track";
 
     const fill = document.createElement("div");
-    fill.className = "oos-solo-stat__fill";
+    fill.className = "oos-solo-stat-row__fill";
     fill.style.setProperty("--solo-stat-fill", `${soloPercent(value, maxValue)}%`);
     track.appendChild(fill);
 
-    card.appendChild(track);
+    row.appendChild(track);
   }
 
-  return card;
+  return row;
 }
 
 function soloPercent(value, maxValue) {
@@ -449,14 +511,12 @@ function soloPercent(value, maxValue) {
   return Math.max(0, Math.min(100, Math.round((number / max) * 100)));
 }
 
+// v0.43.3: skrócone do JEDNEGO zdania z buildSoloMorningLine — bez
+// doklejania dodatkowych zdań jak wcześniej ("Dziś: rekonstrukcja." /
+// "Nie szukasz teraz następnej relacji..."). Fallback tylko gdy
+// funkcja nic nie zwróci (nie powinno się zdarzyć w aktywnym solo).
 function buildSoloRecoveryNarrative(state) {
-  const line = buildSoloMorningLine(state);
-
-  return [
-    "Dziś: rekonstrukcja.",
-    line,
-    "Nie szukasz teraz następnej relacji. Wybierz, z czym zostaniesz sam na sam."
-  ].filter(Boolean).join(" ");
+  return buildSoloMorningLine(state) || "Rekonstrukcja: dziś sprawdzasz, z czym zostajesz sam na sam.";
 }
 
 function createSoloRecoveryChoiceButton(state, choice) {
