@@ -94,14 +94,14 @@
 
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
-import { renderGameScreen } from "./screens/gameScreen.js?v=451";
-import { renderEventScreen } from "./screens/eventScreen.js?v=370";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=390";
+import { renderGameScreen } from "./screens/gameScreen.js?v=460";
+import { renderEventScreen } from "./screens/eventScreen.js?v=460";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=460";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";
 import { appendVersionBadge } from "./versionBadge.js";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=340";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=460";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
 import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";
 import { renderAchievementsScreen } from "./screens/achievementsScreen.js?v=410";

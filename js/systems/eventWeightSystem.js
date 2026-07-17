@@ -4,6 +4,11 @@ import { hasRepairableScars } from "./relationshipRepairSystem.js?v=300";
 
 import { getMetamourContext, hasMetamourSignal } from "./metamourSystem.js?v=300";
 import { getWorkPressureContext, hasWorkSignal } from "./workPressureSystem.js?v=300";
+// v0.46: Work & Obligation Variety Pass. Odczyt WYŁĄCZNIE (żadna
+// modyfikacja criticalEventSystem.js) — potrzebne do delikatnego
+// ważenia eventów "critical-event-approaching" (patrz niżej), które
+// mają zapowiadać nadchodzący Wielki Test w codziennych obowiązkach.
+import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=305";
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
@@ -125,6 +130,23 @@ function computeEventWeight(event, state) {
     (allTags.includes("obligation") || allTags.includes("work"))
   ) {
     weight += 2;
+  }
+
+  // v0.46: Work & Obligation Variety Pass. Delikatne ważenie (NIE
+  // guaranteed spawn) — eventy oznaczone "critical-event-approaching"
+  // mają WIĘKSZĄ SZANSĘ pojawić się, kiedy aktywny Wielki Test jest
+  // już blisko terminu (≤14 dni), zapowiadając go w codziennych
+  // obowiązkach. Bez aktywnego Wielkiego Testu (albo gdy jest jeszcze
+  // daleko) te eventy nadal mogą wystąpić (bazowa waga = 1), tylko bez
+  // bonusu.
+  if (tags.includes("critical-event-approaching")) {
+    const activeCriticalEvent = getCurrentCriticalEvent(state);
+    if (activeCriticalEvent) {
+      const daysLeft = getCriticalEventCountdown(state);
+      if (typeof daysLeft === "number" && daysLeft >= 1 && daysLeft <= 14) {
+        weight += 4;
+      }
+    }
   }
 
   return Math.max(1, weight);

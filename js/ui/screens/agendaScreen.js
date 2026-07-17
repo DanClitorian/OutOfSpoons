@@ -56,7 +56,7 @@ import {
   getAvailableAgendaItems,
   selectAgendaItem,
   getAgendaSlotLabel
-} from "../../systems/dayAgendaSystem.js?v=310";
+} from "../../systems/dayAgendaSystem.js?v=460";
 import {
   ensureWeeklyChallengeState,
   getCurrentWeeklyChallenge,

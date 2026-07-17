@@ -1160,3 +1160,459 @@ eventPool.push({
   ]
 });
 // v0.39 relationship agreement event END
+
+// CLEAN v0.46 work obligation variety events START
+eventPool.push({
+  id: "overdue_email_weight",
+  title: "Mały mail, który waży za dużo",
+  tags: ["obligation", "avoidance"],
+  weightTags: ["obligation", "avoidance"],
+  agendaSlots: ["obligation"],
+  minDay: 3,
+  description:
+    "Ten mail czeka od czterech dni. Nie jest ważny. Jest tylko tym rodzajem małej rzeczy, która zajmuje więcej miejsca w głowie niż na ekranie.",
+  choices: [
+    {
+      id: "answer_email_now",
+      label: "Odpowiedzieć teraz, choć krótko",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText: "Mail zniknął z listy. Głowa zrobiła się o jeden punkt lżejsza."
+    },
+    {
+      id: "archive_without_answering",
+      label: "Zarchiwizować bez odpowiedzi",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Znika z widoku. Nie znika z listy rzeczy, które kiedyś wrócą."
+    },
+    {
+      id: "answer_email_overthinking",
+      label: "Odpisać, ale przeredagować to zdanie osiem razy",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText: "Mail wyszedł idealny. Koszt idealności był wyższy niż samego maila."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "family_favor_request",
+  title: "Prośba, która brzmi jak drobiazg",
+  tags: ["obligation", "family"],
+  weightTags: ["obligation", "low-spoons"],
+  agendaSlots: ["obligation"],
+  minDay: 4,
+  description:
+    "Ktoś z rodziny prosi o przysługę. Brzmi jak nic wielkiego. Nigdy nie jest niczym wielkim, dopóki nie zsumujesz wszystkich razem.",
+  choices: [
+    {
+      id: "help_with_clear_limit",
+      label: "Pomóc, ale nazwać, ile czasu na to masz",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 0,
+      boundaryNote: "named-limit",
+      resultText: "Pomoc miała granicę. Granica została usłyszana, nie tylko wypowiedziana."
+    },
+    {
+      id: "help_without_limit",
+      label: "Pomóc bez stawiania warunków",
+      spoonsCost: 4,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Przysługa się wydłużyła, jak zawsze. Nikt tego nie zaplanował. Nikt też nie zatrzymał."
+    },
+    {
+      id: "decline_this_time",
+      label: "Odmówić tym razem",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText: "Odmowa nie została dobrze przyjęta. Nie została też źle przyjęta na tyle, żeby to cofnąć."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "avoided_formality",
+  title: "Formalność, która czeka w szufladzie",
+  tags: ["obligation", "avoidance"],
+  weightTags: ["obligation", "avoidance"],
+  agendaSlots: ["obligation"],
+  minDay: 5,
+  description:
+    "Ten dokument/formularz/telefon do urzędu czeka już jakiś czas. Nie jest trudny. Jest tylko dokładnie tego rodzaju nudny, który łatwo odkładać w nieskończoność.",
+  choices: [
+    {
+      id: "handle_formality_today",
+      label: "Załatwić to dziś, całościowo",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText: "Zajęło mniej czasu, niż się bałeś/aś. Tak zwykle bywa z rzeczami, które się odkłada."
+    },
+    {
+      id: "handle_partial_formality",
+      label: "Zrobić tylko pierwszy krok",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText: "Nie skończone. Ale zaczęte. Czasem to jedyna dostępna dziś wersja postępu."
+    },
+    {
+      id: "postpone_formality_again",
+      label: "Odłożyć jeszcze raz",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Szuflada trzyma się dobrze. Termin robi się coraz bliższy."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "domestic_chaos_pile",
+  title: "Dom, który przestał udawać porządek",
+  tags: ["obligation", "domestic"],
+  weightTags: ["obligation", "low-spoons"],
+  agendaSlots: ["obligation"],
+  minDay: 2,
+  description:
+    "Naczynia, pranie, papiery na stole — nic z tego osobno nie jest problemem. Razem tworzą coś, co trudno już nazwać bałaganem, bo to już bardziej stan stały.",
+  choices: [
+    {
+      id: "tackle_one_visible_pile",
+      label: "Ogarnąć jedną, najbardziej widoczną rzecz",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText: "Reszta dalej tam jest. Ale ten jeden kąt znowu wygląda jak Twój."
+    },
+    {
+      id: "ignore_and_close_door",
+      label: "Zamknąć drzwi do pokoju i nie patrzeć",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Nie widać, więc chwilowo nie istnieje. Chwilowo."
+    },
+    {
+      id: "deep_clean_everything",
+      label: "Ogarnąć wszystko naraz, do końca",
+      spoonsCost: 4,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText: "Dom wygląda inaczej. Ty też — bardziej zmęczony/a niż zadowolony/a."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "document_preparation_ahead",
+  title: "Dokument, który musi powstać z niczego",
+  tags: ["obligation", "work"],
+  weightTags: ["obligation", "work-pressure"],
+  agendaSlots: ["obligation"],
+  minDay: 6,
+  description:
+    "Pusta strona i termin, który jeszcze nie naciska, ale już o sobie przypomina. Najtrudniejsza część nie jest trudna technicznie. Jest trudna, bo trzeba zacząć.",
+  choices: [
+    {
+      id: "draft_rough_version",
+      label: "Napisać brzydki szkic, byle zacząć",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      workEffect: { pressureChange: -1, stabilityChange: 1, burnoutChange: 0 },
+      resultText: "Szkic jest brzydki. Ale pusta strona przestała być pusta."
+    },
+    {
+      id: "perfect_first_paragraph",
+      label: "Dopracować idealnie tylko pierwszy akapit",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 1,
+      workEffect: { pressureChange: 0, stabilityChange: 0, burnoutChange: 1 },
+      resultText: "Pierwszy akapit jest bez zarzutu. Reszta dokumentu nadal nie istnieje."
+    },
+    {
+      id: "postpone_document_start",
+      label: "Zostawić to na jutro, z czystą głową",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      workEffect: { pressureChange: 2, stabilityChange: 0, burnoutChange: 0 },
+      resultText: "Jutro ma teraz jeden dokument więcej niż wczoraj miało dzisiaj."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "small_breakdown_interrupts",
+  title: "Drobna awaria, która nie pytała o zgodę",
+  tags: ["obligation", "disruption"],
+  weightTags: ["obligation", "low-spoons"],
+  agendaSlots: ["obligation"],
+  minDay: 3,
+  description:
+    "Coś się zepsuło — nic dramatycznego, ale wystarczająco, żeby zjeść resztę dnia, którą miałeś/aś w planie na coś innego.",
+  choices: [
+    {
+      id: "fix_it_yourself_now",
+      label: "Zająć się tym samemu/samej, teraz",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText: "Naprawione. Plan na dziś — mniej więcej też, tylko przesunięty."
+    },
+    {
+      id: "call_for_help_with_it",
+      label: "Poprosić kogoś o pomoc, zamiast robić to sam/a",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Pomoc przyszła. Poczucie, że powinieneś/aś dać radę sam/a, przyszło razem z nią."
+    },
+    {
+      id: "leave_broken_for_now",
+      label: "Zostawić zepsute na teraz",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText: "Zepsute zostaje zepsute. Dzień zostaje Twój — trochę bardziej poszarpany."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "overdue_phone_call",
+  title: "Telefon, który trzeba w końcu wykonać",
+  tags: ["obligation", "avoidance"],
+  weightTags: ["obligation", "avoidance"],
+  agendaSlots: ["obligation"],
+  minDay: 4,
+  description:
+    "Ten telefon jest odkładany od tygodnia. Nie jest to trudna rozmowa. Jest to rozmowa, którą łatwiej nie zacząć niż skończyć.",
+  choices: [
+    {
+      id: "make_the_call_directly",
+      label: "Zadzwonić wprost, bez przygotowywania scenariusza",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText: "Rozmowa trwała cztery minuty. Odkładanie trwało tydzień."
+    },
+    {
+      id: "text_instead_of_call",
+      label: "Napisać wiadomość zamiast dzwonić",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText: "Sprawa załatwiona. Nie tak, jak powinna być, ale załatwiona."
+    },
+    {
+      id: "postpone_the_call_again",
+      label: "Odłożyć telefon na jutro. Znowu",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Jutro brzmi jak plan. Wczoraj też tak brzmiało."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "weekly_recurring_task",
+  title: "To, co wraca w każdym tygodniu",
+  tags: ["obligation", "routine"],
+  weightTags: ["obligation"],
+  agendaSlots: ["obligation"],
+  minDay: 7,
+  description:
+    "Nie jest to nic pilnego. Jest to coś, co po prostu wraca, tydzień po tygodniu, niezależnie od tego, jak minął poprzedni.",
+  choices: [
+    {
+      id: "do_it_on_autopilot",
+      label: "Zrobić to na autopilocie, bez zastanowienia",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText: "Zrobione. Rytuał nie potrzebował dziś Twojej pełnej uwagi, żeby zadziałać."
+    },
+    {
+      id: "question_if_still_needed",
+      label: "Zapytać siebie, czy to nadal jest potrzebne",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText: "Część rytuałów przetrwała, bo są ważne. Część — bo nikt ich nie zakwestionował."
+    },
+    {
+      id: "skip_it_this_week",
+      label: "Odpuścić w tym tygodniu",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Świat się nie zawalił. Wróci w przyszłym tygodniu i tak."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "recovering_from_overload",
+  title: "Dzień po dniu, który kosztował za dużo",
+  tags: ["obligation", "recovery"],
+  weightTags: ["obligation", "low-spoons"],
+  agendaSlots: ["obligation"],
+  minDay: 5,
+  description:
+    "Wczoraj było za dużo. Dziś ciało i głowa domagają się rachunku — a lista obowiązków nie wie, że wczoraj był zły dzień.",
+  choices: [
+    {
+      id: "clear_only_urgent_item",
+      label: "Zrobić tylko to jedno, co naprawdę nie może czekać",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText: "Reszta listy poczeka. Ta jedna rzecz przestała wisieć nad głową."
+    },
+    {
+      id: "push_through_full_list",
+      label: "Przejść przez całą listę mimo wszystko",
+      spoonsCost: 4,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Lista jest pusta. Rachunek za wczoraj i dziś przyjdzie razem, w jednym terminie."
+    },
+    {
+      id: "clear_nothing_today",
+      label: "Nie ruszać dziś niczego z listy",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText: "Lista nie stała się krótsza. Ty stałeś/aś się choć trochę bardziej wypoczęty/a."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "rest_versus_life_admin",
+  title: "Odpoczynek kontra ogarnięcie życia",
+  tags: ["obligation", "rest"],
+  weightTags: ["obligation"],
+  agendaSlots: ["obligation"],
+  minDay: 6,
+  description:
+    "Masz wolne popołudnie. Lista spraw do ogarnięcia też o tym wie i patrzy wymownie. Obie strony mają rację co do tego, że są ważne.",
+  choices: [
+    {
+      id: "protect_the_rest_fully",
+      label: "Bronić odpoczynku bez wyjątków",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText: "Popołudnie zostało Twoje. Lista spraw poczekała — trochę głośniej niż wczoraj."
+    },
+    {
+      id: "split_time_between_both",
+      label: "Podzielić czas na pół",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText: "Ani odpoczynek, ani lista nie dostały pełnej uwagi. Obie dostały trochę."
+    },
+    {
+      id: "sacrifice_rest_for_admin",
+      label: "Poświęcić odpoczynek na rzecz obowiązków",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText: "Lista jest krótsza. Popołudnie, które miało być Twoje, nie było."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "critical_prep_choice",
+  title: "Coś większego czeka w kalendarzu",
+  tags: ["obligation", "preparation"],
+  weightTags: ["obligation", "critical-event-approaching"],
+  agendaSlots: ["obligation"],
+  minDay: 8,
+  description:
+    "Nie dziś. Ale wystarczająco blisko, żeby dawało się to poczuć. Jedna godzina przygotowań teraz mogłaby oszczędzić kilka później — kosztem czegoś innego dziś.",
+  choices: [
+    {
+      id: "prepare_one_fragment_now",
+      label: "Przygotować teraz jeden fragment",
+      spoonsCost: 3,
+      trustChange: -1,
+      frustrationChange: 0,
+      workEffect: { pressureChange: -2, stabilityChange: 1, burnoutChange: 0 },
+      resultText: "Jeden fragment gotowy. Wieczór, który miał być dla kogoś innego, poszedł gdzie indziej."
+    },
+    {
+      id: "leave_evening_for_partner",
+      label: "Zostawić wieczór dla {partnerName}",
+      spoonsCost: 1,
+      trustChange: 2,
+      frustrationChange: 0,
+      workEffect: { pressureChange: 1, stabilityChange: 0, burnoutChange: 0 },
+      resultText: "Wieczór był dla kogoś. Kalendarz zapamiętał, że dziś go nie dotknąłeś/aś."
+    },
+    {
+      id: "pretend_calendar_doesnt_exist",
+      label: "Udawać, że kalendarz nie istnieje",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      workEffect: { pressureChange: 3, stabilityChange: -1, burnoutChange: 1 },
+      resultText: "Kalendarz nie zniknął od tego, że na niego nie patrzysz. Tylko stał się cichszy."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "obligation_masking_at_work",
+  title: "Twarz, którą trzeba nosić do biura",
+  tags: ["obligation", "masking", "work"],
+  weightTags: ["obligation", "work-pressure"],
+  agendaSlots: ["obligation"],
+  minDay: 5,
+  description:
+    "Dzień w pracy wymaga wersji Ciebie, która wygląda na ogarniętą. Ta wersja jest przydatna. Nie jest za darmo.",
+  choices: [
+    {
+      id: "show_up_honest_today",
+      label: "Pokazać się dziś bez pełnej maski",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 1,
+      workEffect: { pressureChange: 1, stabilityChange: -1, burnoutChange: -1 },
+      resultText: "Nikt nie zareagował dramatycznie. To, że się dało, samo w sobie było informacją."
+    },
+    {
+      id: "wear_the_functional_mask",
+      label: "Założyć wersję, która dobrze funkcjonuje",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 0,
+      workEffect: { pressureChange: 0, stabilityChange: 1, burnoutChange: 2 },
+      resultText: "Dzień przeszedł gładko. Gładkość miała swoją cenę, zapisaną gdzie indziej."
+    },
+    {
+      id: "cancel_plans_stay_home",
+      label: "Odwołać dzień, zostać w domu",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 0,
+      workEffect: { pressureChange: 2, stabilityChange: -2, burnoutChange: -1 },
+      resultText: "Dzień w pracy nie odbył się. Praca zauważy — jutro, nie dziś."
+    }
+  ]
+});
+// CLEAN v0.46 work obligation variety events END

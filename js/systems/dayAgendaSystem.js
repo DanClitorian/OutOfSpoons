@@ -8,8 +8,8 @@
 // eventów — import podbity do ?v=310. Ten plik funkcjonalnie się nie
 // zmienił, to czysty cache-bust.
 
-import { eventPool } from "../data/eventData.js?v=390";
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=300";
+import { eventPool } from "../data/eventData.js?v=460";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=460";
 
 const AGENDA_SLOT_ORDER = ["obligation", "relationship", "inner"];
 

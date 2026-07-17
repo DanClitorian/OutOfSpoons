@@ -22,13 +22,13 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=310";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=460";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js?v=300";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js?v=300";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js?v=300";
 import { buildRelationshipRepairReflection } from "../../systems/relationshipRepairSystem.js?v=300";
 import { buildReflectionStaticLine } from "../../systems/staticSystem.js?v=300";
-import { eventPool } from "../../data/eventData.js?v=310";
+import { eventPool } from "../../data/eventData.js?v=460";
 import {
   createGameShell,
   createTopBar,
