@@ -95,7 +95,11 @@ import {
   createSidebar,
   createScenePanel,
   createNarrativeStrip,
-  createCtaButton
+  createCtaButton,
+  createDecisionCard,
+  createResultTile,
+  createPlayerCard,
+  buildStatBar
 } from "../oosLayout.js";
 
 import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=300";
@@ -386,6 +390,19 @@ export function renderGameScreen(container) {
 // (getCurrentSoloSceneInfo) — Echo/Granice/Kontakt społeczny/
 // Gotowość/Rozstrzygnięcie/Jeszcze trochę/To, czego unikałeś/aś —
 // każda inna, żeby gracz WIDZIAŁ ruch, nie tylko czytał inne karty.
+// v0.45.1: Solo UI Parity Fix. Poprzednie wersje (v0.43.x-v0.45)
+// budowały WŁASNE karty/sidebar/result-box z osobnymi klasami
+// (oos-solo-choice, oos-solo-sidebar__*, oos-choice-result-change) —
+// wizualnie zbliżone do reszty gry, ale NIE tożsame: inny clamp linii,
+// inny padding, inny mechanizm pokazywania zmian (strzałki zamiast
+// wartości). Ten redesign PRZESTAJE budować cokolwiek nowego i zamiast
+// tego woła DOKŁADNIE te same, współdzielone funkcje z oosLayout.js,
+// których używa reszta gry: createDecisionCard() (karty wyboru w
+// eventScreen.js/agendaScreen.js), createResultTile() +
+// createScenePanel({modifier:"reflection"}) (ekran skutku decyzji w
+// reflectionScreen.js), createPlayerCard()+buildStatBar() (sidebar
+// partnera). Zero nowego CSS potrzebne — te komponenty i ich style
+// już istnieją i są używane wszędzie indziej.
 function renderSoloRecoveryMorning(container, state) {
   const topbar = createTopBar(state, "game");
   const sidebar = createSoloRecoverySidebar(state);
@@ -408,89 +425,66 @@ function renderSoloRecoveryMorning(container, state) {
     scene,
     narrative,
     actions,
+    // v0.45.1: "flow" bez żadnego solo-specyficznego override'a siatki
+    // (wcześniej .oos-game--solo-recovery .oos-actions--flow wymuszało
+    // sztywne 3 kolumny) — DOKŁADNIE ten sam, domyślny
+    // auto-fit/minmax(230px,1fr), którego używa eventScreen.js dla
+    // swoich 2-4 kart wyboru.
     actionsVariant: "flow"
   });
 
   container.appendChild(shell);
 }
 
-// v0.45: sidebar dostaje piątą pozycję — Echo poprzedniej relacji.
-// Kicker/tytuł zostają stałe ("Tryb solo"/"Rekonstrukcja") — to NAZWA
-// CAŁEJ fazy, podczas gdy tytuł SCENY (powyżej) zmienia się per
-// odsłona. Ten sam, sprawdzony wzorzec skonsolidowanego panelu
-// statystyk z v0.43.3 — bez zmian strukturalnych.
+// v0.45.1: sidebar solo zbudowany z DOKŁADNIE tych samych klas co
+// sidebar partnera (oos-sidebar > oos-player-card + oos-relationship-card
+// z oos-stat-bar w środku) — nie własnych oos-solo-sidebar__*/
+// oos-solo-stats-panel. createPlayerCard() jest tym samym, realnym
+// komponentem, który normalnie pokazuje imię/dzień/spoons — solo
+// dostaje go za darmo, bez zmian. Karta "Rekonstrukcja" poniżej stoi
+// dokładnie tam, gdzie normalnie stoi karta relacji.
 function createSoloRecoverySidebar(state) {
-  const summary = getSoloRecoveryDebugSummary(state);
-
   const sidebar = document.createElement("aside");
-  sidebar.className = "oos-sidebar oos-solo-sidebar";
+  sidebar.className = "oos-sidebar";
 
-  const header = document.createElement("section");
-  header.className = "oos-solo-sidebar__card";
-
-  const kicker = document.createElement("div");
-  kicker.className = "oos-solo-sidebar__kicker";
-  kicker.textContent = "Tryb solo";
-  header.appendChild(kicker);
-
-  const title = document.createElement("h2");
-  title.className = "oos-solo-sidebar__title";
-  title.textContent = "Rekonstrukcja";
-  header.appendChild(title);
-
-  const text = document.createElement("p");
-  text.className = "oos-solo-sidebar__text";
-  text.textContent = "Po rozstaniu nie grasz o czyjeś zaufanie. Sprawdzasz, co zabierzesz dalej.";
-  header.appendChild(text);
-
-  sidebar.appendChild(header);
-
-  const statsPanel = document.createElement("section");
-  statsPanel.className = "oos-solo-stats-panel";
-
-  statsPanel.appendChild(createSoloStatRow("Dni osobno", summary ? summary.daysInSolitude : 0, null));
-  statsPanel.appendChild(createSoloStatRow("Samowiedza", summary ? summary.selfKnowledge : 0, 12));
-  statsPanel.appendChild(createSoloStatRow("Integralność granic", summary ? summary.boundaryIntegrity : 0, 100));
-  statsPanel.appendChild(createSoloStatRow("Przeciążenie społeczne", summary ? summary.socialExhaustion : 0, 12, true));
-  statsPanel.appendChild(createSoloStatRow("Echo poprzedniej relacji", summary ? summary.echo : 0, 12, true));
-
-  sidebar.appendChild(statsPanel);
+  sidebar.appendChild(createPlayerCard(state, "game"));
+  sidebar.appendChild(buildSoloReconstructionCard(state));
 
   return sidebar;
 }
 
-function createSoloStatRow(label, value, maxValue, isStrain = false) {
-  const row = document.createElement("div");
-  row.className = isStrain ? "oos-solo-stat-row oos-solo-stat-row--strain" : "oos-solo-stat-row";
+function buildSoloReconstructionCard(state) {
+  const summary = getSoloRecoveryDebugSummary(state);
 
-  const top = document.createElement("div");
-  top.className = "oos-solo-stat-row__top";
+  const card = document.createElement("section");
+  card.className = "oos-relationship-card";
 
-  const labelEl = document.createElement("span");
-  labelEl.className = "oos-solo-stat-row__label";
-  labelEl.textContent = label;
-  top.appendChild(labelEl);
+  const heading = document.createElement("p");
+  heading.className = "oos-relationship-card-heading";
+  heading.textContent = "Rekonstrukcja";
+  card.appendChild(heading);
 
-  const valueEl = document.createElement("strong");
-  valueEl.className = "oos-solo-stat-row__value";
-  valueEl.textContent = String(value ?? 0);
-  top.appendChild(valueEl);
+  const name = document.createElement("p");
+  name.className = "oos-relationship-card-name";
+  name.textContent = "Tryb solo";
+  card.appendChild(name);
 
-  row.appendChild(top);
+  const label = document.createElement("p");
+  label.className = "oos-relationship-card-label";
+  label.textContent = `Dni osobno: ${summary ? summary.daysInSolitude : 0}`;
+  card.appendChild(label);
 
-  if (maxValue) {
-    const track = document.createElement("div");
-    track.className = "oos-solo-stat-row__track";
+  const selfKnowledge = summary ? summary.selfKnowledge : 0;
+  const boundaryIntegrity = summary ? summary.boundaryIntegrity : 0;
+  const socialExhaustion = summary ? summary.socialExhaustion : 0;
+  const echo = summary ? summary.echo : 0;
 
-    const fill = document.createElement("div");
-    fill.className = "oos-solo-stat-row__fill";
-    fill.style.setProperty("--solo-stat-fill", `${soloPercent(value, maxValue)}%`);
-    track.appendChild(fill);
+  card.appendChild(buildStatBar("🧠 Samowiedza", `${selfKnowledge}/12`, soloPercent(selfKnowledge, 12), "trust"));
+  card.appendChild(buildStatBar("🛡️ Integralność granic", `${boundaryIntegrity}/100`, soloPercent(boundaryIntegrity, 100), "trust"));
+  card.appendChild(buildStatBar("🌀 Przeciążenie społeczne", `${socialExhaustion}/12`, soloPercent(socialExhaustion, 12), "frustration"));
+  card.appendChild(buildStatBar("🔁 Echo poprzedniej relacji", `${echo}/12`, soloPercent(echo, 12), "frustration"));
 
-    row.appendChild(track);
-  }
-
-  return row;
+  return card;
 }
 
 function soloPercent(value, maxValue) {
@@ -507,84 +501,63 @@ function buildSoloRecoveryNarrative(state, sceneInfo) {
   return buildSoloMorningLine(state) || sceneInfo.narrative;
 }
 
-// v0.45: click handler dostosowany do nowego kształtu wyniku — dla
-// wyborów w odsłonach (echo/granice/kontakt/gotowość) i dla
-// maintenance/high-stakes buduje standardową listę zmian statystyk.
-// Dla wyborów ROZSTRZYGNIĘCIA (resolution) nie ma zmian statystyk do
-// pokazania (to czyste ścieżki), a nextAction zależy od tego, którą
-// ścieżkę gracz wybrał — "otworzyć się na możliwość" dostaje SPECJALNY
-// nextAction "start-dating-arc-from-solo" (patrz
-// renderTransientResultScreen), pozostałe zwykłe "advance-solo-day".
+// v0.45.1: karta wyboru solo to teraz DOSŁOWNIE createDecisionCard() —
+// ten sam komponent, którego eventScreen.js/agendaScreen.js używają
+// dla swoich kart. title -> title, text -> description (dokładnie to
+// pole, którego agendaScreen.js już używa dla swoich opisów slotów).
+// Zero własnej klasy, zero własnego DOM-u.
 function createSoloRecoveryChoiceButton(state, choice) {
-  const button = document.createElement("button");
-  button.type = "button";
-  // v0.43.1: "oos-choice-card" nie istniało w żadnym pliku CSS —
-  // literówka względem realnej, współdzielonej klasy kart wyboru
-  // "oos-decision-card". Karty solo dostają teraz TĘ SAMĄ bazową
-  // stylistykę (obramowanie, gradient, hover lift, focus ring) co
-  // zwykłe karty eventów/agendy — .oos-solo-choice (załadowana
-  // później w kaskadzie) nadpisuje tylko to, co faktycznie ma być
-  // inne (rozmiar, tło, siatka wewnętrzna).
-  button.className = "oos-solo-choice oos-decision-card";
-
-  const title = document.createElement("span");
-  title.className = "oos-solo-choice__title";
-  title.textContent = choice.title;
-  button.appendChild(title);
-
-  const text = document.createElement("span");
-  text.className = "oos-solo-choice__text";
-  text.textContent = choice.text;
-  button.appendChild(text);
-  button.addEventListener("click", () => {
-    const result = applySoloRecoveryChoice(state, choice.id);
-    if (result && result.applied) {
-      state.transientChoiceResult = {
-        mode: "solo",
-        title: choice.title,
-        text: result.result || choice.text,
-        changes: buildSoloChangesList(choice),
-        nextAction: result.startsDatingArc ? "start-dating-arc-from-solo" : "advance-solo-day"
-      };
-      saveGame(state);
+  return createDecisionCard({
+    title: choice.title,
+    description: choice.text,
+    onClick: () => {
+      const result = applySoloRecoveryChoice(state, choice.id);
+      if (result && result.applied) {
+        state.transientChoiceResult = {
+          mode: "solo",
+          text: result.result || choice.text,
+          changes: buildSoloChangesTiles(choice),
+          nextAction: result.startsDatingArc ? "start-dating-arc-from-solo" : "advance-solo-day"
+        };
+        saveGame(state);
+      }
+      showScreen("game");
     }
-    showScreen("game");
   });
-
-  return button;
 }
 
-// Buduje listę { label, direction } z pól *Change już obecnych na
-// obiekcie choice — te wartości są STAŁE, znane z góry, ale pokazywane
-// graczowi DOPIERO w result boxie po kliknięciu, nigdy jako prognoza
-// przed wyborem. Wybory ROZSTRZYGNIĘCIA nie mają tych pól — naturalnie
-// zwracają pustą listę (żadnej stat-zmiany do pokazania, tylko
-// narracja przejścia).
-function buildSoloChangesList(choice) {
+// v0.45.1: zwraca dane kafelków w KSZTAŁCIE, jakiego oczekuje
+// createResultTile() ({icon, label, value, desirableDirection}) —
+// DOKŁADNIE ten sam format co buildResultTiles() w reflectionScreen.js
+// dla Spoons/Zaufania/Frustracji. Wartości to realne, znane z góry
+// delty (choice.*Change) — pokazywane graczowi DOPIERO po kliknięciu,
+// w result boxie, nigdy jako prognoza przed wyborem.
+// desirableDirection:"down" dla Przeciążenia i Echo — ich WZROST jest
+// złym efektem (czerwony kafelek), dokładnie tak samo jak Frustracja w
+// reflectionScreen.js.
+function buildSoloChangesTiles(choice) {
   const changes = [];
   if (choice.selfKnowledgeChange) {
-    changes.push({ label: "Samowiedza", direction: choice.selfKnowledgeChange > 0 ? "up" : "down" });
+    changes.push({ icon: "🧠", label: "Samowiedza", value: choice.selfKnowledgeChange });
   }
   if (choice.boundaryIntegrityChange) {
-    changes.push({ label: "Integralność granic", direction: choice.boundaryIntegrityChange > 0 ? "up" : "down" });
+    changes.push({ icon: "🛡️", label: "Integralność granic", value: choice.boundaryIntegrityChange });
   }
   if (choice.socialExhaustionChange) {
-    changes.push({ label: "Przeciążenie społeczne", direction: choice.socialExhaustionChange > 0 ? "up" : "down" });
+    changes.push({ icon: "🌀", label: "Przeciążenie społeczne", value: choice.socialExhaustionChange, desirableDirection: "down" });
   }
   if (choice.echoChange) {
-    changes.push({ label: "Echo poprzedniej relacji", direction: choice.echoChange > 0 ? "up" : "down" });
+    changes.push({ icon: "🔁", label: "Echo poprzedniej relacji", value: choice.echoChange, desirableDirection: "down" });
   }
   return changes;
 }
 
 // v0.44: Dating Arc Foundation. Renderuje się w TYM SAMYM miejscu co
-// tryb solo (dispatch w renderGameScreen, przed sprawdzeniem solo) —
-// reużywa DOKŁADNIE tych samych klas co solo (oos-solo-sidebar,
-// oos-solo-sidebar__card, oos-solo-stats-panel, createSoloStatRow,
-// oos-solo-choice/oos-decision-card) — świadomie zero nowego, dużego
-// UI, zgodnie z ticketem. Sidebar partnera NIE pojawia się, dopóki
-// relacja nie zostanie naprawdę rozpoczęta (dating arc ma WŁASNY
-// sidebar, patrz createDatingArcSidebar).
+// tryb solo (dispatch w renderGameScreen, przed sprawdzeniem solo).
+// v0.45.1: sidebar/karty/result-box reużywają teraz DOKŁADNIE tych
+// samych komponentów co solo (patrz komentarze wyżej) — nie osobnych
+// klas oos-solo-sidebar__*. Sidebar partnera NIE pojawia się, dopóki
+// relacja nie zostanie naprawdę rozpoczęta.
 function renderDatingArcMorning(container, state) {
   const topbar = createTopBar(state, "game");
   const sidebar = createDatingArcSidebar(state);
@@ -610,163 +583,125 @@ function renderDatingArcMorning(container, state) {
   container.appendChild(shell);
 }
 
-// Sidebar dating arcu — reużywa TYCH SAMYCH klas co sidebar solo
-// (oos-solo-sidebar/-card/-stats-panel), tylko z innymi danymi:
-// imię prospecta, etap, curiosity/compatibilitySignal/pacePressure/
-// redFlags jako kompaktowe paski (createSoloStatRow, patrz wyżej).
-// Zero nowego CSS potrzebnego dla samego layoutu.
-// v0.44.1: Choice Feedback Unification. Etap jest teraz widoczny jako
-// czytelny tekst w kickerze ("Nowy kontakt · Rozmowa"), nie jako
-// pozycja w panelu statystyk — zgodnie z wymaganiem "UI musi pokazywać
-// stage jako coś bardziej czytelnego niż tylko statystyka". Dodana
-// nowa sekcja z green/red flag (krótkie zdania, nie liczby) między
-// kartą nagłówkową a panelem statystyk. Panel statystyk zostaje przy
-// 4 numerycznych paskach (bez "Etapu", który przeniósł się wyżej).
+// v0.45.1: sidebar dating arcu zbudowany z tych samych klas co sidebar
+// partnera (oos-player-card + oos-relationship-card + oos-stat-bar),
+// nie własnych oos-solo-sidebar__*. Nagłówek karty pokazuje etap
+// czytelnym tekstem ("Nowy kontakt · Rozmowa"), imię i krótki opis
+// stylu/intencji prospecta zajmują miejsce, gdzie normalnie jest
+// relationshipLabel partnera. Green/red flag jako dodatkowe linie
+// tekstu (ta sama klasa oos-relationship-card-label co reszta) — NIE
+// jako partner, tylko jako możliwość.
 function createDatingArcSidebar(state) {
-  const summary = getDatingArcDebugSummary(state);
-  const prospect = summary ? summary.prospect : null;
-
   const sidebar = document.createElement("aside");
-  sidebar.className = "oos-sidebar oos-solo-sidebar";
+  sidebar.className = "oos-sidebar";
 
-  const header = document.createElement("section");
-  header.className = "oos-solo-sidebar__card";
-
-  const kicker = document.createElement("div");
-  kicker.className = "oos-solo-sidebar__kicker";
-  kicker.textContent = `Nowy kontakt · ${getDatingArcStageTitle(state)}`;
-  header.appendChild(kicker);
-
-  const title = document.createElement("h2");
-  title.className = "oos-solo-sidebar__title";
-  title.textContent = prospect ? prospect.name : "Ktoś nowy";
-  header.appendChild(title);
-
-  const text = document.createElement("p");
-  text.className = "oos-solo-sidebar__text";
-  text.textContent = prospect
-    ? `${prospect.communicationStyle}. ${prospect.relationalIntent}.`
-    : "To wciąż możliwość, nie zobowiązanie.";
-  header.appendChild(text);
-
-  sidebar.appendChild(header);
-
-  if (prospect) {
-    const flags = document.createElement("section");
-    flags.className = "oos-dating-arc-flags";
-
-    const green = document.createElement("p");
-    green.className = "oos-dating-arc-flags__item oos-dating-arc-flags__item--green";
-    green.textContent = prospect.greenFlag;
-    flags.appendChild(green);
-
-    const red = document.createElement("p");
-    red.className = "oos-dating-arc-flags__item oos-dating-arc-flags__item--red";
-    red.textContent = prospect.redFlag;
-    flags.appendChild(red);
-
-    sidebar.appendChild(flags);
-  }
-
-  const statsPanel = document.createElement("section");
-  statsPanel.className = "oos-solo-stats-panel";
-
-  statsPanel.appendChild(createSoloStatRow("Ciekawość", summary ? summary.curiosity : 0, 10));
-  statsPanel.appendChild(createSoloStatRow("Zgodność", summary ? summary.compatibilitySignal : 0, 10));
-  statsPanel.appendChild(createSoloStatRow("Presja tempa", summary ? summary.pacePressure : 0, 10, true));
-  statsPanel.appendChild(createSoloStatRow("Sygnały ostrzegawcze", summary ? summary.redFlags : 0, 10, true));
-
-  sidebar.appendChild(statsPanel);
+  sidebar.appendChild(createPlayerCard(state, "game"));
+  sidebar.appendChild(buildDatingArcCard(state));
 
   return sidebar;
 }
 
-// Karta wyboru dating arcu — DOKŁADNIE ta sama para klas co karty solo
-// (oos-solo-choice + oos-decision-card), więc dostaje tę samą
-// stylistykę bez żadnego nowego CSS. Po kliknięciu: aplikuje wybór,
-// przesuwa dzień (ten sam rytm co solo recovery) i wraca do
-// renderGameScreen — dispatch tam sam rozpozna, czy dating arc nadal
-// jest aktywny (kolejny etap), czy właśnie się rozstrzygnął (partner
-// powstał albo gracz wrócił do solo).
-// v0.44.1: Choice Feedback Unification. Jak createSoloRecoveryChoiceButton
-// — kliknięcie aplikuje wybór, buduje listę zmian z choice.effects
-// (deltas znane z góry, ale ujawniane DOPIERO po fakcie) i ustawia
-// transientChoiceResult. advanceDatingArcDay() woła się dopiero po
-// "Dalej". Działa identycznie niezależnie od outcome (advanced/
-// entered/waiting/released) — advanceDatingArcDay() jest bezpieczne do
-// wywołania zawsze (nie sprawdza arc.active), więc dzień zawsze
-// przechodzi dalej po kliknięciu "Dalej".
-function createDatingArcChoiceButton(state, choice) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "oos-solo-choice oos-decision-card";
+function buildDatingArcCard(state) {
+  const summary = getDatingArcDebugSummary(state);
+  const prospect = summary ? summary.prospect : null;
 
-  const title = document.createElement("span");
-  title.className = "oos-solo-choice__title";
-  title.textContent = choice.title;
-  button.appendChild(title);
+  const card = document.createElement("section");
+  card.className = "oos-relationship-card";
 
-  const text = document.createElement("span");
-  text.className = "oos-solo-choice__text";
-  text.textContent = choice.text;
-  button.appendChild(text);
+  const heading = document.createElement("p");
+  heading.className = "oos-relationship-card-heading";
+  heading.textContent = `Nowy kontakt · ${getDatingArcStageTitle(state)}`;
+  card.appendChild(heading);
 
-  button.addEventListener("click", () => {
-    const result = applyDatingArcChoice(state, choice.id);
-    if (result && result.applied) {
-      state.transientChoiceResult = {
-        mode: "dating",
-        title: choice.title,
-        text: result.resultText || choice.text,
-        changes: buildDatingChangesList(choice),
-        nextAction: "advance-dating-day"
-      };
-      saveGame(state);
-    }
-    showScreen("game");
-  });
+  const name = document.createElement("p");
+  name.className = "oos-relationship-card-name";
+  name.textContent = prospect ? prospect.name : "Ktoś nowy";
+  card.appendChild(name);
 
-  return button;
+  const label = document.createElement("p");
+  label.className = "oos-relationship-card-label";
+  label.textContent = prospect
+    ? `${prospect.communicationStyle}. ${prospect.relationalIntent}.`
+    : "To wciąż możliwość, nie zobowiązanie.";
+  card.appendChild(label);
+
+  if (prospect) {
+    const flags = document.createElement("p");
+    flags.className = "oos-relationship-card-label";
+    flags.textContent = `${prospect.greenFlag} — ${prospect.redFlag}`;
+    card.appendChild(flags);
+  }
+
+  const curiosity = summary ? summary.curiosity : 0;
+  const compatibilitySignal = summary ? summary.compatibilitySignal : 0;
+  const pacePressure = summary ? summary.pacePressure : 0;
+  const redFlags = summary ? summary.redFlags : 0;
+
+  card.appendChild(buildStatBar("✨ Ciekawość", `${curiosity}/10`, soloPercent(curiosity, 10), "trust"));
+  card.appendChild(buildStatBar("💬 Sygnał kompatybilności", `${compatibilitySignal}/10`, soloPercent(compatibilitySignal, 10), "trust"));
+  card.appendChild(buildStatBar("⏱️ Presja tempa", `${pacePressure}/10`, soloPercent(pacePressure, 10), "frustration"));
+  card.appendChild(buildStatBar("🚩 Czerwone flagi", `${redFlags}/10`, soloPercent(redFlags, 10), "frustration"));
+
+  return card;
 }
 
-// Buduje listę { label, direction } z choice.effects (STAGE_CHOICES w
-// datingArcSystem.js) — te same zasady co buildSoloChangesList: brak
-// prognozy przed wyborem, tylko odczyt wsteczny w result boxie.
-// Wybory terminalne w "define-relationship" nie mają effects — dostają
-// pustą listę (result box i tak pokazuje resultText).
-function buildDatingChangesList(choice) {
+// v0.45.1: karta wyboru dating arcu to DOSŁOWNIE createDecisionCard(),
+// jak w solo. Po kliknięciu: aplikuje wybór, buduje kafelki zmian w
+// formacie createResultTile() i ustawia transientChoiceResult.
+// advanceDatingArcDay() woła się dopiero po "Dalej".
+function createDatingArcChoiceButton(state, choice) {
+  return createDecisionCard({
+    title: choice.title,
+    description: choice.text,
+    onClick: () => {
+      const result = applyDatingArcChoice(state, choice.id);
+      if (result && result.applied) {
+        state.transientChoiceResult = {
+          mode: "dating",
+          text: result.resultText || choice.text,
+          changes: buildDatingChangesTiles(choice),
+          nextAction: "advance-dating-day"
+        };
+        saveGame(state);
+      }
+      showScreen("game");
+    }
+  });
+}
+
+// Jak buildSoloChangesTiles — {icon, label, value, desirableDirection}
+// z choice.effects. Wybory terminalne w "define-relationship" mogą
+// mieć effects (enter_slow/enter_fast) albo nie (not_yet/let_go) —
+// naturalnie pusta lista, jeśli nie mają.
+function buildDatingChangesTiles(choice) {
   const effects = choice.effects || {};
   const changes = [];
 
   if (effects.curiosity) {
-    changes.push({ label: "Ciekawość", direction: effects.curiosity > 0 ? "up" : "down" });
+    changes.push({ icon: "✨", label: "Ciekawość", value: effects.curiosity });
   }
   if (effects.compatibilitySignal) {
-    changes.push({ label: "Sygnał kompatybilności", direction: effects.compatibilitySignal > 0 ? "up" : "down" });
+    changes.push({ icon: "💬", label: "Sygnał kompatybilności", value: effects.compatibilitySignal });
   }
   if (effects.pacePressure) {
-    changes.push({ label: "Presja tempa", direction: effects.pacePressure > 0 ? "up" : "down" });
+    changes.push({ icon: "⏱️", label: "Presja tempa", value: effects.pacePressure, desirableDirection: "down" });
   }
   if (effects.redFlags) {
-    changes.push({ label: "Czerwone flagi", direction: effects.redFlags > 0 ? "up" : "down" });
+    changes.push({ icon: "🚩", label: "Czerwone flagi", value: effects.redFlags, desirableDirection: "down" });
   }
 
   return changes;
 }
 
-// v0.44.1: Choice Feedback Unification. Jeden, wspólny ekran dla
-// WSZYSTKICH trzech przypadków transientChoiceResult:
-//   - mode "solo" / "dating": zwykły result box (tytuł wyboru, tekst
-//     rezultatu, lista zmian statystyk PO fakcie) z JEDNYM przyciskiem
-//     "Dalej", który dopiero teraz woła advanceSoloRecoveryDay() albo
-//     advanceDatingArcDay(),
-//   - mode "new-relationship-prompt": transition box "Ktoś pojawia się
-//     jako możliwość." z DWOMA przyciskami — "Wejdź w kontakt powoli"
-//     (odpala startDatingArc()) i "Jeszcze nie teraz" (po prostu
-//     zamyka box, gracz zostaje w solo).
-// Sidebar podczas result boxa pokazuje AKTUALNY (już zaktualizowany)
-// stan — dane już się zmieniły pod spodem, ten ekran tylko pokazuje to
-// graczowi, zanim przejdzie dalej.
+// v0.45.1: Solo UI Parity Fix. Ekran skutku decyzji solo/dating to
+// teraz DOSŁOWNIE ten sam layout co reflectionScreen.js —
+// createScenePanel({modifier:"reflection", title:"Skutek decyzji"})
+// (TA SAMA, stała nazwa sceny co w relacji — nie tytuł klikniętej
+// karty), createResultTile() kafelki + createCtaButton() w JEDNYM
+// rzędzie akcji z actionsVariant:"reflection" (dokładnie ten wariant,
+// którego reflectionScreen.js używa dla [...tiles, cta]). Zero
+// własnego "belka zmian pod narracją" — kafelki żyją w dolnym pasku
+// akcji, tam gdzie w całej reszcie gry.
 function renderTransientResultScreen(container, state) {
   const result = state.transientChoiceResult;
 
@@ -774,65 +709,44 @@ function renderTransientResultScreen(container, state) {
   const sidebar = isDatingArcActive(state) ? createDatingArcSidebar(state) : createSoloRecoverySidebar(state);
 
   const scene = createScenePanel({
-    modifier: "morning",
-    title: result.title
+    modifier: "reflection",
+    title: "Skutek decyzji"
   });
 
   const narrative = createNarrativeStrip(result.text);
 
-  if (result.changes && result.changes.length > 0) {
-    narrative.appendChild(buildChangesListElement(result.changes));
-  }
+  const tiles = (result.changes || []).map((change) => createResultTile(change));
 
-  const actions = [
-    createCtaButton("Dalej", () => {
-      const nextAction = result.nextAction;
-      state.transientChoiceResult = null;
-      if (nextAction === "advance-solo-day") {
-        advanceSoloRecoveryDay(state);
-      } else if (nextAction === "advance-dating-day") {
-        advanceDatingArcDay(state);
-      } else if (nextAction === "start-dating-arc-from-solo") {
-        // v0.45: rozstrzygnięcie "Otworzyć się na możliwość" — dzień
-        // przechodzi dalej TAK SAMO jak po każdym innym wyborze solo
-        // (jeden wybór = jeden dzień), a DOPIERO potem dating arc się
-        // zaczyna, z nowym prospectem, na już przesuniętym dniu.
-        advanceSoloRecoveryDay(state);
-        startDatingArc(state, "solo-recovery");
-      }
-      saveGame(state);
-      showScreen("game");
-    })
-  ];
+  const cta = createCtaButton("Dalej", () => {
+    const nextAction = result.nextAction;
+    state.transientChoiceResult = null;
+    if (nextAction === "advance-solo-day") {
+      advanceSoloRecoveryDay(state);
+    } else if (nextAction === "advance-dating-day") {
+      advanceDatingArcDay(state);
+    } else if (nextAction === "start-dating-arc-from-solo") {
+      // v0.45: rozstrzygnięcie "Otworzyć się na możliwość" — dzień
+      // przechodzi dalej TAK SAMO jak po każdym innym wyborze solo
+      // (jeden wybór = jeden dzień), a DOPIERO potem dating arc się
+      // zaczyna, z nowym prospectem, na już przesuniętym dniu.
+      advanceSoloRecoveryDay(state);
+      startDatingArc(state, "solo-recovery");
+    }
+    saveGame(state);
+    showScreen("game");
+  });
 
   const shell = createGameShell({
-    screenClass: "choice-result",
+    screenClass: "reflection",
     topbar,
     sidebar,
     scene,
     narrative,
-    actions,
-    actionsVariant: "single"
+    actions: [...tiles, cta],
+    actionsVariant: "reflection"
   });
 
   container.appendChild(shell);
-}
-
-// Buduje wizualną listę zmian ("Samowiedza ↑", "Presja tempa ↓" itd.)
-// — TYLKO tekst + kierunek, nigdy surowa liczba delty ani wartość
-// bezwzględna. Wywoływane WYŁĄCZNIE w result boxie, PO wyborze.
-function buildChangesListElement(changes) {
-  const list = document.createElement("div");
-  list.className = "oos-choice-result-changes";
-
-  changes.forEach((change) => {
-    const item = document.createElement("span");
-    item.className = `oos-choice-result-change oos-choice-result-change--${change.direction}`;
-    item.textContent = `${change.label} ${change.direction === "up" ? "↑" : "↓"}`;
-    list.appendChild(item);
-  });
-
-  return list;
 }
 
 function buildMorningNarrative(state) {

@@ -325,7 +325,11 @@ function buildRelationshipMoodLabel(npc) {
   return "Niejasno";
 }
 
-function buildStatBar(label, valueText, percentValue, modifier) {
+// v0.45.1: Solo UI Parity Fix. Wyeksportowane (było prywatne), żeby
+// gameScreen.js mogło budować karty statystyk solo/dating DOKŁADNIE
+// tym samym mechanizmem co karta partnera (oos-stat-bar) — zero
+// nowego CSS potrzebnego do samych pasków statystyk.
+export function buildStatBar(label, valueText, percentValue, modifier) {
   const stat = document.createElement("div");
   stat.className = "oos-stat-bar";
 
@@ -356,8 +360,20 @@ function buildStatBar(label, valueText, percentValue, modifier) {
   return stat;
 }
 
+// v0.45.1: Solo UI Parity Fix. Wcześniej zwracało npc niezależnie od
+// state.partner.status — podczas solo (partner.status === "ex", obiekt
+// celowo NIE jest usuwany, patrz soloRecoverySystem.js) createPlayerCard()
+// pokazywałaby pasek zaufania do BYŁEGO partnera, co jest mylące
+// (sugeruje aktywną relację, której już nie ma). Teraz zwraca npc
+// TYLKO dla partnera o statusie "active" — naprawia to zarówno dla
+// reużycia createPlayerCard() w trybie solo, jak i dla każdego innego
+// przyszłego miejsca, które mogłoby wywołać ten sam problem.
 function getPartnerNpc(state) {
   if (!state || !state.partner || !state.npcs) {
+    return null;
+  }
+
+  if (state.partner.status && state.partner.status !== "active") {
     return null;
   }
 
