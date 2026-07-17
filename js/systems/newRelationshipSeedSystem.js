@@ -240,6 +240,7 @@ function calculateStartStats(state, solo) {
   const selfKnowledge = Number(solo.selfKnowledge || 0);
   const boundaryIntegrity = Number(solo.boundaryIntegrity || 0);
   const socialExhaustion = Number(solo.socialExhaustion || 0);
+  const echo = Number(solo.echo || 0);
   const lessons = Array.isArray(solo.lessons) ? solo.lessons : [];
 
   let trust = 44;
@@ -264,9 +265,40 @@ function calculateStartStats(state, solo) {
     frustration += 4;
   }
 
+  // v0.45: Echo poprzedniej relacji jako napięcie interpretacyjne —
+  // wysokie Echo utrudnia start nowej relacji (nowa osoba czytana
+  // częściowo przez pryzmat poprzedniej), niezależnie od tego, jak
+  // dobrze przebiegł sam dating arc. Niskie Echo NIE daje bonusu —
+  // brak kary nie jest premią, tylko "więcej przestrzeni" (zgodnie z
+  // ustaleniem, że niskie Echo != "wyleczone").
+  if (echo >= 8) {
+    trust -= 5;
+    frustration += 4;
+  } else if (echo >= 5) {
+    trust -= 2;
+  }
+
+  // v0.45: statystyki dating arcu (state.datingArc — nadal wypełnione
+  // w momencie tego wywołania, bo finalizeNewRelationship() resetuje
+  // je DOPIERO po tym obliczeniu) wpływają na start — jak przeszedł/a
+  // kontakt, kształtuje to, jak zaczyna się relacja.
+  // boundaryIntegrity częściowo TŁUMI negatywny wpływ redFlags/
+  // pacePressure — wysoka integralność granic chroni przed zbyt
+  // wysoką frustracją na starcie, nawet jeśli dating arc był burzliwy.
+  const arc = state && state.datingArc ? state.datingArc : null;
+  if (arc) {
+    const compatibilitySignal = Number(arc.compatibilitySignal || 0);
+    const redFlags = Number(arc.redFlags || 0);
+    const pacePressure = Number(arc.pacePressure || 0);
+    const boundaryProtection = boundaryIntegrity >= 70 ? 0.5 : boundaryIntegrity >= 50 ? 0.75 : 1;
+
+    trust += Math.min(8, compatibilitySignal);
+    frustration += Math.round((redFlags * 2 + pacePressure) * boundaryProtection);
+  }
+
   return {
-    trust: clamp(trust, 35, 68),
-    frustration: clamp(frustration, 12, 48)
+    trust: clamp(trust, 30, 72),
+    frustration: clamp(frustration, 10, 55)
   };
 }
 

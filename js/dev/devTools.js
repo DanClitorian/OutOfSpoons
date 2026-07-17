@@ -58,7 +58,7 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=440";
+import { showScreen } from "../ui/uiManager.js?v=450";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
@@ -121,17 +121,17 @@ import {
   getSoloRecoveryDebugSummary,
   setSelfKnowledgeHigh as setSelfKnowledgeHighState,
   clearSoloRecovery as clearSoloRecoveryState
-} from "../systems/soloRecoverySystem.js?v=440";
+} from "../systems/soloRecoverySystem.js?v=450";
 import {
   previewNewRelationshipSeed,
   startNewRelationshipSeed as startNewRelationshipSeedState
-} from "../systems/newRelationshipSeedSystem.js?v=440";
+} from "../systems/newRelationshipSeedSystem.js?v=450";
 import {
   getDatingArcDebugSummary,
   startDatingArc as startDatingArcState,
   forceAdvanceDatingArcStage,
   clearDatingArc as clearDatingArcState
-} from "../systems/datingArcSystem.js?v=440";
+} from "../systems/datingArcSystem.js?v=450";
 function requireActiveState(actionName) {
   const state = getState();
 

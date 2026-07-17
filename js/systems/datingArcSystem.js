@@ -23,7 +23,8 @@
 // Ten moduł NIE zmienia spoons/trust/frustration bezpośrednio, NIE
 // dotyka eventSystem.js/weeklySummaryScreen.js.
 
-import { startNewRelationshipFromProspect } from "./newRelationshipSeedSystem.js?v=440";
+import { startNewRelationshipFromProspect } from "./newRelationshipSeedSystem.js?v=450";
+import { recordPatternEntry, evaluatePatterns } from "./patternSystem.js?v=300";
 
 const MAX_HISTORY = 30;
 
@@ -53,6 +54,7 @@ const PROSPECT_POOL = [
     redFlag: "czasem znika na kilka dni bez słowa",
     contrastToPreviousRelationship: "mniej intensywny, więcej ciszy",
     pace: "slow",
+    appearanceContext: "przez wspólnego znajomego, który od miesięcy powtarzał, że powinniście się poznać",
     firstImpressionText: "Nie próbuje być zabawny na siłę. Pyta więcej, niż mówi."
   },
   {
@@ -66,6 +68,7 @@ const PROSPECT_POOL = [
     redFlag: "chce widywać się codziennie od pierwszego tygodnia",
     contrastToPreviousRelationship: "szybsza, głośniejsza, mniej przestrzeni",
     pace: "fast",
+    appearanceContext: "w tej samej kawiarni, w której zaczęłaś/ąłeś siadać po rozstaniu, bo tam jest cicho",
     firstImpressionText: "Odpisuje w minutę. Entuzjazm, o który jeszcze nie prosiłeś/aś."
   },
   {
@@ -79,6 +82,7 @@ const PROSPECT_POOL = [
     redFlag: "zmienia temat, gdy robi się poważnie",
     contrastToPreviousRelationship: "lżejszy, ale trudniej się do niego dostać",
     pace: "slow",
+    appearanceContext: "stary kontakt z aplikacji, o którym zapomniałeś/aś, odzywa się bez wyraźnego powodu",
     firstImpressionText: "Rozmowa płynie łatwo. Za łatwo, żeby wiedzieć, co jest pod spodem."
   },
   {
@@ -92,6 +96,7 @@ const PROSPECT_POOL = [
     redFlag: "głośno porównuje cię do poprzednich osób",
     contrastToPreviousRelationship: "więcej pytań, mniej założeń",
     pace: "medium",
+    appearanceContext: "przyjaciel/przyjaciółka namówił/a Cię, żebyś w końcu odpisał/a na aplikacji",
     firstImpressionText: "Zamiast się domyślać, po prostu pyta. To rzadkie."
   }
 ];
@@ -122,6 +127,7 @@ const STAGE_CHOICES = {
       title: "Nazwać, że jesteś po rozstaniu",
       text: "Powiedzieć to wprost, zamiast zakładać, że i tak wyjdzie.",
       effects: { compatibilitySignal: 2, pacePressure: -1 },
+      patternTags: ["transparency"],
       resultText: "Prawda o punkcie startu nie odstrasza od razu."
     },
     {
@@ -129,6 +135,7 @@ const STAGE_CHOICES = {
       title: "Zagrać lekkość, choć jej nie czujesz",
       text: "Utrzymać żartobliwy ton, żeby niczego nie komplikować.",
       effects: { curiosity: 1, redFlags: 0 },
+      patternTags: ["avoidance"],
       resultText: "Lekkość działa. Przynajmniej na zewnątrz."
     },
     {
@@ -145,6 +152,7 @@ const STAGE_CHOICES = {
       title: "Nazwać, czego dziś nie masz siły robić",
       text: "Powiedzieć, gdzie jest dzisiejsza granica, zamiast przekraczać ją po cichu.",
       effects: { compatibilitySignal: 2 },
+      patternTags: ["transparency"],
       resultText: "Granica nazwana na głos waży inaczej niż domyślana."
     },
     {
@@ -152,6 +160,7 @@ const STAGE_CHOICES = {
       title: "Zignorować zmęczenie i przyspieszyć",
       text: "Iść dalej, chociaż ciało już protestuje.",
       effects: { pacePressure: 2, redFlags: 1 },
+      patternTags: ["overextension"],
       resultText: "Tempo przyspiesza. Jeszcze nie wiadomo, kosztem czego."
     },
     {
@@ -168,6 +177,7 @@ const STAGE_CHOICES = {
       title: "Spotkać się bez grania roli",
       text: "Pokazać się takim/taką, jaki/a jesteś dzisiaj, nie wersją na pokaz.",
       effects: { compatibilitySignal: 2 },
+      patternTags: ["transparency"],
       resultText: "Nikt nie musiał dziś nikogo udawać."
     },
     {
@@ -175,6 +185,7 @@ const STAGE_CHOICES = {
       title: "Spotkać się, ale zagrać wersję, która się podoba",
       text: "Pokazać stronę, która najbardziej się sprzedaje.",
       effects: { curiosity: 1, redFlags: 1 },
+      patternTags: ["people-pleasing"],
       resultText: "Wersja na pokaz podobała się. Trochę nieznajomej osobie."
     },
     {
@@ -191,14 +202,17 @@ const STAGE_CHOICES = {
       title: "Wejść powoli",
       text: "Zacząć relację, nazywając tempo, którego potrzebujesz.",
       terminal: "enter",
-      resultText: "Zaczyna się coś, co nie musi niczego udowadniać od razu."
+      effects: { compatibilitySignal: 1 },
+      patternTags: ["transparency"],
+      resultText: "Zaczyna się coś, co nie musi niczego udowadniać od razu. Ale nie wiadomo jeszcze, czy tempo obojgu wystarczy."
     },
     {
       id: "enter_fast",
       title: "Wejść za szybko, żeby nie czuć pustki",
       text: "Wejść w to teraz, zanim zdążysz się zawahać.",
       terminal: "enter",
-      resultText: "Zaczyna się szybko. Może za szybko, żeby to jeszcze ocenić."
+      effects: { compatibilitySignal: 2, pacePressure: 2 },
+      resultText: "Bliskość przychodzi szybko i naprawdę coś daje. Pytanie, czy zdążyliście się w ogóle poznać."
     },
     {
       id: "not_yet",
@@ -279,6 +293,7 @@ function generateProspect(state) {
     redFlag: picked.redFlag,
     contrastToPreviousRelationship: picked.contrastToPreviousRelationship,
     pace: picked.pace,
+    appearanceContext: picked.appearanceContext,
     firstImpressionText: picked.firstImpressionText
   };
 }
@@ -357,6 +372,22 @@ export function applyDatingArcChoice(state, choiceId) {
   arc.pacePressure = clampStat((arc.pacePressure || 0) + (effects.pacePressure || 0));
   arc.redFlags = clampStat((arc.redFlags || 0) + (effects.redFlags || 0));
   arc.readiness = clampStat(arc.compatibilitySignal - arc.redFlags);
+
+  // v0.45: integracja z patternSystem.js WYŁĄCZNIE przez już
+  // istniejące, eksportowane recordPatternEntry()/evaluatePatterns() —
+  // patternSystem.js samo w sobie NIE jest tu dotykane. Ten sam
+  // mechanizm co w soloRecoverySystem.js.
+  if (Array.isArray(choice.patternTags) && choice.patternTags.length > 0) {
+    const recorded = recordPatternEntry(state, {
+      key: `dating-arc:${state.day}:${arc.stage}:${choice.id}`,
+      day: state.day,
+      source: "dating-arc",
+      tags: choice.patternTags
+    });
+    if (recorded) {
+      evaluatePatterns(state);
+    }
+  }
 
   let outcome = "advanced";
   let newPartner = null;
@@ -454,7 +485,22 @@ export function buildDatingArcNarrativeLine(state) {
   }
 
   if (arc.stage === "signal") {
-    return arc.prospect.firstImpressionText;
+    // v0.45: sygnał zaczyna się od KONKRETNEGO powodu, dla którego
+    // prospect w ogóle się pojawia (appearanceContext) — nowa osoba
+    // nie materializuje się znikąd. firstImpressionText dopisany jako
+    // drugie zdanie, po kontekście.
+    const context = arc.prospect.appearanceContext
+      ? `Ktoś pojawia się — ${arc.prospect.appearanceContext}.`
+      : "Ktoś pojawia się jako możliwość, nie jako rozwiązanie.";
+
+    // Echo poprzedniej relacji jako napięcie interpretacyjne: wysokie
+    // Echo zniekształca to, jak sygnał jest odczytywany — nie zmienia
+    // faktów (prospect jest ten sam), tylko dokłada zdanie o tym, że
+    // trudno dziś czytać to bez porównań.
+    const echo = state.soloRecovery ? Number(state.soloRecovery.echo || 0) : 0;
+    const echoLine = echo >= 8 ? " Trudno dziś czytać to bez porównań do tego, co było wcześniej." : "";
+
+    return `${context} ${arc.prospect.firstImpressionText}${echoLine}`;
   }
 
   const lines = {

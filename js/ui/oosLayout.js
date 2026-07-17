@@ -67,7 +67,13 @@ export function getPhaseLabel(screenName) {
  * @param {string} [overridePhaseText] - dokładniejszy tekst fazy (np.
  *   "Wydarzenie 2/3 — Relacja") zamiast domyślnej etykiety ekranu
  */
-export function createTopBar(state, screenName, overridePhaseText) {
+// v0.44.1: Choice Feedback Unification. Dodany opcjonalny 4. parametr
+// `options` — jeśli options.showAchievements === true, dopisuje mały,
+// subtelny przycisk-skrót do osiągnięć po prawej stronie topbara,
+// obok statystyk. Backward-compatible: wszystkie istniejące wywołania
+// (2-3 argumenty) działają dokładnie tak jak wcześniej, bo options
+// domyślnie jest pustym obiektem.
+export function createTopBar(state, screenName, overridePhaseText, options = {}) {
   const bar = document.createElement("header");
   bar.className = "oos-topbar";
 
@@ -87,6 +93,18 @@ export function createTopBar(state, screenName, overridePhaseText) {
   const npc = getPartnerNpc(state);
   if (npc) {
     stats.appendChild(buildTopBarStat("🤝", `${clampPercent(npc.trust)}`, "trust"));
+  }
+
+  if (options.showAchievements) {
+    const achievementsButton = document.createElement("button");
+    achievementsButton.type = "button";
+    achievementsButton.className = "oos-topbar-achievements";
+    achievementsButton.setAttribute("aria-label", "Osiągnięcia");
+    achievementsButton.textContent = "🏆";
+    if (typeof options.onAchievementsClick === "function") {
+      achievementsButton.addEventListener("click", options.onAchievementsClick);
+    }
+    stats.appendChild(achievementsButton);
   }
 
   bar.appendChild(stats);

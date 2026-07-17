@@ -1,0 +1,120 @@
+/* choice-feedback-v0-44-1.css
+ *
+ * v0.44.1: Choice Feedback Unification.
+ *
+ * Dodaje styl dla trzech nowych elementów UI:
+ *   1. .oos-topbar-achievements — mały, subtelny skrót do osiągnięć w
+ *      topbarze (zamiast dużego, równorzędnego CTA w dolnym panelu
+ *      obok głównej akcji dnia).
+ *   2. .oos-choice-result-changes — lista zmian statystyk PO wyborze
+ *      (nigdy przed) w result boxie trybu solo/dating arc.
+ *   3. .oos-dating-arc-flags — green/red flag prospecta w sidebarze
+ *      dating arcu, jako krótkie, czytelne linie (nie liczby).
+ *
+ * Reużywa istniejących zmiennych CSS (--oos-ink/--oos-muted/--oos-line/
+ * --oos-gold/--oos-sage/--oos-rose/--oos-shadow) z game-ui-v0-18.css —
+ * zero nowych kolorów. Zero zmian w .oos-game/.oos-actions/.oos-stage
+ * globalnie.
+ */
+
+/* --- Skrót do osiągnięć w topbarze --- */
+
+.oos-topbar-achievements {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--oos-line);
+  border-radius: 999px;
+  background: var(--oos-panel);
+  color: var(--oos-ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.oos-topbar-achievements:hover {
+  background: var(--oos-paper);
+  transform: translateY(-1px);
+}
+
+.oos-topbar-achievements:focus-visible {
+  outline: 2px solid var(--oos-gold);
+  outline-offset: 2px;
+}
+
+/* --- Lista zmian statystyk w result boxie (PO wyborze, nigdy przed) --- */
+
+.oos-choice-result-changes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 12px;
+  margin-top: 10px;
+}
+
+.oos-choice-result-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--oos-line);
+  background: var(--oos-panel);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.oos-choice-result-change--up {
+  color: var(--oos-sage);
+  border-color: rgba(116, 145, 94, 0.4);
+}
+
+.oos-choice-result-change--down {
+  color: var(--oos-rose);
+  border-color: rgba(181, 98, 79, 0.4);
+}
+
+/* --- Green/red flag prospecta w sidebarze dating arcu --- */
+
+.oos-dating-arc-flags {
+  flex: 0 0 auto;
+  display: grid;
+  gap: 4px;
+  padding: 8px 12px;
+}
+
+.oos-dating-arc-flags__item {
+  margin: 0;
+  padding-left: 14px;
+  position: relative;
+  font-size: 0.74rem;
+  line-height: 1.3;
+  color: var(--oos-ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.oos-dating-arc-flags__item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.oos-dating-arc-flags__item--green::before {
+  background: var(--oos-sage);
+}
+
+.oos-dating-arc-flags__item--red::before {
+  background: var(--oos-rose);
+}
