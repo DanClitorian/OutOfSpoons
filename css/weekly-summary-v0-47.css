@@ -1,0 +1,353 @@
+/* weekly-summary-v0-47.css
+ *
+ * v0.47: Weekly Summary Game Feel Pass.
+ *
+ * DODATKOWA warstwa stylów dla ekranu podsumowania tygodnia — ładowana
+ * PO css/weekly-summary-v0-21.css i css/patterns-v0-22.css. Stary plik
+ * v0-21 zostaje bez zmian (karty w sekcji "Szczegóły tygodnia" nadal
+ * korzystają z jego reguł 1:1). Wszystko tutaj jest spięte przez ten sam
+ * namespace ".oos-weekly-summary" (nowe elementy: hero, 3 główne karty,
+ * badge osiągnięć, konsekwencje, teaser, zwijane szczegóły).
+ *
+ * Zmienne --ws-* są zdefiniowane na .oos-weekly-summary w pliku v0-21 i
+ * dziedziczą się na wszystkie nowe elementy — ten plik ich NIE nadpisuje.
+ */
+
+/* --------------------------------------------------------------------
+   1. HERO
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary--v47 .oos-weekly-summary__hero {
+  text-align: center;
+  margin-bottom: 26px;
+  padding: 26px 20px 22px;
+  background:
+    radial-gradient(ellipse at top, rgba(192, 138, 62, 0.10), transparent 65%),
+    var(--ws-panel);
+  border: 1px solid var(--ws-line);
+  border-radius: 16px;
+  box-shadow: 0 10px 24px var(--ws-shadow);
+}
+
+.oos-weekly-summary--v47 .oos-weekly-summary__hero-title {
+  margin: 0 0 10px;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary--v47 .oos-weekly-summary__hero-line {
+  margin: 0 auto 10px;
+  max-width: 560px;
+  font-size: 17px;
+  line-height: 1.55;
+  font-style: italic;
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary--v47 .oos-weekly-summary__hero .oos-weekly-summary__period {
+  margin: 0;
+}
+
+/* --------------------------------------------------------------------
+   2. Trzy główne karty: sukces / koszt / styl
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__flow {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.oos-weekly-summary__main-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 760px) {
+  .oos-weekly-summary__main-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.oos-weekly-summary__main-card {
+  position: relative;
+  background: var(--ws-panel);
+  border: 1px solid var(--ws-line);
+  border-radius: 14px;
+  padding: 16px 16px 18px;
+  box-shadow: 0 6px 16px var(--ws-shadow);
+  border-top: 4px solid var(--ws-line);
+}
+
+.oos-weekly-summary__main-card--success {
+  border-top-color: var(--ws-sage);
+}
+
+.oos-weekly-summary__main-card--cost {
+  border-top-color: var(--ws-rose);
+}
+
+.oos-weekly-summary__main-card--style {
+  border-top-color: var(--ws-blue);
+}
+
+.oos-weekly-summary__main-card-eyebrow {
+  margin: 0 0 6px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ws-muted);
+}
+
+.oos-weekly-summary__main-card--success .oos-weekly-summary__main-card-eyebrow {
+  color: var(--ws-sage);
+}
+
+.oos-weekly-summary__main-card--cost .oos-weekly-summary__main-card-eyebrow {
+  color: var(--ws-rose);
+}
+
+.oos-weekly-summary__main-card--style .oos-weekly-summary__main-card-eyebrow {
+  color: var(--ws-blue);
+}
+
+.oos-weekly-summary__main-card-title {
+  margin: 0 0 8px;
+  font-size: 19px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary__main-card-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ws-ink);
+}
+
+/* --------------------------------------------------------------------
+   3. Sekcje wspólne (osiągnięcia / konsekwencje)
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__section {
+  background: var(--ws-panel);
+  border: 1px solid var(--ws-line);
+  border-radius: 14px;
+  padding: 16px 18px 18px;
+  box-shadow: 0 6px 16px var(--ws-shadow);
+}
+
+.oos-weekly-summary__section-heading {
+  margin: 0 0 12px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ws-muted);
+}
+
+/* --- Osiągnięcia jako nagroda ------------------------------------- */
+
+.oos-weekly-summary__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.oos-weekly-summary__badge {
+  position: relative;
+  flex: 1 1 240px;
+  min-width: 220px;
+  padding: 14px 14px 14px 18px;
+  background:
+    linear-gradient(135deg, rgba(192, 138, 62, 0.14), rgba(192, 138, 62, 0.04)),
+    var(--ws-paper);
+  border: 1px solid var(--ws-gold);
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 3px rgba(192, 138, 62, 0.12);
+}
+
+.oos-weekly-summary__badge-tag {
+  position: absolute;
+  top: -9px;
+  left: 14px;
+  padding: 2px 9px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ws-paper);
+  background: var(--ws-gold);
+  border-radius: 999px;
+}
+
+.oos-weekly-summary__badge-title {
+  margin: 4px 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary__badge-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--ws-muted);
+}
+
+.oos-weekly-summary__achievements-progress {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--ws-muted);
+}
+
+.oos-weekly-summary__badges + .oos-weekly-summary__achievements-progress {
+  margin-top: 14px;
+}
+
+/* --- Konsekwencje -------------------------------------------------- */
+
+.oos-weekly-summary__consequence-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.oos-weekly-summary__consequence-item {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary__consequence-item::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--ws-gold);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------
+   4. Teaser kolejnego tygodnia
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__teaser {
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(93, 123, 144, 0.10), transparent 70%),
+    var(--ws-panel);
+  border-color: var(--ws-blue);
+}
+
+.oos-weekly-summary__teaser-eyebrow {
+  margin: 0 0 8px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ws-blue);
+}
+
+.oos-weekly-summary__teaser-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary__teaser-line {
+  margin: 0 auto;
+  max-width: 480px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--ws-muted);
+}
+
+/* --------------------------------------------------------------------
+   5. Szczegóły tygodnia (zwijane)
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary__details {
+  border: 1px dashed var(--ws-line);
+  border-radius: 14px;
+  padding: 0;
+  background: transparent;
+}
+
+.oos-weekly-summary__details-toggle {
+  cursor: pointer;
+  padding: 13px 18px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ws-muted);
+  list-style: none;
+  user-select: none;
+}
+
+.oos-weekly-summary__details-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.oos-weekly-summary__details-toggle::before {
+  content: "▸ ";
+  color: var(--ws-gold);
+}
+
+.oos-weekly-summary__details[open] .oos-weekly-summary__details-toggle::before {
+  content: "▾ ";
+}
+
+.oos-weekly-summary__details-toggle:hover {
+  color: var(--ws-ink);
+}
+
+.oos-weekly-summary__details[open] {
+  background: rgba(251, 247, 236, 0.6);
+  padding-bottom: 16px;
+}
+
+.oos-weekly-summary__details .oos-weekly-summary__grid {
+  padding: 0 16px;
+  margin-bottom: 0;
+}
+
+/* Postęp miesięcznego cyklu (dawna reguła __arc-progress z v0-21 —
+   przemianowana klasa, ta sama rola wizualna). */
+.oos-weekly-summary__cycle-progress {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ws-muted);
+}
+
+/* --------------------------------------------------------------------
+   6. Footer / CTA
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary--v47 .oos-weekly-summary__footer {
+  margin-top: 24px;
+}

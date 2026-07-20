@@ -92,6 +92,10 @@
 // narracyjną. eventScreen.js / reflectionScreen.js / weeklySummaryScreen.js
 // / monthSummaryScreen.js NIE zmieniły się w v0.34.
 
+// v0.47: Weekly Summary Game Feel Pass. Podbity WYLACZNIE import
+// weeklySummaryScreen.js (?v=470) - tylko ten ekran zmienil sie w
+// v0.47 (nowa prezentacja; mechanika tygodnia nietknieta). Pozostale
+// ekrany zostaja przy swoich dotychczasowych query.
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
 import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
 import { renderGameScreen } from "./screens/gameScreen.js?v=460";
@@ -99,7 +103,7 @@ import { renderEventScreen } from "./screens/eventScreen.js?v=460";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=460";
 import { renderEveningScreen } from "./screens/eveningScreen.js";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=305";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=470";
 import { appendVersionBadge } from "./versionBadge.js";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=460";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
