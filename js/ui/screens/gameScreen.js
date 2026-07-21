@@ -118,6 +118,9 @@ import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine 
 import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine, getWorkPressureContext } from "../../systems/workPressureSystem.js?v=300";
 import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLine } from "../../systems/achievementSystem.js?v=400";
+// v0.52: Weekly Stakes Tracking — czyste odczyty śladu tygodnia
+// (linia w bloku "Na horyzoncie" + warunkowa karteczka sygnału).
+import { buildTrackingHorizonLine, buildTrackingMorningSignal } from "../../systems/weeklyStakesTrackingSystem.js?v=520";
 import {
   ensureSoloRecoveryState,
   isSoloRecoveryActive,
@@ -869,6 +872,11 @@ function buildMorningSignals(state) {
     }
   }
 
+  // 2b. v0.52: Ślad tygodnia — TYLKO gdy wyraźny (>=2 dni, ton
+  // skrajny). Konkuruje priorytetem (47/33) jak każdy sygnał; limit 3
+  // widocznych kart pozostaje bez zmian.
+  push(buildTrackingMorningSignal(state));
+
   // 3. Konflikt — im wyżej na drabinie stanów, tym ważniejszy.
   const conflictLine = buildMorningConflictLine(state);
   if (conflictLine) {
@@ -1097,6 +1105,12 @@ function appendMorningHorizonBlock(sidebar, state) {
     const daysLeft = getWeeklyChallengeCountdown(state);
     if (typeof daysLeft === "number") {
       rows.push({ label: "Stawka tygodnia", value: `za ${daysLeft} ${dayWord(daysLeft)}` });
+    }
+
+    // v0.52: subtelny status śladu (dobry/stabilny/kruchy) — bez liczb.
+    const traceLine = buildTrackingHorizonLine(state);
+    if (traceLine) {
+      rows.push(traceLine);
     }
   }
 

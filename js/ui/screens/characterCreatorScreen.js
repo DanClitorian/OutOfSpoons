@@ -8,7 +8,7 @@
 
 import { showScreen } from "../uiManager.js";
 // v0.49: cache-bust — dayCycle.js zmienił zawartość (pełny cykl fatigue).
-import { startNewGame } from "../../systems/dayCycle.js?v=490";
+import { startNewGame } from "../../systems/dayCycle.js?v=520";
 import {
   getTraitsData,
   isValidTraitSelection,

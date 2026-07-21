@@ -43,6 +43,10 @@ import { initNpc } from "./npcSystem.js";
 // (nic go nie wywoływało) i tylko sugerował mechanikę, która nie
 // istniała. Nocną regenerację robi teraz applyMorningSpoonsFromFatigue.
 import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js?v=490";
+// v0.52: Weekly Stakes Tracking — jeden ślad dziennie, zapisywany przy
+// przejściu dnia (idempotentny guard w samym systemie). Czysta,
+// minimalna integracja: import + jedno wywołanie w advanceToNextDay.
+import { recordWeeklyTrackingMark } from "./weeklyStakesTrackingSystem.js?v=520";
 import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=490";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
@@ -184,6 +188,12 @@ export function resolveEvent(choiceId) {
  */
 export function advanceToNextDay() {
   const state = getState();
+
+  // v0.52, KONIEC DNIA (krok 0): ślad Stawki Tygodnia — oceniamy stan
+  // "jak dzień się skończył" (łącznie z wyborem wieczornym z v0.51),
+  // PRZED rozliczeniem fatigue i inkrementem dnia. Guard
+  // lastEvaluatedDay w systemie: jeden dzień = maksymalnie jeden ślad.
+  recordWeeklyTrackingMark(state);
 
   // v0.49, KONIEC DNIA: rozliczenie długu zmęczenia na stanie PO
   // wieczornej decyzji (eveningScreen woła advanceToNextDay już po

@@ -1,0 +1,85 @@
+/* weekly-stakes-tracking-v0-52.css
+ *
+ * v0.52: Weekly Stakes Tracking.
+ *
+ * Minimalna warstwa dla bloku "Ślad tygodnia" w karcie Stawki na
+ * weekly summary. Linia w porannym "Na horyzoncie" reużywa istniejące
+ * klasy .oos-morning-horizon-* z v0.50 (zero nowego CSS tam), a
+ * karteczka sygnału — istniejący styl .oos-morning-signal--weekly.
+ *
+ * Zasady: paper-first v0.48, płasko, zero gradientów/glow. Ślady jako
+ * małe notatki z kropką tuszu, NIGDY tabela.
+ */
+
+.oos-weekly-trace {
+  margin: 10px 0 12px;
+  padding: 9px 12px 10px;
+  border: 1px dashed var(--vi-line-strong, rgba(63, 56, 48, 0.34));
+  border-radius: 3px;
+  background: rgba(251, 247, 237, 0.55);
+}
+
+.oos-weekly-trace__heading {
+  margin: 0 0 4px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-weekly-trace__text {
+  margin: 0 0 7px;
+  font-family: Georgia, Cambria, serif;
+  font-size: 13.5px;
+  line-height: 1.45;
+  font-style: italic;
+  color: var(--vi-ink, #3F3830);
+}
+
+.oos-weekly-trace__marks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.oos-weekly-trace__mark {
+  position: relative;
+  padding-left: 14px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+/* Kropka tuszu zamiast bulletu — kolor = charakter śladu. Nie polegamy
+   wyłącznie na kolorze: notka ZAWSZE nazywa rzecz słowami. */
+.oos-weekly-trace__mark::before {
+  content: "●";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 8px;
+  line-height: 1.9;
+}
+
+.oos-weekly-trace__mark--good::before {
+  color: var(--vi-green, #6E8068);
+}
+
+.oos-weekly-trace__mark--costly::before {
+  color: var(--vi-rose, #A86F68);
+}
+
+.oos-weekly-trace__mark--neutral::before {
+  color: var(--vi-line-strong, rgba(63, 56, 48, 0.34));
+}
+
+.oos-weekly-trace__mark-day {
+  font-family: Georgia, Cambria, serif;
+  font-weight: 700;
+  color: var(--vi-ink, #3F3830);
+}

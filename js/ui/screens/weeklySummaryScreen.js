@@ -66,6 +66,10 @@ import { evaluateMonthlyLoopAfterWeeklySummary, hasPendingMonthSummary } from ".
 // v0.47: tylko odczyt stanu osiągnięć (ensure jest bezpieczne i idempotentne,
 // patrz achievementSystem.js). Ten ekran NICZEGO nie odblokowuje.
 import { ensureAchievementState } from "../../systems/achievementSystem.js?v=400";
+// v0.52: Weekly Stakes Tracking — ślad tygodnia w karcie Stawki
+// (czysty odczyt; celowo BEZ ensure, żeby pokazać ślad WŁAŚNIE
+// ocenionego tygodnia zanim nowy tydzień go zresetuje).
+import { buildWeeklyTraceSummary } from "../../systems/weeklyStakesTrackingSystem.js?v=520";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -125,6 +129,9 @@ export function renderWeeklySummaryScreen(container) {
   mainCards.appendChild(buildSuccessCard(summary, state, challengeSummary, criticalSummary, dominantPatterns));
   mainCards.appendChild(buildCostCard(summary, state, challengeSummary, criticalSummary));
   mainCards.appendChild(buildStyleCard(dominantPatterns));
+  // (v0.52: ślad tygodnia jest pokazywany niżej, w karcie "Stawka
+  // tygodnia" w sekcji szczegółów — jedna dopisana notka, zero
+  // przebudowy struktury v0.47.)
   main.appendChild(mainCards);
 
   // 3. Osiągnięcia jako nagroda / milestone.
@@ -638,7 +645,7 @@ function buildDetailsSection(summary, state, challengeSummary, criticalSummary, 
   grid.className = "oos-weekly-summary__grid";
   grid.appendChild(buildStoryCard(summary, state, dominantPatterns));
   grid.appendChild(buildStateCard(summary, state));
-  grid.appendChild(buildWeeklyStakeCard(challengeSummary));
+  grid.appendChild(buildWeeklyStakeCard(challengeSummary, summary, state));
   grid.appendChild(buildCriticalEventCard(criticalSummary, state));
   details.appendChild(grid);
 
@@ -864,7 +871,7 @@ function createStatLine(label, value) {
 }
 
 // Dawna karta 3 — Stawka tygodnia. Przeniesiona 1:1 do sekcji szczegółów.
-function buildWeeklyStakeCard(challengeSummary) {
+function buildWeeklyStakeCard(challengeSummary, summary, state) {
   const card = document.createElement("section");
   card.className = "oos-weekly-summary__card oos-weekly-summary__card--weekly-stake";
 
@@ -872,6 +879,14 @@ function buildWeeklyStakeCard(challengeSummary) {
   heading.className = "oos-weekly-summary__card-heading";
   heading.textContent = "Stawka tygodnia";
   card.appendChild(heading);
+
+  // v0.52: Ślad tygodnia — ton + max 3 najważniejsze ślady jako małe
+  // notatki (NIGDY pełna tabela 7 dni). Brak śladów (stary zapis,
+  // pierwszy tydzień) => blok po prostu się nie renderuje.
+  const trace = buildWeeklyTraceSummary(state, summary.startDay, summary.endDay);
+  if (trace) {
+    card.appendChild(buildWeeklyTraceBlock(trace));
+  }
 
   if (challengeSummary.lastResult) {
     card.appendChild(buildResultBlock({
@@ -898,6 +913,48 @@ function buildWeeklyStakeCard(challengeSummary) {
   }
 
   return card;
+}
+
+// v0.52: blok "Ślad tygodnia" wewnątrz karty Stawki.
+function buildWeeklyTraceBlock(trace) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "oos-weekly-trace";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-weekly-trace__heading";
+  heading.textContent = `Ślad tygodnia: ${trace.tone}`;
+  wrapper.appendChild(heading);
+
+  const text = document.createElement("p");
+  text.className = "oos-weekly-trace__text";
+  text.textContent = trace.text;
+  wrapper.appendChild(text);
+
+  if (trace.topMarks.length > 0) {
+    const list = document.createElement("ul");
+    list.className = "oos-weekly-trace__marks";
+
+    trace.topMarks.forEach((mark) => {
+      const item = document.createElement("li");
+      item.className = `oos-weekly-trace__mark oos-weekly-trace__mark--${mark.value > 0 ? "good" : mark.value < 0 ? "costly" : "neutral"}`;
+
+      const day = document.createElement("span");
+      day.className = "oos-weekly-trace__mark-day";
+      day.textContent = `Dzień ${mark.day}`;
+      item.appendChild(day);
+
+      const note = document.createElement("span");
+      note.className = "oos-weekly-trace__mark-note";
+      note.textContent = ` — ${mark.note}`;
+      item.appendChild(note);
+
+      list.appendChild(item);
+    });
+
+    wrapper.appendChild(list);
+  }
+
+  return wrapper;
 }
 
 // Dawna karta 4 — Wielki Test. Przeniesiona 1:1 do sekcji szczegółów.
