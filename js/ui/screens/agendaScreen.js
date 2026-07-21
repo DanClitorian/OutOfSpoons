@@ -69,7 +69,7 @@ import {
   createScenePanel,
   createNarrativeStrip,
   createDecisionCard
-} from "../oosLayout.js";
+} from "../oosLayout.js?v=530";
 import { buildAgendaStakesBadge } from "../../systems/dailyStakesSystem.js?v=320";
 import { ensureRelationshipModelState, buildRelationshipModelAgendaLine } from "../../systems/relationshipModelSystem.js?v=340";
 

@@ -1,0 +1,140 @@
+/* physical-spoons-v0-53.css
+ *
+ * v0.53: Physical Spoon Row UI.
+ *
+ * Fizyczny rząd łyżeczek w karcie gracza — jak małe bursztynowe
+ * znaczniki zasobu położone na kartce. CSS-only: czarka i trzonek to
+ * dwa pseudo-elementy, zero obrazków, zero SVG z plików, zero emoji.
+ *
+ * Zasady paper-first (v0.48): płaskie wypełnienia, zero gradientów,
+ * zero glow, zero animacji. Pusta łyżeczka różni się od pełnej
+ * KSZTAŁTEM (przerywany kontur bez wypełnienia), nie tylko kolorem —
+ * czytelne także bez rozróżniania barw.
+ *
+ * Stany:
+ *   .oos-spoon-row--low       (current <= 2)  — czarki w stonowanym
+ *                             różu tuszu; ostrzegawczo, nie alarmowo
+ *   .oos-spoon-row--critical  (current == 0)  — mocniejszy kontur
+ *                             pustych; wciąż zero czerwieni i migania
+ *   .oos-spoon-row--small     — wariant kompaktowy (rezerwowy)
+ */
+
+.oos-spoon-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px;
+  margin: 8px 0 2px;
+  padding: 0;
+}
+
+.oos-spoon-token {
+  position: relative;
+  width: 9px;
+  height: 21px;
+  flex: 0 0 auto;
+}
+
+/* Ręcznie położone znaczniki: co drugi delikatnie przekręcony —
+   ta sama konwencja co fiszki wyborów z v0.48. */
+.oos-spoon-token:nth-child(even) {
+  transform: rotate(3deg);
+}
+
+.oos-spoon-token:nth-child(odd) {
+  transform: rotate(-2deg);
+}
+
+/* Czarka */
+.oos-spoon-token::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 8px;
+  height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 46% 46%;
+  box-sizing: border-box;
+  background: var(--vi-amber, #C99A55);
+  border: 1px solid var(--vi-umber-deep, #6B5138);
+}
+
+/* Trzonek */
+.oos-spoon-token::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 9px;
+  width: 2px;
+  height: 12px;
+  transform: translateX(-50%);
+  border-radius: 1px;
+  background: var(--vi-umber-deep, #6B5138);
+}
+
+/* Pusta: kontur zamiast wypełnienia + wyblakły trzonek. */
+.oos-spoon-token--empty::before {
+  background: transparent;
+  border-style: dashed;
+  border-color: rgba(63, 56, 48, 0.35);
+}
+
+.oos-spoon-token--empty::after {
+  background: rgba(63, 56, 48, 0.26);
+}
+
+/* Niski stan: pełne czarki w stonowanym różu tuszu. */
+.oos-spoon-row--low .oos-spoon-token--full::before {
+  background: var(--vi-rose, #A86F68);
+  border-color: var(--vi-umber-deep, #6B5138);
+}
+
+/* Krytyczny (zero): puste dostają odrobinę mocniejszy, różowawy
+   kontur — informacja, nie syrena. */
+.oos-spoon-row--critical .oos-spoon-token--empty::before {
+  border-color: rgba(168, 111, 104, 0.6);
+}
+
+.oos-spoon-row--critical .oos-spoon-token--empty::after {
+  background: rgba(168, 111, 104, 0.45);
+}
+
+/* Wariant kompaktowy (rezerwowy — patrz oosLayout#buildSpoonRow). */
+.oos-spoon-row--small {
+  gap: 3px;
+  margin: 4px 0 0;
+}
+
+.oos-spoon-row--small .oos-spoon-token {
+  width: 7px;
+  height: 16px;
+}
+
+.oos-spoon-row--small .oos-spoon-token::before {
+  width: 6px;
+  height: 8px;
+}
+
+.oos-spoon-row--small .oos-spoon-token::after {
+  top: 7px;
+  height: 9px;
+}
+
+/* Ciemny papier wieczoru (v0.48): jaśniejsze trzonki i kontury,
+   żeby znaczniki były czytelne na #3A342B. */
+.oos-game--evening .oos-spoon-token::after {
+  background: #B8AC9C;
+}
+
+.oos-game--evening .oos-spoon-token::before {
+  border-color: #B8AC9C;
+}
+
+.oos-game--evening .oos-spoon-token--empty::before {
+  border-color: rgba(239, 232, 216, 0.35);
+}
+
+.oos-game--evening .oos-spoon-token--empty::after {
+  background: rgba(239, 232, 216, 0.3);
+}

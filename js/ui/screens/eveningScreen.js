@@ -49,7 +49,7 @@ import {
   createScenePanel,
   createNarrativeStrip,
   createDecisionCard
-} from "../oosLayout.js";
+} from "../oosLayout.js?v=530";
 
 export function renderEveningScreen(container) {
   const state = getState();

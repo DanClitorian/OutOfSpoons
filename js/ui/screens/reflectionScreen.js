@@ -37,7 +37,7 @@ import {
   createNarrativeStrip,
   createResultTile,
   createCtaButton
-} from "../oosLayout.js";
+} from "../oosLayout.js?v=530";
 
 import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=300";
 import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=300";

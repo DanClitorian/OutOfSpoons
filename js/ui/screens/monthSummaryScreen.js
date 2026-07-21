@@ -12,7 +12,7 @@
 
 import { getState } from "../../state/gameState.js";
 import { showScreen } from "../uiManager.js?v=305";
-import { createTopBar } from "../oosLayout.js";
+import { createTopBar } from "../oosLayout.js?v=530";
 import { consumePendingMonthSummary, getLatestMonthSummary } from "../../systems/monthlyLoopSystem.js?v=305";
 
 export function renderMonthSummaryScreen(root) {

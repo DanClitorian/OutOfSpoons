@@ -69,7 +69,7 @@ import {
   createScenePanel,
   createNarrativeStrip,
   createDecisionCard
-} from "../oosLayout.js";
+} from "../oosLayout.js?v=530";
 
 export function renderEventScreen(container) {
   const event = getCurrentEvent();

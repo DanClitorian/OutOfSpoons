@@ -112,7 +112,7 @@ import {
   createResultTile,
   createPlayerCard,
   buildStatBar
-} from "../oosLayout.js";
+} from "../oosLayout.js?v=530";
 
 import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=300";
 import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine, getWorkPressureContext } from "../../systems/workPressureSystem.js?v=300";

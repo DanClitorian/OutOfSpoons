@@ -55,6 +55,55 @@ const SCENE_ASSET_PATHS = {
  * Zamienia nazwę ekranu (jak w uiManager.js "screens") na etykietę fazy
  * dnia czytelną dla gracza.
  */
+/**
+ * v0.53: Physical Spoon Row UI.
+ *
+ * CSS-only rząd łyżeczek: obecne jako pełne (bursztynowa czarka),
+ * brakujące jako puste (przerywany kontur — różnica KSZTAŁTU, nie
+ * tylko koloru). Zero obrazków/SVG z plików/emoji. Style:
+ * css/physical-spoons-v0-53.css (paper-first, zgodne z v0.48).
+ *
+ * To czysta prezentacja aktualnego stanu zasobu — NIGDY koszty
+ * wyborów (twardy zakaz projektu: żadnych przewidywanych efektów na
+ * kartach decyzji).
+ *
+ * options.size === "small" -> wariant kompaktowy (obecnie nieużywany
+ * w topbarze — priorytet ma karta gracza; wariant istnieje, żeby
+ * przyszłe użycie nie wymagało zmian komponentu).
+ *
+ * Dostępność: wrapper role="img" + aria-label "Łyżeczki: X z Y",
+ * tokeny aria-hidden, nic nie jest focusowalne (to nie przyciski).
+ */
+export function buildSpoonRow(current, max, options = {}) {
+  const safeMax = Math.max(1, Math.round(Number(max) || 0));
+  const safeCurrent = Math.min(safeMax, Math.max(0, Math.round(Number(current) || 0)));
+
+  const row = document.createElement("div");
+  row.className = "oos-spoon-row";
+  if (options.size === "small") {
+    row.className += " oos-spoon-row--small";
+  }
+  // Stan niski/krytyczny: delikatnie ostrzegawczy, bez alarmu i migania.
+  if (safeCurrent === 0) {
+    row.className += " oos-spoon-row--critical";
+  } else if (safeCurrent <= 2) {
+    row.className += " oos-spoon-row--low";
+  }
+  row.setAttribute("role", "img");
+  row.setAttribute("aria-label", `Łyżeczki: ${safeCurrent} z ${safeMax}`);
+
+  for (let i = 0; i < safeMax; i += 1) {
+    const token = document.createElement("span");
+    token.className = i < safeCurrent
+      ? "oos-spoon-token oos-spoon-token--full"
+      : "oos-spoon-token oos-spoon-token--empty";
+    token.setAttribute("aria-hidden", "true");
+    row.appendChild(token);
+  }
+
+  return row;
+}
+
 export function getPhaseLabel(screenName) {
   return SCREEN_PHASE_LABELS[screenName] || "";
 }
@@ -234,6 +283,10 @@ export function createPlayerCard(state, screenName) {
 
   const spoons = state && state.resources ? state.resources.spoons : null;
   if (spoons) {
+    // v0.53: Physical Spoon Row — fizyczny rząd łyżeczek NAD paskiem.
+    // Pasek z tekstem 5/10 celowo ZOSTAJE (warstwa pomocnicza i
+    // dostępnościowa) — rząd dodaje fizyczność, niczego nie zabiera.
+    card.appendChild(buildSpoonRow(spoons.current, spoons.max));
     card.appendChild(
       buildStatBar("🥄 Spoons", `${spoons.current}/${spoons.max}`, percent(spoons.current, spoons.max), "spoons")
     );

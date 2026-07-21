@@ -111,22 +111,27 @@ import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.j
 // + karteczki sygnalow); daily rolls i pozostale ekrany NIETKNIETE.
 // v0.52.1: Morning Signal Visibility Cleanup — podbity WYLACZNIE
 // gameScreen (filtr waznosci karteczek) i versionBadge.
-import { renderGameScreen } from "./screens/gameScreen.js?v=521";
-import { renderEventScreen } from "./screens/eventScreen.js?v=520";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=460";
+// v0.53: Physical Spoon Row UI. oosLayout.js dostal nowy komponent
+// buildSpoonRow (?v=530) - podbite importy WSZYSTKICH 6 ekranow,
+// ktore realnie importuja oosLayout (agenda/evening/event/game/
+// monthSummary/reflection) + versionBadge. weeklySummaryScreen
+// CELOWO nietkniety - ma wlasny layout i NIE importuje oosLayout.
+import { renderGameScreen } from "./screens/gameScreen.js?v=530";
+import { renderEventScreen } from "./screens/eventScreen.js?v=530";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=530";
 // v0.51: Contextual Evening Recovery. Podbity WYLACZNIE import
 // eveningScreen.js (?v=510) - kontekstowy wieczor; pozostale ekrany
 // (w tym poranek v0.50) NIETKNIETE.
-import { renderEveningScreen } from "./screens/eveningScreen.js?v=520";
+import { renderEveningScreen } from "./screens/eveningScreen.js?v=530";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=520";
 // v0.48: Visual Identity Redesign. Podbity WYLACZNIE import
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=521";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=460";
-import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
+import { appendVersionBadge } from "./versionBadge.js?v=530";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=530";
+import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=530";
 import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";
 import { renderAchievementsScreen } from "./screens/achievementsScreen.js?v=410";
 import { renderSoloRecoveryScreen } from "./screens/soloRecoveryScreen.js?v=430";
