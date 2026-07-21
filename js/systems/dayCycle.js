@@ -23,6 +23,14 @@
 // oba zmieniły WŁASNE importy eventData.js (9 nowych eventów) — importy
 // podbite do ?v=310. Sama logika dayCycle.js nadal NIETKNIĘTA.
 //
+// v0.49: Fatigue Economy Reconnection. advanceToNextDay() wykonuje
+// teraz PEŁNY cykl fatigue (updateFatigueAfterDay przed inkrementem
+// dnia, applyMorningSpoonsFromFatigue po nim) — obie funkcje były
+// importowane od v0.8.1, ale nigdy nie wywoływane. Import
+// fatigueSystem.js podbity do ?v=490 (zmieniona semantyka
+// applyMorningSpoonsFromFatigue), eventSystem.js do ?v=490 (podbił
+// swój import fatigueSystem.js).
+//
 // v0.33: Masking Debt. eventSystem.js znowu zmienił zawartość
 // (integracja długu maskowania w applyChoice, działająca WYŁĄCZNIE po
 // kliknięciu, dokładnie jak Pattern Pressure/Scars/Repair/Metamour/
@@ -31,9 +39,11 @@
 
 import { setState, getState } from "../state/gameState.js";
 import { initNpc } from "./npcSystem.js";
-import { regenerateSpoons } from "./spoonsSystem.js";
-import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=460";
+// v0.49: import regenerateSpoons USUNIĘTY — był martwy od v0.8.2
+// (nic go nie wywoływało) i tylko sugerował mechanikę, która nie
+// istniała. Nocną regenerację robi teraz applyMorningSpoonsFromFatigue.
+import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigue } from "./fatigueSystem.js?v=490";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=490";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
@@ -46,10 +56,15 @@ import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=
 // state/saveManager.js).
 const SAVE_VERSION = 5;
 
-// Ile spoons wraca po nocy. Świadomie mniej niż max — zmęczenie
-// z poprzednich dni ma się kumulować, jeśli gracz nie dba o siebie.
-// Wartość do skalibrowania wspólnie z projektantem gry.
-const DAILY_SPOONS_REGEN = 6;
+// v0.49: Nocna regeneracja — wreszcie WPIĘTA (bazowa pula przekazywana
+// do applyMorningSpoonsFromFatigue, która pomniejsza ją o fatigue).
+// Wartość zmieniona z historycznego 6 na 3: szóstka była projektowana,
+// gdy noc miała być JEDYNYM źródłem odnowy — od tamtej pory doszły
+// opcje wieczorne (do +3, v0.9) i eventy poranne (~+1 średnio, v0.8.2).
+// Przy 6 typowy dzień kończyłby się de facto resetem do max — wbrew
+// filozofii persistent spoons. 3 to punkt startowy pod zapowiedziany
+// osobny playtest balansu, nie ostateczna kalibracja.
+const DAILY_SPOONS_REGEN = 3;
 
 /**
  * Tworzy zupełnie nową rozgrywkę na podstawie danych z kreatora postaci
@@ -170,13 +185,23 @@ export function resolveEvent(choiceId) {
 export function advanceToNextDay() {
   const state = getState();
 
-  // v0.8.2:
-  // Spoons are persistent. We do NOT reset them to max here.
-  // The new morning starts with whatever was left after the previous day,
-  // then global and partner morning events modify that number.
+  // v0.49, KONIEC DNIA: rozliczenie długu zmęczenia na stanie PO
+  // wieczornej decyzji (eveningScreen woła advanceToNextDay już po
+  // applyEveningRecovery — więc np. wcześniejsze pójście spać może
+  // realnie obniżyć fatigue). Progi (patrz fatigueSystem.js):
+  // koniec na 0 spoons: +2; na <=25% max: +1; z zapasem >=50% max: -1.
+  updateFatigueAfterDay(state);
+
+  // v0.8.2 / v0.49:
+  // Spoons są PERSYSTENTNE. Nadal ŻADNEGO resetu do max. Nowy poranek
+  // = wczorajsza końcówka + nocna regeneracja pomniejszona o fatigue
+  // (minimum 1 spoon — zero softlocka), a dopiero POTEM globalny i
+  // partnerski event poranny modyfikują wynik.
   state.day += 1;
   state.phase = "morning";
   state.currentEventId = null;
+
+  applyMorningSpoonsFromFatigue(state, DAILY_SPOONS_REGEN);
 
   ensureMorningEventState(state);
   resolveMorningEvents(state);

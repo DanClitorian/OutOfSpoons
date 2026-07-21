@@ -5,6 +5,16 @@
 // Spoons should not behave like a fully reset daily wallet.
 // If the player ends the day depleted, the next morning starts with fewer
 // available spoons. If the player keeps some capacity, fatigue can go down.
+//
+// v0.49: Fatigue Economy Reconnection. Ten system był częściowo martwy:
+// updateFatigueAfterDay() i applyMorningSpoonsFromFatigue() były
+// importowane w dayCycle.js, ale NIGDY nie wywoływane (przeoczenie z
+// przejścia na persistent spoons w v0.8.2) — dług rósł przez
+// addFatigueDebt() przy wymuszonych wyborach i nigdy nie bolał ani nie
+// spadał. Od v0.49 pełny cykl działa: koniec dnia rozlicza fatigue
+// (updateFatigueAfterDay w advanceToNextDay), a poranek stosuje dług do
+// nocnej regeneracji (applyMorningSpoonsFromFatigue — patrz nowa
+// semantyka niżej: persistent spoons, ZERO resetu do max, minimum 1).
 
 const MAX_FATIGUE = 6;
 const MIN_MORNING_SPOONS = 1;
@@ -80,14 +90,38 @@ export function updateFatigueAfterDay(state) {
   return change;
 }
 
-export function applyMorningSpoonsFromFatigue(state) {
+/**
+ * v0.49: Fatigue Economy Reconnection — NOWA SEMANTYKA.
+ *
+ * Stara implementacja (v0.8.1, nigdy nie wpięta) ustawiała poranek na
+ * "max - fatigue", IGNORUJĄC wczorajszą końcówkę — przy fatigue 0 był
+ * to de facto codzienny reset do max, sprzeczny z persistent spoons
+ * z v0.8.2. Nowa formuła szanuje obie zasady naraz:
+ *
+ *   poranne spoons = clamp(
+ *     wczorajsza końcówka + (baseNightRegen - fatigue.current),
+ *     MIN_MORNING_SPOONS,
+ *     max
+ *   )
+ *
+ * Czyli: noc regeneruje stałą pulę, dług zmęczenia ją pomniejsza
+ * (fatigue >= baseNightRegen oznacza noc bez odnowy albo wręcz na
+ * minusie), a wczorajsze zapasy/niedobory PRZECHODZĄ dalej. Gracz
+ * nigdy nie budzi się z mniej niż MIN_MORNING_SPOONS (1) — zero
+ * softlocka przez fatigue.
+ *
+ * Wywoływane wyłącznie przez dayCycle.advanceToNextDay(): PO
+ * zwiększeniu numeru dnia, PRZED eventami porannymi.
+ */
+export function applyMorningSpoonsFromFatigue(state, baseNightRegen = 0) {
   const fatigue = ensureFatigueState(state);
   const spoons = state.resources.spoons;
 
   const max = Number(spoons.max) || 10;
-  const available = Math.max(MIN_MORNING_SPOONS, max - fatigue.current);
+  const current = clamp(Number(spoons.current) || 0, 0, max);
+  const netNightChange = (Number(baseNightRegen) || 0) - fatigue.current;
 
-  spoons.current = clamp(available, MIN_MORNING_SPOONS, max);
+  spoons.current = clamp(current + netNightChange, MIN_MORNING_SPOONS, max);
 
   return spoons.current;
 }

@@ -97,18 +97,22 @@
 // v0.47 (nowa prezentacja; mechanika tygodnia nietknieta). Pozostale
 // ekrany zostaja przy swoich dotychczasowych query.
 import { renderMainMenu } from "./screens/mainMenuScreen.js";
-import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js";
+// v0.49: Fatigue Economy Reconnection. Podbite importy 3 ekranów,
+// ktore zmienily WLASNE importy dayCycle.js (eventScreen,
+// eveningScreen, characterCreatorScreen) oraz versionBadge.js (nowy
+// numer wersji). Pozostale ekrany NIE zmienily sie w v0.49.
+import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js?v=490";
 import { renderGameScreen } from "./screens/gameScreen.js?v=460";
-import { renderEventScreen } from "./screens/eventScreen.js?v=460";
+import { renderEventScreen } from "./screens/eventScreen.js?v=490";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=460";
-import { renderEveningScreen } from "./screens/eveningScreen.js";
+import { renderEveningScreen } from "./screens/eveningScreen.js?v=490";
 
 import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=470";
 // v0.48: Visual Identity Redesign. Podbity WYLACZNIE import
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=480";
+import { appendVersionBadge } from "./versionBadge.js?v=490";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=460";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
 import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";

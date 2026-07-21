@@ -58,8 +58,12 @@
 
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
-import { showScreen } from "../ui/uiManager.js?v=450";
+import { showScreen } from "../ui/uiManager.js?v=490";
 import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
+// v0.49: Fatigue Economy Reconnection — helpery showFatigue /
+// setFatigueHigh / clearFatigue (patrz definicje przy helperach
+// Static, ta sama konwencja requireActiveState + saveGame).
+import { ensureFatigueState, getFatigueLabel } from "../systems/fatigueSystem.js?v=490";
 import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
 import {
   ensurePartnerCapacityState,
@@ -471,6 +475,66 @@ function clearStatic() {
   return result;
 }
 
+
+// v0.49: Fatigue Economy Reconnection — dev-only podgląd długu
+// zmęczenia. Fatigue obniża nocną regenerację spoons (patrz
+// fatigueSystem.js#applyMorningSpoonsFromFatigue i
+// dayCycle.js#advanceToNextDay).
+function showFatigue() {
+  const state = requireActiveState("showFatigue()");
+  if (!state) {
+    return null;
+  }
+
+  const fatigue = ensureFatigueState(state);
+  console.log(
+    `[oosDev] Fatigue: ${fatigue.current}/${fatigue.max} (${getFatigueLabel(state)}).`
+  );
+  console.log(
+    `[oosDev] Ostatnia zmiana: ${fatigue.lastChange} (powód: ${fatigue.lastReason}).`
+  );
+  console.log(
+    `[oosDev] Najbliższa noc: regeneracja pomniejszona o ${fatigue.current}, ` +
+    "poranek nigdy poniżej 1 spoon."
+  );
+  return fatigue;
+}
+
+// v0.49: Wymusza maksymalny dług zmęczenia — do sprawdzenia, że poranek
+// po ciężkiej nocy startuje nisko, ale NIGDY poniżej 1 spoon.
+function setFatigueHigh() {
+  const state = requireActiveState("setFatigueHigh()");
+  if (!state) {
+    return null;
+  }
+
+  const fatigue = ensureFatigueState(state);
+  fatigue.current = fatigue.max;
+  fatigue.lastChange = 0;
+  fatigue.lastReason = "dev-tools";
+  saveGame(state);
+  console.log(
+    `[oosDev] Fatigue ustawione na ${fatigue.current}/${fatigue.max}. ` +
+    "Zakończ dzień, żeby zobaczyć obniżony poranek."
+  );
+  return fatigue;
+}
+
+// v0.49: Zeruje dług zmęczenia — do sprawdzenia "czystego" poranka.
+function clearFatigue() {
+  const state = requireActiveState("clearFatigue()");
+  if (!state) {
+    return null;
+  }
+
+  const fatigue = ensureFatigueState(state);
+  fatigue.current = 0;
+  fatigue.lastChange = 0;
+  fatigue.lastReason = "dev-tools";
+  saveGame(state);
+  console.log("[oosDev] Fatigue wyczyszczone (0).");
+  return fatigue;
+}
 
 // v0.28: Metamour. Dev-only podgląd osoby z sieci relacji.
 function showMetamour() {
@@ -1302,6 +1366,9 @@ if (typeof window !== "undefined") {
     showStatic,
     setStaticHigh,
     clearStatic,
+    showFatigue,
+    setFatigueHigh,
+    clearFatigue,
     showMetamour,
     setMetamourTensionHigh,
     clearMetamourSignal,

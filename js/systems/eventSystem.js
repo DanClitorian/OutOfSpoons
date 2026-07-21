@@ -23,7 +23,11 @@
 
 import { eventPool } from "../data/eventData.js?v=460";
 import { modifySpoons } from "./spoonsSystem.js";
-import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js";
+// v0.49: cache-bust ?v=490 — fatigueSystem.js zmienił semantykę
+// applyMorningSpoonsFromFatigue. Samo addFatigueDebt (używane tu przy
+// wyborze ponad stan spoons) działa BEZ ZMIAN — ale od v0.49 ten dług
+// wreszcie realnie boli: obniża nocną regenerację następnego poranka.
+import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js?v=490";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
 import { getWeightedEventForDay } from "./eventWeightSystem.js?v=460";
