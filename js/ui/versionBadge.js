@@ -6,7 +6,7 @@
 // v0.48: Visual Identity Redesign. Cache-bust (?v=480) na imporcie
 // versionData.js (zmienil sie numer wersji) - bez tego przegladarka
 // moglaby dalej pokazywac stary badge z cache.
-import { GAME_VERSION_LABEL } from "../data/versionData.js?v=500";
+import { GAME_VERSION_LABEL } from "../data/versionData.js?v=510";
 
 export function appendVersionBadge(container) {
   if (!container) {

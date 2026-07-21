@@ -1,0 +1,47 @@
+/* contextual-evening-v0-51.css
+ *
+ * v0.51: Contextual Evening Recovery.
+ *
+ * Minimalna warstwa: typ opcji wieczornej jako LEWA linia tuszu na
+ * karcie (ta sama konwencja co karteczki poranka z v0.50) + drobne
+ * dopasowanie do ciemnego papieru .oos-game--evening z v0.48.
+ *
+ * Zasady: zero gradientow/glow, plaskie kolory, karty nadal w 100%
+ * wspoldzielony komponent .oos-decision-card — ta warstwa TYLKO barwi
+ * krawedz i nic wiecej. Odcienie dobrane pod ciemne tlo #3E382E
+ * (jasniejsze niz dziennne --vi-*, zeby linia byla czytelna noca).
+ */
+
+.oos-game--evening .oos-evening-card {
+  border-left-width: 3px;
+}
+
+.oos-game--evening .oos-evening-card--sleep,
+.oos-game--evening .oos-evening-card--rest {
+  border-left-color: #D8B57C;
+}
+
+.oos-game--evening .oos-evening-card--grounding,
+.oos-game--evening .oos-evening-card--solitude {
+  border-left-color: #9DB295;
+}
+
+.oos-game--evening .oos-evening-card--connection,
+.oos-game--evening .oos-evening-card--repair {
+  border-left-color: #8FA9BD;
+}
+
+.oos-game--evening .oos-evening-card--work,
+.oos-game--evening .oos-evening-card--admin,
+.oos-game--evening .oos-evening-card--preparation {
+  border-left-color: #B8AC9C;
+}
+
+.oos-game--evening .oos-evening-card--unmasking {
+  border-left-color: #C39A92;
+}
+
+.oos-game--evening .oos-evening-card--avoidance {
+  border-left-color: rgba(239, 232, 216, 0.3);
+  border-left-style: dashed;
+}

@@ -1,6 +1,15 @@
 // eveningScreen.js
 //
 // v0.9: evening recovery screen.
+//
+// v0.51: Contextual Evening Recovery. Wieczor pokazuje 3-4 opcje
+// DOBRANE do stanu dnia (eveningRecoverySystem#getEveningRecoveryOptions
+// jest teraz kontekstowy) + jedna linie ramujaca zalezna od stanu
+// (buildEveningFrameLine). Karty dostaja klase typu
+// oos-evening-card--{type} (style: css/contextual-evening-v0-51.css,
+// paper-first, zgodne z .oos-game--evening). Flow, mechanika kliku
+// (apply -> pattern -> advanceToNextDay -> save) NIETKNIETE — fatigue
+// v0.49 rozlicza sie w advanceToNextDay dokladnie jak dotad.
 // Flow:
 //   morning -> event -> reflection -> evening -> next morning
 //
@@ -28,8 +37,9 @@ import { advanceToNextDay } from "../../systems/dayCycle.js?v=490";
 import { saveGame } from "../../state/saveManager.js";
 import {
   getEveningRecoveryOptions,
-  applyEveningRecovery
-} from "../../systems/eveningRecoverySystem.js";
+  applyEveningRecovery,
+  buildEveningFrameLine
+} from "../../systems/eveningRecoverySystem.js?v=510";
 import { shouldShowWeeklySummary } from "../../systems/weeklySummarySystem.js";
 import { recordPatternFromEveningRecovery } from "../../systems/patternSystem.js";
 import {
@@ -52,9 +62,9 @@ export function renderEveningScreen(container) {
     title: "Koniec dnia"
   });
 
-  const narrative = createNarrativeStrip(
-    "Dzień się domyka. To, co zostało w zasobach, przechodzi na jutro. Dzień już się wydarzył — teraz zostaje pytanie, co robisz z resztką siebie."
-  );
+  // v0.51: jedna linia ramujaca zalezna od stanu dnia (konwencja
+  // spójna z buildMorningFrameLine z v0.50).
+  const narrative = createNarrativeStrip(buildEveningFrameLine(state));
 
   const options = getEveningRecoveryOptions(state);
   const cards = options.map((option) => buildEveningCard(option, state));
@@ -73,7 +83,7 @@ export function renderEveningScreen(container) {
 }
 
 function buildEveningCard(option, state) {
-  return createDecisionCard({
+  const card = createDecisionCard({
     title: replacePlaceholders(option.label, state),
     description: replacePlaceholders(option.description, state),
     onClick: () => {
@@ -96,6 +106,14 @@ function buildEveningCard(option, state) {
       }
     }
   });
+
+  // v0.51: typ opcji jako klasa — wylacznie do stylowania (lewa linia
+  // tuszu, patrz contextual-evening-v0-51.css). Zero debug UI.
+  if (option.type) {
+    card.className += ` oos-evening-card oos-evening-card--${option.type}`;
+  }
+
+  return card;
 }
 
 function replacePlaceholders(text, state) {
@@ -104,5 +122,11 @@ function replacePlaceholders(text, state) {
   }
 
   const partnerName = state.partner ? state.partner.name : "partner";
-  return text.replace(/\{partnerName\}/g, partnerName);
+  const metamourName = state.partner && state.partner.metamour && state.partner.metamour.name
+    ? state.partner.metamour.name
+    : "ta druga osoba";
+
+  return text
+    .replace(/\{partnerName\}/g, partnerName)
+    .replace(/\{metamourName\}/g, metamourName);
 }
