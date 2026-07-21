@@ -1028,9 +1028,59 @@ function buildMorningSignals(state) {
     });
   }
 
+  // v0.52.1: FILTR WAŻNOŚCI. Karteczki poranka to nie lista źródeł
+  // danych — systemy dalej liczą wszystko (wzorce, pracę, szum, sieć
+  // relacji, maskę...), ale poranek pokazuje wyłącznie sygnały z
+  // whitelisty w shouldShowMorningSignal. Reszta żyje w sidebarze,
+  // eventach i wieczorze — tam, gdzie jest kontekst na jej czytanie.
+  //
   // Sort malejąco po priorytecie; Array.prototype.sort jest stabilny,
   // więc remisy zachowują świadomą kolejność wstawiania.
-  return signals.sort((a, b) => b.priority - a.priority);
+  return signals
+    .filter(shouldShowMorningSignal)
+    .sort((a, b) => b.priority - a.priority);
+}
+
+// --------------------------------------------------------------------
+// v0.52.1: whitelista porannych sygnałów. Zasada: domyślnie NIE
+// pokazujemy — sygnał musi zasłużyć na miejsce w otwarciu dnia.
+// Przechodzą tylko rzeczy pilne albo rzadkie:
+//   critical-horizon      Wielki Test za <=3 dni,
+//   weekly-close          Stawka tygodnia za <=2 dni,
+//   fatigue-high          skrajne zmęczenie (>=4),
+//   achievement           świeżo odblokowany kamień milowy,
+//   weekly-trace-*        skrajny ślad tygodnia z v0.52 (emitowany
+//                         tylko przy >=2 dniach i wyraźnym tonie),
+//   conflict              WYŁĄCZNIE critical/fight (priorytet >=88) —
+//                         średnie napięcia (volatile/strained) to nie
+//                         jest wiadomość na dzień dobry.
+// Świadomie ODPADAJĄ jako karteczki: pattern (Wzorzec), work (Praca),
+// metamour (Sieć relacji), static (Szum), masking-debt (Maska),
+// partner-capacity, fatigue-mid, relationship-model. Ich systemy
+// działają bez zmian — to czysto decyzja ekspozycji.
+// --------------------------------------------------------------------
+
+const MORNING_SIGNAL_WHITELIST = new Set([
+  "critical-horizon",
+  "weekly-close",
+  "fatigue-high",
+  "achievement",
+  "weekly-trace-fragile",
+  "weekly-trace-good"
+]);
+
+const CONFLICT_SIGNAL_MIN_PRIORITY = 88;
+
+function shouldShowMorningSignal(signal) {
+  if (!signal || !signal.id) {
+    return false;
+  }
+
+  if (signal.id === "conflict") {
+    return (Number(signal.priority) || 0) >= CONFLICT_SIGNAL_MIN_PRIORITY;
+  }
+
+  return MORNING_SIGNAL_WHITELIST.has(signal.id);
 }
 
 // --------------------------------------------------------------------

@@ -22,7 +22,7 @@
 // import eveningScreen.js). devTools.js NIE zmienil sie w v0.51.
 // v0.52: Weekly Stakes Tracking. Cache-bust uiManager (podbil importy
 // 5 ekranow + versionBadge). devTools.js NIE zmienil sie w v0.52.
-import { initUI, showScreen } from "./ui/uiManager.js?v=520";
+import { initUI, showScreen } from "./ui/uiManager.js?v=521";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia

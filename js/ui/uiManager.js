@@ -109,7 +109,9 @@ import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.j
 // v0.50: Morning Signal Cards. Podbity WYLACZNIE import
 // gameScreen.js (?v=500) - nowa prezentacja poranka (linia ramujaca
 // + karteczki sygnalow); daily rolls i pozostale ekrany NIETKNIETE.
-import { renderGameScreen } from "./screens/gameScreen.js?v=520";
+// v0.52.1: Morning Signal Visibility Cleanup — podbity WYLACZNIE
+// gameScreen (filtr waznosci karteczek) i versionBadge.
+import { renderGameScreen } from "./screens/gameScreen.js?v=521";
 import { renderEventScreen } from "./screens/eventScreen.js?v=520";
 import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=460";
 // v0.51: Contextual Evening Recovery. Podbity WYLACZNIE import
@@ -122,7 +124,7 @@ import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=52
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=520";
+import { appendVersionBadge } from "./versionBadge.js?v=521";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=460";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=305";
 import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";
