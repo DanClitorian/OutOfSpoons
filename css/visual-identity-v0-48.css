@@ -1,0 +1,834 @@
+/* visual-identity-v0-48.css
+ *
+ * v0.48: Visual Identity Redesign — "mniej aplikacja, bardziej gra".
+ *
+ * OSTATNIA warstwa CSS w index.html. To jest warstwa OVERRIDE: nie
+ * definiuje nowego design systemu, tylko przestraja istniejące klasy
+ * (.oos-*, .screen, .primary-button, .oos-weekly-summary__*, body[...])
+ * na jeden wspólny język wizualny: papier, tusz, druk, dziennik.
+ *
+ * Zasady tej warstwy:
+ *   1. ZERO funkcji linear-/radial-/conic- w tym pliku — wszystkie
+ *      powierzchnie są płaskie. Głębia pochodzi z faktury papieru,
+ *      cienkich ramek i małych, miękkich cieni "kartka leży na stole".
+ *   2. Faktura papieru: jeden malutki, wbudowany kafelek SVG (data URI,
+ *      ~0,4 KB, zero sieci) z drobinkami tuszu o bardzo niskiej
+ *      nieprzezroczystości. Nie przeszkadza w czytelności.
+ *   3. Promienie: 2-10px (druk/notes), nigdy pigułki 999px w UI gry.
+ *   4. Kolory wyglądają jak farba na papierze, nie jak UI kit.
+ *   5. !important pojawia się WYŁĄCZNIE tam, gdzie starsze warstwy
+ *      (hotfix v0.17.1 w style.css) same używają !important na
+ *      html/body/#app — inaczej nie da się ich uczciwie nadpisać.
+ *   6. Zero zmian layoutu/gridów/overflow — wyłącznie skóra.
+ *
+ * Sekcje:
+ *   0. Tokeny + faktura
+ *   1. Fundament strony (html/body, zaznaczanie, version badge)
+ *   2. Stare komponenty bazowe (.screen, przyciski, nagłówki)
+ *   3. Menu główne — okładka dziennika
+ *   4. Kreator postaci — strona formularza w dzienniku
+ *   5. Plansza gry .oos-game — arkusz na biurku
+ *   6. Topbar — nagłówek strony dziennika
+ *   7. Sidebar — karta postaci / karta relacji
+ *   8. Scena — zdjęcie w passe-partout + etykieta
+ *   9. Narracja
+ *  10. Karty wyboru — kartoteka
+ *  11. Kafle wyników — stemple
+ *  12. CTA
+ *  13. Wieczór — ciemny papier (płasko)
+ *  14. Weekly summary — rozkładówka dziennika
+ *  15. Pozostałe ekrany (achievements, koniec relacji, month, solo)
+ *  16. Dostępność (focus, reduced motion)
+ */
+
+/* --------------------------------------------------------------------
+   0. Tokeny + faktura papieru
+   -------------------------------------------------------------------- */
+
+:root {
+  --vi-parchment: #F3EADC;   /* blat / tło strony */
+  --vi-paper: #FAF5EA;       /* kartka / karta */
+  --vi-paper-2: #F5EEDF;     /* kartka wtórna, cieplejsza */
+  --vi-ink: #3F3830;         /* tusz główny */
+  --vi-ink-soft: #6F6255;    /* tusz wyblakły */
+  --vi-umber: #8C6F5A;       /* ciepła umbra */
+  --vi-umber-deep: #6B5138;  /* umbra druku (przyciski) */
+  --vi-amber: #C99A55;       /* stare złoto */
+  --vi-blue: #5D7486;        /* zakurzony błękit */
+  --vi-rose: #A86F68;        /* przygaszony róż */
+  --vi-green: #6E8068;       /* spłowiała zieleń */
+  --vi-line: rgba(63, 56, 48, 0.18);
+  --vi-line-strong: rgba(63, 56, 48, 0.34);
+
+  /* Cień "kartka na stole": mały, miękki, bardzo subtelny. */
+  --vi-shadow-card: 0 1px 2px rgba(63, 56, 48, 0.10), 0 3px 9px rgba(63, 56, 48, 0.08);
+  --vi-shadow-sheet: 0 1px 2px rgba(63, 56, 48, 0.10), 0 10px 26px rgba(63, 56, 48, 0.10);
+
+  /* Drobinki tuszu i włókna papieru — wbudowany kafelek SVG 180x180.
+     Nieprzezroczystość drobinek 0.03-0.05: widoczne z bliska, niewidoczne
+     dla oka czytającego tekst. */
+  --vi-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg fill='%233F3830'%3E%3Ccircle cx='14' cy='23' r='1' fill-opacity='.05'/%3E%3Ccircle cx='67' cy='9' r='.7' fill-opacity='.04'/%3E%3Ccircle cx='128' cy='31' r='1.1' fill-opacity='.04'/%3E%3Ccircle cx='163' cy='74' r='.8' fill-opacity='.05'/%3E%3Ccircle cx='39' cy='68' r='.6' fill-opacity='.05'/%3E%3Ccircle cx='96' cy='57' r='1' fill-opacity='.03'/%3E%3Ccircle cx='22' cy='121' r='.9' fill-opacity='.04'/%3E%3Ccircle cx='78' cy='104' r='.6' fill-opacity='.05'/%3E%3Ccircle cx='141' cy='118' r='1' fill-opacity='.045'/%3E%3Ccircle cx='58' cy='152' r='.8' fill-opacity='.04'/%3E%3Ccircle cx='112' cy='166' r='1.1' fill-opacity='.035'/%3E%3Ccircle cx='170' cy='150' r='.6' fill-opacity='.05'/%3E%3Crect x='84' y='137' width='7' height='.7' fill-opacity='.03' transform='rotate(-14 84 137)'/%3E%3Crect x='24' y='44' width='6' height='.7' fill-opacity='.03' transform='rotate(9 24 44)'/%3E%3Crect x='140' y='88' width='8' height='.6' fill-opacity='.028' transform='rotate(-5 140 88)'/%3E%3C/g%3E%3Cg fill='%23C99A55'%3E%3Ccircle cx='103' cy='19' r='.8' fill-opacity='.05'/%3E%3Ccircle cx='47' cy='96' r='.7' fill-opacity='.045'/%3E%3Ccircle cx='155' cy='42' r='.6' fill-opacity='.05'/%3E%3Ccircle cx='9' cy='163' r='.9' fill-opacity='.04'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* --------------------------------------------------------------------
+   1. Fundament strony
+   -------------------------------------------------------------------- */
+
+/* Hotfix v0.17.1 w style.css maluje html/body promienistym przejściem
+   tonalnym z !important — jedyny uczciwy sposób na płaski papier to ta
+   sama waga, później w kaskadzie. */
+html,
+body {
+  background: var(--vi-parchment) !important;
+  background-image: var(--vi-texture) !important;
+  color: var(--vi-ink);
+}
+
+::selection {
+  background: rgba(201, 154, 85, 0.35);
+  color: var(--vi-ink);
+}
+
+.version-badge {
+  font-family: "Courier New", monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 0.06em;
+  color: var(--vi-ink-soft) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------
+   2. Stare komponenty bazowe (menu / kreator / weekly CTA)
+   -------------------------------------------------------------------- */
+
+.screen {
+  background-color: var(--vi-paper);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-radius: 4px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+h1,
+h2 {
+  font-family: Georgia, Cambria, "Times New Roman", serif;
+  font-weight: 400;
+  color: var(--vi-ink);
+  border-bottom-color: var(--vi-line);
+}
+
+.subtitle {
+  color: var(--vi-ink-soft);
+}
+
+button {
+  border-radius: 3px;
+}
+
+.primary-button {
+  background-color: var(--vi-umber-deep);
+  color: #F6EFE0;
+  border: 1px solid #57422D;
+  font-family: Georgia, Cambria, serif;
+  letter-spacing: 0.02em;
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.25);
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.primary-button:hover {
+  background-color: #7A5D40;
+  transform: translateY(-1px);
+}
+
+.secondary-button {
+  background: transparent;
+  color: var(--vi-ink);
+  border: 1px solid var(--vi-line-strong);
+  font-family: Georgia, Cambria, serif;
+}
+
+.secondary-button:hover {
+  border-color: var(--vi-umber);
+  color: var(--vi-umber-deep);
+  background: rgba(140, 111, 90, 0.06);
+}
+
+/* --------------------------------------------------------------------
+   3. Menu główne — okładka dziennika, nie ekran aplikacji
+   -------------------------------------------------------------------- */
+
+.main-menu.screen,
+.screen.main-menu {
+  background: transparent;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+  text-align: center;
+  padding-top: 13vh;
+  animation: none;
+}
+
+.main-menu h1 {
+  font-size: clamp(2.4rem, 6vw, 3.4rem);
+  letter-spacing: 0.04em;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0.4rem;
+}
+
+/* Mały drukarski ornament pod tytułem zamiast kreski-podkreślenia. */
+.main-menu h1::after {
+  content: "· · ·";
+  display: block;
+  margin-top: 0.55rem;
+  font-size: 15px;
+  letter-spacing: 0.6em;
+  color: var(--vi-amber);
+}
+
+.main-menu .subtitle {
+  margin-bottom: 3rem;
+  font-family: Georgia, Cambria, serif;
+}
+
+.main-menu .primary-button,
+.main-menu .secondary-button {
+  display: block;
+  width: min(300px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0.85rem 1.2rem;
+  font-size: 1.05rem;
+}
+
+/* --------------------------------------------------------------------
+   4. Kreator postaci — strona formularza w dzienniku, nie web-form
+   -------------------------------------------------------------------- */
+
+.character-creator-screen h2 {
+  border-bottom: 1px solid var(--vi-line);
+}
+
+.character-creator-screen .section-heading {
+  font-family: Georgia, Cambria, serif;
+  font-weight: 400;
+  color: var(--vi-ink);
+}
+
+.character-creator-screen label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--vi-ink-soft);
+}
+
+/* Pola tekstowe jak linia do wpisania piórem, nie input z appki. */
+.character-creator-screen input[type="text"] {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--vi-line-strong);
+  border-radius: 0;
+  padding: 0.45rem 0.1rem;
+  font-family: Georgia, Cambria, serif;
+  font-size: 1.1rem;
+  color: var(--vi-ink);
+}
+
+.character-creator-screen input[type="text"]:focus-visible {
+  outline: none;
+  border-bottom: 2px solid var(--vi-umber);
+}
+
+.character-creator-screen input[type="text"]::placeholder {
+  color: rgba(111, 98, 85, 0.55);
+  font-style: italic;
+}
+
+.trait-option {
+  background-color: #FCF8EE;
+  border: 1px solid var(--vi-line);
+  border-radius: 3px;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.trait-option:hover {
+  border-color: var(--vi-amber);
+  background-color: var(--vi-paper);
+}
+
+.trait-option:has(input:checked) {
+  border-color: var(--vi-amber);
+  background-color: #F7EFDD;
+  box-shadow: inset 3px 0 0 var(--vi-amber);
+}
+
+.trait-option input[type="checkbox"] {
+  accent-color: var(--vi-umber);
+}
+
+.field-hint {
+  color: var(--vi-ink-soft);
+}
+
+.field-error {
+  color: var(--vi-rose);
+}
+
+/* --------------------------------------------------------------------
+   5. Plansza gry .oos-game — arkusz papieru na biurku
+   -------------------------------------------------------------------- */
+
+.oos-game {
+  /* Przestrojenie tokenów planszy — całe poddrzewo .oos-* przejmuje
+     nową paletę przez zmienne, bez dotykania layoutu. */
+  --oos-paper: #F7F2E7;
+  --oos-panel: #FBF7ED;
+  --oos-ink: var(--vi-ink);
+  --oos-muted: var(--vi-ink-soft);
+  --oos-line: var(--vi-line-strong);
+  --oos-blue: var(--vi-blue);
+  --oos-gold: var(--vi-amber);
+  --oos-sage: var(--vi-green);
+  --oos-rose: var(--vi-rose);
+  --oos-shadow: rgba(63, 56, 48, 0.12);
+
+  background: var(--oos-paper);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line-strong);
+  border-radius: 10px;
+  box-shadow: var(--vi-shadow-sheet);
+}
+
+/* --------------------------------------------------------------------
+   6. Topbar — górna linia strony dziennika, nie pasek aplikacji
+   -------------------------------------------------------------------- */
+
+.oos-topbar {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--vi-line-strong);
+  border-radius: 0;
+  font-weight: 400;
+}
+
+.oos-topbar-daylabel {
+  font-family: Georgia, Cambria, serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.oos-topbar-stat {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--vi-ink-soft);
+}
+
+.oos-topbar-stat-value {
+  font-family: Georgia, Cambria, serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------
+   7. Sidebar — karta postaci z RPG, nie panel ustawień
+   -------------------------------------------------------------------- */
+
+.oos-player-card,
+.oos-relationship-card {
+  background: var(--oos-panel);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-radius: 5px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+.oos-player-card-badge,
+.oos-relationship-card-heading {
+  letter-spacing: 0.14em;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--vi-line);
+}
+
+.oos-player-card-name,
+.oos-relationship-card-name {
+  font-weight: 400;
+  font-family: Georgia, Cambria, serif;
+}
+
+.oos-stat-bar-row {
+  font-weight: 600;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--vi-ink-soft);
+}
+
+.oos-stat-bar-value {
+  color: var(--vi-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* Paski statystyk: kreska atramentu, nie pigułka postępu. */
+.oos-stat-bar-track {
+  height: 6px;
+  border-radius: 2px;
+  background: rgba(63, 56, 48, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(63, 56, 48, 0.06);
+}
+
+.oos-stat-bar-fill {
+  border-radius: 2px;
+}
+
+/* Nastrój relacji: mały stempel, nie badge-pigułka. */
+.oos-relationship-card-mood {
+  border-radius: 3px;
+  border: 1px solid rgba(93, 116, 134, 0.5);
+  background: transparent;
+  color: var(--vi-blue);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10.5px;
+}
+
+/* --------------------------------------------------------------------
+   8. Scena — zdjęcie w passe-partout, etykieta jak podpis pod zdjęciem
+   -------------------------------------------------------------------- */
+
+.oos-scene {
+  border: 1px solid rgba(63, 56, 48, 0.4);
+  border-radius: 2px;
+  /* Papierowa oprawa (mat) + cienka linia ramy + cień fotografii. */
+  box-shadow:
+    0 0 0 6px var(--oos-panel),
+    0 0 0 7px var(--vi-line-strong),
+    0 6px 16px rgba(63, 56, 48, 0.16);
+}
+
+/* Ciemne przejście tonalne u dołu sceny — usunięte. Zdjęcie zostaje
+   zdjęciem; czytelność tytułu zapewnia etykieta, nie przyciemnienie. */
+.oos-scene::after {
+  background: none;
+}
+
+.oos-scene-title {
+  top: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--vi-line-strong);
+  background: var(--vi-paper);
+  color: var(--vi-ink);
+  box-shadow: 0 2px 5px rgba(63, 56, 48, 0.2);
+  padding: 6px 18px;
+  font-family: Georgia, Cambria, serif;
+  font-weight: 400;
+  font-size: clamp(13px, 1.3vw, 17px);
+  letter-spacing: 0.12em;
+}
+
+/* --------------------------------------------------------------------
+   9. Narracja — akapit na kartce
+   -------------------------------------------------------------------- */
+
+.oos-narrative {
+  background: var(--oos-panel);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-radius: 4px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+.oos-narrative-text {
+  font-weight: 400;
+  font-family: Georgia, Cambria, serif;
+}
+
+/* --------------------------------------------------------------------
+   10. Karty wyboru — kartoteka / fiszki, nie przyciski SaaS
+   -------------------------------------------------------------------- */
+
+.oos-decision-card {
+  background: #FCF8EE;
+  background-image: var(--vi-texture);
+  border: 1px solid rgba(63, 56, 48, 0.32);
+  border-radius: 4px;
+  box-shadow: var(--vi-shadow-card);
+  transition: transform 130ms ease, border-color 130ms ease, box-shadow 130ms ease;
+}
+
+/* Małe niedoskonałości: fiszki leżą odrobinę krzywo, jak rozłożone
+   ręcznie. Kąty są celowo mniejsze niż stopień — obecne, nie teatralne. */
+.oos-actions .oos-decision-card:nth-child(odd) {
+  transform: rotate(-0.35deg);
+}
+
+.oos-actions .oos-decision-card:nth-child(even) {
+  transform: rotate(0.3deg);
+}
+
+.oos-decision-card:hover:not(:disabled):not(.oos-decision-card--disabled) {
+  transform: translateY(-2px) rotate(0deg);
+  border-color: var(--vi-umber);
+  box-shadow: 0 2px 3px rgba(63, 56, 48, 0.12), 0 7px 16px rgba(63, 56, 48, 0.13);
+}
+
+.oos-decision-card-title {
+  font-family: Georgia, Cambria, serif;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-size: clamp(15px, 1.25vw, 18px);
+}
+
+.oos-decision-card-description {
+  color: var(--vi-ink-soft);
+}
+
+.oos-decision-card-status {
+  letter-spacing: 0.1em;
+  color: var(--vi-umber);
+}
+
+/* Karta niedostępna: odłożona, wyblakła kartka — nie "disabled button". */
+.oos-decision-card--disabled,
+.oos-decision-card:disabled {
+  background: #F2ECDF;
+  border: 1px dashed rgba(63, 56, 48, 0.3);
+  opacity: 0.62;
+  filter: none;
+  transform: rotate(0deg);
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.08);
+}
+
+/* --------------------------------------------------------------------
+   11. Kafle wyników — stemple / etykiety, nie SaaS badges
+   -------------------------------------------------------------------- */
+
+.oos-result-tile {
+  border-radius: 3px;
+  border: 1px solid var(--vi-line);
+  background: var(--oos-panel);
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.08);
+}
+
+.oos-result-tile-label {
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-size: clamp(10px, 0.9vw, 12px);
+  font-weight: 600;
+  color: var(--vi-ink-soft);
+}
+
+.oos-result-tile-value {
+  font-family: Georgia, Cambria, serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.oos-result-tile--positive {
+  background: #EAEFE3;
+  border-color: rgba(110, 128, 104, 0.5);
+}
+
+.oos-result-tile--positive .oos-result-tile-value {
+  color: #5A6D54;
+}
+
+.oos-result-tile--negative {
+  background: #F1E5E1;
+  border-color: rgba(168, 111, 104, 0.5);
+}
+
+.oos-result-tile--negative .oos-result-tile-value {
+  color: #96605A;
+}
+
+.oos-result-tile--neutral {
+  background: #F1EADB;
+  border-color: var(--vi-line);
+}
+
+.oos-result-tile--neutral .oos-result-tile-value {
+  color: var(--vi-ink-soft);
+}
+
+/* --------------------------------------------------------------------
+   12. CTA — przycisk drukarski, bez plastikowego 3D
+   -------------------------------------------------------------------- */
+
+.oos-cta-button {
+  background: var(--vi-umber-deep);
+  color: #F6EFE0;
+  border: 1px solid #57422D;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.28), 0 4px 10px rgba(63, 56, 48, 0.14);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+.oos-cta-button:hover {
+  background: #7A5D40;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 3px rgba(63, 56, 48, 0.26), 0 6px 14px rgba(63, 56, 48, 0.16);
+}
+
+/* --------------------------------------------------------------------
+   13. Wieczór — ciemny papier, nie granatowy dashboard
+   -------------------------------------------------------------------- */
+
+.oos-game--evening {
+  --oos-paper: #2E2A23;
+  --oos-panel: #3A342B;
+  --oos-ink: #EFE8D8;
+  --oos-muted: #B9AD99;
+  --oos-line: rgba(239, 232, 216, 0.24);
+  --oos-shadow: rgba(0, 0, 0, 0.3);
+
+  background: var(--oos-paper);
+  background-image: var(--vi-texture);
+  border-color: rgba(239, 232, 216, 0.2);
+}
+
+.oos-game--evening .oos-topbar {
+  background: transparent;
+  border-bottom-color: rgba(239, 232, 216, 0.24);
+}
+
+.oos-game--evening .oos-player-card,
+.oos-game--evening .oos-relationship-card,
+.oos-game--evening .oos-narrative {
+  background: var(--oos-panel);
+  border-color: rgba(239, 232, 216, 0.16);
+}
+
+.oos-game--evening .oos-decision-card {
+  background: #3E382E;
+  border-color: rgba(239, 232, 216, 0.28);
+  color: var(--oos-ink);
+}
+
+.oos-game--evening .oos-decision-card--disabled,
+.oos-game--evening .oos-decision-card:disabled {
+  background: #35302A;
+  border-color: rgba(239, 232, 216, 0.2);
+}
+
+.oos-game--evening .oos-decision-card-description {
+  color: var(--oos-muted);
+}
+
+.oos-game--evening .oos-scene {
+  box-shadow:
+    0 0 0 6px var(--oos-panel),
+    0 0 0 7px rgba(239, 232, 216, 0.22),
+    0 6px 16px rgba(0, 0, 0, 0.34);
+}
+
+.oos-game--evening .oos-scene-title {
+  background: #3A342B;
+  color: var(--oos-ink);
+  border-color: rgba(239, 232, 216, 0.3);
+}
+
+.oos-game--evening .oos-stat-bar-track {
+  background: rgba(239, 232, 216, 0.16);
+}
+
+/* --------------------------------------------------------------------
+   14. Weekly summary — rozkładówka dziennika / milestone
+   -------------------------------------------------------------------- */
+
+.oos-weekly-summary {
+  --ws-paper: #F7F2E7;
+  --ws-panel: #FBF7ED;
+  --ws-ink: var(--vi-ink);
+  --ws-muted: var(--vi-ink-soft);
+  --ws-line: var(--vi-line-strong);
+  --ws-blue: var(--vi-blue);
+  --ws-gold: var(--vi-amber);
+  --ws-sage: var(--vi-green);
+  --ws-rose: var(--vi-rose);
+  --ws-shadow: rgba(63, 56, 48, 0.1);
+}
+
+/* Hero: nagłówek rozdziału — linie drukarskie zamiast poświaty. */
+.oos-weekly-summary--v47 .oos-weekly-summary__hero {
+  background: var(--ws-panel);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-top: 2px solid var(--vi-ink);
+  border-radius: 4px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+.oos-weekly-summary--v47 .oos-weekly-summary__hero-title {
+  font-weight: 400;
+}
+
+/* Karty szczegółów (v0-21): płaska kartka zamiast rozświetlonego rogu. */
+.oos-weekly-summary__card {
+  background: var(--ws-panel);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-radius: 4px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+/* Trzy główne karty v0.47: wpisy w dzienniku z barwną linią druku. */
+.oos-weekly-summary__main-card {
+  background: var(--ws-panel);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-radius: 4px;
+  border-top-width: 3px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+.oos-weekly-summary__main-card-title {
+  font-family: Georgia, Cambria, serif;
+  font-weight: 700;
+}
+
+.oos-weekly-summary__section {
+  background: var(--ws-panel);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-radius: 4px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+/* Badge osiągnięcia: naklejka/znaczek na papierze, nie złoty glow. */
+.oos-weekly-summary__badge {
+  background: #F7EEDC;
+  border: 1px solid var(--vi-amber);
+  border-radius: 3px;
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.1), inset 0 0 0 1px rgba(201, 154, 85, 0.25);
+}
+
+.oos-weekly-summary__badge-tag {
+  border-radius: 2px;
+  letter-spacing: 0.14em;
+}
+
+/* Teaser: notatka na marginesie z niebieską linią, nie panel z tłem. */
+.oos-weekly-summary__teaser {
+  background: var(--ws-panel);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-left: 3px solid var(--vi-blue);
+  border-radius: 4px;
+  text-align: left;
+  padding-left: 22px;
+}
+
+.oos-weekly-summary__teaser-line {
+  margin: 0;
+  max-width: none;
+}
+
+.oos-weekly-summary__details {
+  border: 1px dashed var(--vi-line-strong);
+  border-radius: 4px;
+}
+
+.oos-weekly-summary__details[open] {
+  background: rgba(251, 247, 237, 0.7);
+}
+
+/* CTA weekly (stary .primary-button z warstwy v0-21). */
+.oos-weekly-summary__footer .primary-button {
+  background: var(--vi-umber-deep);
+  border: 1px solid #57422D;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.28), 0 4px 10px rgba(63, 56, 48, 0.14);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+
+.oos-weekly-summary__footer .primary-button:hover {
+  background: #7A5D40;
+}
+
+.oos-weekly-summary__effect-chip {
+  border-radius: 3px;
+}
+
+.oos-weekly-summary__result {
+  border-radius: 3px;
+}
+
+.oos-weekly-summary__upcoming {
+  border-radius: 3px;
+}
+
+/* --------------------------------------------------------------------
+   15. Pozostałe ekrany: achievements / koniec relacji / month / solo
+   -------------------------------------------------------------------- */
+
+body[data-game-screen="achievements"],
+body[data-game-screen="achievement"],
+body[data-game-screen="soloRecovery"],
+body[data-game-screen="solo-recovery"],
+body[data-game-screen="monthSummary"],
+body[data-game-screen="month-summary"] {
+  background: var(--vi-parchment) !important;
+  background-image: var(--vi-texture) !important;
+}
+
+/* Koniec relacji: papier lekko wystudzony — sygnał emocjonalny bez
+   czerwonej poświaty. */
+body[data-game-screen="relationshipEnd"],
+body[data-game-screen="relationship-end"],
+body[data-game-screen="gameOver"] {
+  background: #EFE7DB !important;
+  background-image: var(--vi-texture) !important;
+}
+
+.oos-achievements__card,
+.oos-relationship-end__card,
+.oos-month-summary__card,
+.oos-solo-sidebar__card {
+  background: var(--vi-paper);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line);
+  border-radius: 4px;
+  box-shadow: var(--vi-shadow-card);
+}
+
+/* --------------------------------------------------------------------
+   16. Dostępność
+   -------------------------------------------------------------------- */
+
+.oos-decision-card:focus-visible,
+.oos-cta-button:focus-visible,
+.primary-button:focus-visible,
+.secondary-button:focus-visible,
+.trait-option:focus-within,
+.oos-weekly-summary__details-toggle:focus-visible {
+  outline: 2px solid var(--vi-amber);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oos-decision-card,
+  .oos-cta-button,
+  .primary-button,
+  .trait-option {
+    transition: none;
+  }
+
+  .oos-actions .oos-decision-card:nth-child(odd),
+  .oos-actions .oos-decision-card:nth-child(even) {
+    transform: none;
+  }
+}

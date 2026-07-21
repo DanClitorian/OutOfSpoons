@@ -11,7 +11,10 @@
 // v0.47: Weekly Summary Game Feel Pass. Cache-bust (?v=470) na
 // imporcie uiManager.js (uiManager zmienil swoj import
 // weeklySummaryScreen.js). devTools.js NIE zmienil sie w v0.47.
-import { initUI, showScreen } from "./ui/uiManager.js?v=470";
+// v0.48: Visual Identity Redesign. Cache-bust (?v=480) na imporcie
+// uiManager.js (uiManager zmienil swoj import versionBadge.js).
+// devTools.js NIE zmienil sie w v0.48.
+import { initUI, showScreen } from "./ui/uiManager.js?v=480";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
