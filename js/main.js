@@ -16,7 +16,9 @@
 // devTools.js NIE zmienil sie w v0.48.
 // v0.49: Fatigue Economy Reconnection. Cache-bust uiManager (3 ekrany
 // podbily importy dayCycle.js) oraz devTools (nowe helpery fatigue).
-import { initUI, showScreen } from "./ui/uiManager.js?v=490";
+// v0.50: Morning Signal Cards. Cache-bust uiManager (podbil import
+// gameScreen.js). devTools.js NIE zmienil sie w v0.50.
+import { initUI, showScreen } from "./ui/uiManager.js?v=500";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia

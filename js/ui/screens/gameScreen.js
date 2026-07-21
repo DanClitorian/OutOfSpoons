@@ -1,6 +1,17 @@
 // gameScreen.js
 //
 // Morning screen.
+//
+// v0.50: Morning Signal Cards. Poranek przestaje byc jednym dlugim
+// akapitem (buildMorningNarrative sklejalo do 13 zdan z 13 systemow w
+// jeden string — polowa i tak ginela w clampie 3 linii narracji).
+// Nowa prezentacja: JEDNA linia ramujaca dzien (Daily Stakes) + max 3
+// najwazniejsze sygnaly jako papierowe karteczki (priorytetyzowane) +
+// reszta w zwinietym "Jeszcze X notatek". Mechanika daily rolls
+// (sekwencja ensure/roll/saveGame ponizej) jest NIETKNIETA — zmienila
+// sie wylacznie prezentacja. Sidebar dostal maly staly blok
+// "Na horyzoncie" (Stawka tygodnia / Wielki Test) w karcie gracza.
+// Style: css/morning-signals-v0-50.css (paper-first, zgodne z v0.48).
 // v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
 // system .oos-* (patrz js/ui/oosLayout.js). Żadnej zależności od
 // starych klas .vn-*.
@@ -68,7 +79,8 @@ import {
 import {
   ensurePartnerCapacityState,
   resolvePartnerDailyCapacity,
-  getPartnerCapacityShortLabel
+  getPartnerCapacityShortLabel,
+  getPartnerCapacityContext
 } from "../../systems/partnerCapacitySystem.js?v=300";
 import {
   ensureMaskingDebtState,
@@ -103,7 +115,7 @@ import {
 } from "../oosLayout.js";
 
 import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=300";
-import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine } from "../../systems/workPressureSystem.js?v=300";
+import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine, getWorkPressureContext } from "../../systems/workPressureSystem.js?v=300";
 import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
 import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLine } from "../../systems/achievementSystem.js?v=400";
 import {
@@ -286,13 +298,18 @@ export function renderGameScreen(container) {
     onAchievementsClick: () => showScreen("achievements")
   });
   const sidebar = createSidebar(state, "game");
+  // v0.50: maly, staly blok "Na horyzoncie" w karcie gracza — countdowny
+  // Stawki tygodnia i Wielkiego Testu mieszkaja teraz TU na stale,
+  // a w karteczkach sygnalow pojawiaja sie tylko, gdy termin jest blisko.
+  appendMorningHorizonBlock(sidebar, state);
 
   const scene = createScenePanel({
     modifier: "morning",
     title: `Dzień ${state.day}`
   });
 
-  const narrative = createNarrativeStrip(buildMorningNarrative(state));
+  // v0.50: Morning Signal Cards — linia ramujaca + karteczki sygnalow.
+  const narrative = buildMorningNarrativeSection(state);
 
   // v0.43.1: usunięty martwy kod — ta gałąź jest osiągana WYŁĄCZNIE
   // gdy isSolo === false (przy isSolo === true funkcja zwróciła już
@@ -749,105 +766,378 @@ function renderTransientResultScreen(container, state) {
   container.appendChild(shell);
 }
 
-function buildMorningNarrative(state) {
+// ====================================================================
+// v0.50: Morning Signal Cards
+//
+// Zamiast jednego akapitu-zlepka: JEDNA linia ramująca (Daily Stakes)
+// + karteczki sygnałów z priorytetami. Wszystkie funkcje poniżej TYLKO
+// CZYTAJĄ stan — daily rolls wykonały się już wyżej w renderGameScreen,
+// w niezmienionej sekwencji. Teksty sygnałów pochodzą z istniejących
+// builderów systemów (zero liczb, zero debugowych danych) — nowe są
+// wyłącznie dwie narracyjne linie zmęczenia (fatigue nie miało dotąd
+// żadnej linii porannej, bo system był odłączony aż do v0.49).
+// ====================================================================
+
+const MORNING_SIGNAL_LIMIT = 3;
+
+function buildMorningNarrativeSection(state) {
+  const section = createNarrativeStrip(buildMorningFrameLine(state));
+  section.className += " oos-narrative--morning";
+
+  const signals = buildMorningSignals(state);
+  if (signals.length === 0) {
+    return section;
+  }
+
+  const board = document.createElement("div");
+  board.className = "oos-morning-signals";
+
+  const visible = signals.slice(0, MORNING_SIGNAL_LIMIT);
+  const hidden = signals.slice(MORNING_SIGNAL_LIMIT);
+
+  visible.forEach((signal) => {
+    board.appendChild(buildMorningSignalCard(signal, false));
+  });
+
+  if (hidden.length > 0) {
+    board.appendChild(buildHiddenSignalsBlock(hidden));
+  }
+
+  section.appendChild(board);
+  return section;
+}
+
+// Jedna linia ramująca dzień. Daily Stakes istnieje po to, żeby scena
+// mówiła JEDNĄ rzecz — jeśli z jakiegoś powodu go nie ma (np. bardzo
+// stary zapis przed pierwszym przeliczeniem), spokojny fallback.
+function buildMorningFrameLine(state) {
   const stakesLine = buildMorningStakesLine(state);
-  const achievementLine = buildMorningAchievementLine(state);
-  const soloLine = buildSoloMorningLine(state);
-  const maskingDebtLine = buildMorningMaskingDebtLine(state);
-  const relationshipModelLine = buildRelationshipModelMorningLine(state);
+  if (stakesLine) {
+    return stakesLine;
+  }
+
+  return "Nowy dzień się zaczyna. Zdecyduj, czym zajmiesz się najpierw.";
+}
+
+// --------------------------------------------------------------------
+// Zbieranie sygnałów. Każdy sygnał: { id, title, text, type, priority }.
+// type -> klasa oos-morning-signal--{type} (patrz morning-signals-v0-50.css).
+// priority: wyższy = ważniejszy; sort stabilny, więc przy remisie
+// wygrywa kolejność wstawienia (ustawiona świadomie od najcięższych).
+// --------------------------------------------------------------------
+
+function buildMorningSignals(state) {
+  const signals = [];
+
+  const push = (signal) => {
+    if (signal && signal.text) {
+      signals.push(signal);
+    }
+  };
+
+  // 1. Wielki Test blisko terminu (<= 3 dni): najwyższy priorytet.
+  const criticalEvent = getCurrentCriticalEvent(state);
+  if (criticalEvent) {
+    const daysLeft = getCriticalEventCountdown(state);
+    if (typeof daysLeft === "number" && daysLeft <= 3) {
+      push({
+        id: "critical-horizon",
+        title: "Na horyzoncie",
+        type: "critical",
+        priority: 100,
+        text: daysLeft <= 1
+          ? `Większa próba jest tuż-tuż: „${criticalEvent.title}”.`
+          : `Większa próba coraz bliżej: „${criticalEvent.title}”. Zostały ${daysLeft} dni.`
+      });
+    }
+  }
+
+  // 2. Stawka tygodnia blisko terminu (<= 2 dni).
+  const weeklyChallenge = getCurrentWeeklyChallenge(state);
+  if (weeklyChallenge) {
+    const daysLeft = getWeeklyChallengeCountdown(state);
+    if (typeof daysLeft === "number" && daysLeft <= 2) {
+      push({
+        id: "weekly-close",
+        title: "Stawka tygodnia",
+        type: "weekly",
+        priority: 90,
+        text: daysLeft <= 1
+          ? `„${weeklyChallenge.title}” rozstrzyga się dziś albo jutro.`
+          : `„${weeklyChallenge.title}” domyka się za ${daysLeft} dni.`
+      });
+    }
+  }
+
+  // 3. Konflikt — im wyżej na drabinie stanów, tym ważniejszy.
   const conflictLine = buildMorningConflictLine(state);
-  const partnerTeaser = buildPartnerCapacityTeaser(state);
-  const patternTeaser = buildPatternTeaser(state);
-  const weeklyTeaser = buildWeeklyStakeTeaser(state);
-  const criticalTeaser = buildCriticalEventTeaser(state);
-  const staticLine = buildMorningStaticLine(state);
-  const metamourLine = buildMorningMetamourLine(state);
+  if (conflictLine) {
+    const conflictState = state.partner && state.partner.conflict
+      ? state.partner.conflict.state
+      : "calm";
+    const conflictPriority =
+      conflictState === "fight" ? 92 :
+      conflictState === "critical" ? 88 :
+      conflictState === "volatile" ? 64 : 58;
+    push({
+      id: "conflict",
+      title: "Napięcie",
+      type: "relationship",
+      priority: conflictPriority,
+      text: conflictLine
+    });
+  }
+
+  // 4. Zmęczenie (v0.49: fatigue realnie obniża nocną regenerację).
+  // Fatigue nie miało dotąd ŻADNEJ linii porannej — te dwie są nowe,
+  // celowo narracyjne, bez liczb.
+  const fatigueCurrent = state.resources && state.resources.fatigue
+    ? Number(state.resources.fatigue.current) || 0
+    : 0;
+  if (fatigueCurrent >= 4) {
+    push({
+      id: "fatigue-high",
+      title: "Zmęczenie",
+      type: "fatigue",
+      priority: 85,
+      text: "Zmęczenie nie zostało wczoraj. Dziś zaczyna się niżej, niż by mogło — i to jest informacja, nie wyrok."
+    });
+  } else if (fatigueCurrent >= 2) {
+    push({
+      id: "fatigue-mid",
+      title: "Zmęczenie",
+      type: "fatigue",
+      priority: 55,
+      text: "Ciało prowadzi własny rejestr ostatnich dni. Poranek jest odrobinę cięższy, niż wygląda."
+    });
+  }
+
+  // 5. Rachunek za maskę (pojawia się tylko rano po realnym koszcie).
+  const maskingDebtLine = buildMorningMaskingDebtLine(state);
+  if (maskingDebtLine) {
+    push({
+      id: "masking-debt",
+      title: "Maska",
+      type: "inner",
+      priority: 80,
+      text: maskingDebtLine
+    });
+  }
+
+  // 6. Praca — priorytet zależny od realnej presji, tekst z systemu.
   const workLine = buildMorningWorkLine(state);
-
-  if (
-    !stakesLine &&
-    !achievementLine &&
-    !soloLine &&
-    !maskingDebtLine &&
-    !relationshipModelLine &&
-    !conflictLine &&
-    !partnerTeaser &&
-    !patternTeaser &&
-    !weeklyTeaser &&
-    !criticalTeaser &&
-    !staticLine
-  ) {
-    return "Nowy dzień się zaczyna. Sprawdź, co czeka na Ciebie, i zdecyduj, czym zajmiesz się najpierw.";
-  }
-
-  const parts = [
-    "Dziś: plan dnia.",
-    stakesLine,
-    achievementLine,
-    soloLine,
-    maskingDebtLine,
-    relationshipModelLine,
-    conflictLine,
-    partnerTeaser,
-    patternTeaser,
-    weeklyTeaser,
-    criticalTeaser,
-    staticLine
-  ].filter(Boolean);
-  if (metamourLine) {
-    parts.push(metamourLine);
-  }
-
   if (workLine) {
-    parts.push(workLine);
+    const workContext = getWorkPressureContext(state);
+    const workPriority = workContext && workContext.pressure >= 60 ? 72 : 48;
+    push({
+      id: "work",
+      title: "Praca",
+      type: "work",
+      priority: workPriority,
+      text: workLine
+    });
   }
 
-  return parts.join(" ");
+  // 7. Świeżo odblokowany kamień milowy.
+  const achievementLine = buildMorningAchievementLine(state);
+  if (achievementLine) {
+    push({
+      id: "achievement",
+      title: "Kamień milowy",
+      type: "achievement",
+      priority: 65,
+      text: achievementLine
+    });
+  }
+
+  // 8. Dostępność partnera — tekst z dziennego sygnału systemu, jeśli
+  // jest; inaczej krótka forma z etykiety.
+  const partnerContext = getPartnerCapacityContext(state);
+  if (partnerContext && (partnerContext.isCritical || partnerContext.isLow)) {
+    const partnerName = state.partner ? state.partner.name : "Partner";
+    const capacitySignal = state.partner && state.partner.capacity
+      ? state.partner.capacity.dailySignal
+      : null;
+    push({
+      id: "partner-capacity",
+      title: "Partner",
+      type: "relationship",
+      priority: partnerContext.isCritical ? 60 : 44,
+      text: capacitySignal && capacitySignal.text
+        ? capacitySignal.text
+        : `${partnerName} też nie ma dziś nadmiaru. To zmienia temperaturę dnia.`
+    });
+  }
+
+  // 9. Echo wzorca (getLatestPatternEcho — jedno wywołanie, jak dotąd).
+  const patternResult = getLatestPatternEcho(state);
+  if (patternResult) {
+    push({
+      id: "pattern",
+      title: "Wzorzec",
+      type: "inner",
+      priority: 50,
+      text: `${patternResult.pattern.title}. ${patternResult.text}`
+    });
+  }
+
+  // 10. Sieć relacji (metamour) — tekst z dziennego sygnału.
+  const metamourLine = buildMorningMetamourLine(state);
+  if (metamourLine) {
+    push({
+      id: "metamour",
+      title: "Sieć relacji",
+      type: "relationship",
+      priority: 45,
+      text: metamourLine
+    });
+  }
+
+  // 11. Szum (Static) — głośniejszy przy intensity >= 2.
+  const staticLine = buildMorningStaticLine(state);
+  if (staticLine) {
+    const staticIntensity = state.player && state.player.static
+      ? Number(state.player.static.intensity) || 0
+      : 0;
+    push({
+      id: "static",
+      title: "Szum",
+      type: "inner",
+      priority: staticIntensity >= 2 ? 57 : 40,
+      text: staticLine
+    });
+  }
+
+  // 12. Niejasne ustalenia w relacji — najcichszy sygnał.
+  const relationshipModelLine = buildRelationshipModelMorningLine(state);
+  if (relationshipModelLine) {
+    push({
+      id: "relationship-model",
+      title: "Ustalenia",
+      type: "relationship",
+      priority: 30,
+      text: relationshipModelLine
+    });
+  }
+
+  // Sort malejąco po priorytecie; Array.prototype.sort jest stabilny,
+  // więc remisy zachowują świadomą kolejność wstawiania.
+  return signals.sort((a, b) => b.priority - a.priority);
 }
 
-function buildPartnerCapacityTeaser(state) {
-  const shortLabel = getPartnerCapacityShortLabel(state);
+// --------------------------------------------------------------------
+// Render karteczek
+// --------------------------------------------------------------------
 
-  if (!shortLabel) {
-    return null;
+function buildMorningSignalCard(signal, isMuted) {
+  const card = document.createElement("article");
+  card.className = `oos-morning-signal oos-morning-signal--${signal.type}`;
+  if (isMuted) {
+    card.className += " oos-morning-signal--muted";
   }
 
-  return `Partner: ${shortLabel}.`;
+  const title = document.createElement("p");
+  title.className = "oos-morning-signal-title";
+  title.textContent = signal.title;
+  card.appendChild(title);
+
+  const text = document.createElement("p");
+  text.className = "oos-morning-signal-text";
+  text.textContent = signal.text;
+  card.appendChild(text);
+
+  return card;
 }
 
-function buildPatternTeaser(state) {
-  ensurePatternState(state);
-  const result = getLatestPatternEcho(state);
+function buildHiddenSignalsBlock(hiddenSignals) {
+  const details = document.createElement("details");
+  details.className = "oos-morning-signals-more";
 
-  if (!result) {
-    return null;
-  }
+  const summary = document.createElement("summary");
+  summary.className = "oos-morning-signals-more-toggle";
+  summary.textContent = `Jeszcze ${hiddenSignals.length} ${noteWord(hiddenSignals.length)}`;
+  details.appendChild(summary);
 
-  return `Wzorzec: ${result.pattern.title}. ${result.text}`;
+  const list = document.createElement("div");
+  list.className = "oos-morning-signals-more-list";
+  hiddenSignals.forEach((signal) => {
+    list.appendChild(buildMorningSignalCard(signal, true));
+  });
+  details.appendChild(list);
+
+  return details;
 }
 
-function buildWeeklyStakeTeaser(state) {
-  ensureWeeklyChallengeState(state);
-  const challenge = getCurrentWeeklyChallenge(state);
-
-  if (!challenge) {
-    return null;
+function noteWord(count) {
+  if (count === 1) {
+    return "notatka";
   }
-
-  const daysLeft = getWeeklyChallengeCountdown(state);
-  return `Stawka: ${challenge.title} za ${daysLeft} ${dayWord(daysLeft)}.`;
+  if (count >= 2 && count <= 4) {
+    return "notatki";
+  }
+  return "notatek";
 }
 
-function buildCriticalEventTeaser(state) {
-  ensureCriticalEventState(state);
-  const event = getCurrentCriticalEvent(state);
+// --------------------------------------------------------------------
+// Sidebar: stały blok "Na horyzoncie" w karcie gracza (tylko poranek).
+// Countdowny mieszkają tu NA STAŁE — karteczka sygnału dubluje je
+// wyłącznie, gdy termin jest blisko (patrz buildMorningSignals).
+// --------------------------------------------------------------------
 
-  if (!event) {
-    return null;
+function appendMorningHorizonBlock(sidebar, state) {
+  const playerCard = sidebar && sidebar.children ? sidebar.children[0] : null;
+  if (!playerCard) {
+    return;
   }
 
-  const daysLeft = getCriticalEventCountdown(state);
-  return `Wielki Test: ${event.title} za ${daysLeft} ${dayWord(daysLeft)}.`;
+  const rows = [];
+
+  const weeklyChallenge = getCurrentWeeklyChallenge(state);
+  if (weeklyChallenge) {
+    const daysLeft = getWeeklyChallengeCountdown(state);
+    if (typeof daysLeft === "number") {
+      rows.push({ label: "Stawka tygodnia", value: `za ${daysLeft} ${dayWord(daysLeft)}` });
+    }
+  }
+
+  const criticalEvent = getCurrentCriticalEvent(state);
+  if (criticalEvent) {
+    const daysLeft = getCriticalEventCountdown(state);
+    if (typeof daysLeft === "number") {
+      rows.push({ label: "Wielki Test", value: `za ${daysLeft} ${dayWord(daysLeft)}` });
+    }
+  }
+
+  if (rows.length === 0) {
+    return;
+  }
+
+  const block = document.createElement("div");
+  block.className = "oos-morning-horizon";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-morning-horizon-heading";
+  heading.textContent = "Na horyzoncie";
+  block.appendChild(heading);
+
+  rows.forEach((row) => {
+    const line = document.createElement("p");
+    line.className = "oos-morning-horizon-row";
+
+    const label = document.createElement("span");
+    label.className = "oos-morning-horizon-label";
+    label.textContent = row.label;
+    line.appendChild(label);
+
+    const value = document.createElement("span");
+    value.className = "oos-morning-horizon-value";
+    value.textContent = row.value;
+    line.appendChild(value);
+
+    block.appendChild(line);
+  });
+
+  playerCard.appendChild(block);
 }
 
 function dayWord(daysLeft) {

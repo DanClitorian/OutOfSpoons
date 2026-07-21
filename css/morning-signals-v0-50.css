@@ -1,0 +1,288 @@
+/* morning-signals-v0-50.css
+ *
+ * v0.50: Morning Signal Cards.
+ *
+ * Style dla nowej prezentacji poranka: jedna linia ramująca + max 3
+ * papierowe karteczki sygnałów + zwijane "Jeszcze X notatek" + mały
+ * blok "Na horyzoncie" w karcie gracza.
+ *
+ * Zasady (spójne z css/visual-identity-v0-48.css):
+ *   - ZERO funkcji gradientowych, zero glow — płaski papier i tusz,
+ *   - typ sygnału oznaczony LEWĄ linią (jak zakreślenie na marginesie),
+ *   - tokeny --vi-* z warstwy v0.48 (z literalnymi fallbackami),
+ *   - scope: WYŁĄCZNIE poranek (body[data-game-screen="game"/"morning"])
+ *     + klasa .oos-narrative--morning dodawana przez gameScreen.js —
+ *     agenda/event/reflection/evening/solo są nietknięte,
+ *   - precedens układu: daily-stakes-v0-32.css robi dokładnie ten sam
+ *     manewr (kolumna wewnątrz .oos-narrative) na ekranie agendy.
+ */
+
+/* --------------------------------------------------------------------
+   1. Narracja poranka: kolumna zamiast pojedynczego wyśrodkowanego
+   wiersza. Linia ramująca zostaje wyśrodkowana, karteczki pod nią.
+   -------------------------------------------------------------------- */
+
+body[data-game-screen="game"] .oos-narrative--morning,
+body[data-game-screen="morning"] .oos-narrative--morning {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 9px;
+  padding: 12px 18px;
+}
+
+body[data-game-screen="game"] .oos-narrative--morning .oos-narrative-text,
+body[data-game-screen="morning"] .oos-narrative--morning .oos-narrative-text {
+  align-self: center;
+  font-size: clamp(15px, 1.4vw, 19px);
+  -webkit-line-clamp: 2;
+}
+
+/* --------------------------------------------------------------------
+   2. Karteczki sygnałów
+   -------------------------------------------------------------------- */
+
+.oos-morning-signals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+
+.oos-morning-signal {
+  background: #FCF8EE;
+  border: 1px solid var(--vi-line, rgba(63, 56, 48, 0.18));
+  border-left: 3px solid var(--vi-line-strong, rgba(63, 56, 48, 0.34));
+  border-radius: 3px;
+  padding: 7px 10px 8px;
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.1);
+  text-align: left;
+  min-width: 0;
+}
+
+.oos-morning-signal-title {
+  margin: 0 0 3px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-morning-signal-text {
+  margin: 0;
+  font-family: Georgia, Cambria, serif;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--vi-ink, #3F3830);
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Typ sygnału = kolor lewej linii + tytułu. Nie polegamy wyłącznie na
+   kolorze: tytuł ZAWSZE nazywa typ słowem (Zmęczenie/Praca/Napięcie...). */
+
+.oos-morning-signal--critical {
+  border-left-color: var(--vi-rose, #A86F68);
+}
+
+.oos-morning-signal--critical .oos-morning-signal-title {
+  color: var(--vi-rose, #A86F68);
+}
+
+.oos-morning-signal--weekly {
+  border-left-color: var(--vi-amber, #C99A55);
+}
+
+.oos-morning-signal--weekly .oos-morning-signal-title {
+  color: var(--vi-amber, #C99A55);
+}
+
+.oos-morning-signal--fatigue {
+  border-left-color: var(--vi-umber, #8C6F5A);
+}
+
+.oos-morning-signal--fatigue .oos-morning-signal-title {
+  color: var(--vi-umber, #8C6F5A);
+}
+
+.oos-morning-signal--relationship {
+  border-left-color: var(--vi-blue, #5D7486);
+}
+
+.oos-morning-signal--relationship .oos-morning-signal-title {
+  color: var(--vi-blue, #5D7486);
+}
+
+.oos-morning-signal--work {
+  border-left-color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-morning-signal--inner {
+  border-left-color: var(--vi-green, #6E8068);
+}
+
+.oos-morning-signal--inner .oos-morning-signal-title {
+  color: var(--vi-green, #6E8068);
+}
+
+/* Kamień milowy: naklejka — odrobinę cieplejszy papier (płasko). */
+.oos-morning-signal--achievement {
+  border-left-color: var(--vi-amber, #C99A55);
+  border-color: var(--vi-amber, #C99A55);
+  background: #F7EEDC;
+}
+
+.oos-morning-signal--achievement .oos-morning-signal-title {
+  color: var(--vi-amber, #C99A55);
+}
+
+.oos-morning-signal--neutral {
+  border-left-color: var(--vi-line-strong, rgba(63, 56, 48, 0.34));
+}
+
+/* Karteczki w zwiniętej reszcie: wyciszone, mniejsza hierarchia. */
+.oos-morning-signal--muted {
+  background: #F5EFE2;
+  box-shadow: none;
+  opacity: 0.9;
+}
+
+.oos-morning-signal--muted .oos-morning-signal-text {
+  font-size: 12px;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+/* --------------------------------------------------------------------
+   3. "Jeszcze X notatek" — zwijana reszta sygnałów
+   -------------------------------------------------------------------- */
+
+.oos-morning-signals-more {
+  grid-column: 1 / -1;
+  border: 1px dashed var(--vi-line-strong, rgba(63, 56, 48, 0.34));
+  border-radius: 3px;
+  background: transparent;
+}
+
+.oos-morning-signals-more-toggle {
+  cursor: pointer;
+  list-style: none;
+  padding: 6px 10px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--vi-ink-soft, #6F6255);
+  user-select: none;
+}
+
+.oos-morning-signals-more-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.oos-morning-signals-more-toggle::before {
+  content: "▸ ";
+  color: var(--vi-amber, #C99A55);
+}
+
+.oos-morning-signals-more[open] .oos-morning-signals-more-toggle::before {
+  content: "▾ ";
+}
+
+.oos-morning-signals-more-toggle:hover {
+  color: var(--vi-ink, #3F3830);
+}
+
+.oos-morning-signals-more-toggle:focus-visible {
+  outline: 2px solid var(--vi-amber, #C99A55);
+  outline-offset: 2px;
+}
+
+.oos-morning-signals-more-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 8px;
+  padding: 2px 8px 8px;
+}
+
+/* --------------------------------------------------------------------
+   4. Sidebar: "Na horyzoncie" w karcie gracza
+   -------------------------------------------------------------------- */
+
+.oos-morning-horizon {
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--vi-line, rgba(63, 56, 48, 0.18));
+}
+
+.oos-morning-horizon-heading {
+  margin: 0 0 4px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--vi-ink-soft, #6F6255);
+  text-align: center;
+}
+
+.oos-morning-horizon-row {
+  margin: 0 0 2px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+
+.oos-morning-horizon-label {
+  color: var(--vi-ink-soft, #6F6255);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.oos-morning-horizon-value {
+  flex-shrink: 0;
+  font-family: Georgia, Cambria, serif;
+  font-weight: 700;
+  color: var(--vi-ink, #3F3830);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------
+   5. Niskie okna (typowy 1366x768 z paskami przeglądarki)
+   -------------------------------------------------------------------- */
+
+@media (max-height: 800px) {
+  body[data-game-screen="game"] .oos-narrative--morning,
+  body[data-game-screen="morning"] .oos-narrative--morning {
+    gap: 7px;
+    padding: 9px 14px;
+  }
+
+  .oos-morning-signal {
+    padding: 5px 9px 6px;
+  }
+
+  .oos-morning-signal-text {
+    -webkit-line-clamp: 1;
+  }
+
+  .oos-morning-horizon {
+    margin-top: 5px;
+    padding-top: 5px;
+  }
+}
+
+@media (max-width: 780px) {
+  .oos-morning-signals,
+  .oos-morning-signals-more-list {
+    grid-template-columns: 1fr;
+  }
+}
