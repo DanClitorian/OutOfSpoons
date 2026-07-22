@@ -1616,3 +1616,1376 @@ eventPool.push({
   ]
 });
 // CLEAN v0.46 work obligation variety events END
+
+// v0.54 Month One Content Expansion & Anti-Repetition Pass START
+// +34 nowych eventów (prefiks "v054_") w konwencji eventPool.push()
+// z v0.46. Rozszerzają kategorie: relacja codzienna, praca,
+// obowiązki/admin, maskowanie, ciało, sieć relacji (metamour),
+// odpoczynek/samotność, dziwność/humor. Zero nowych pól efektów —
+// wyłącznie spoonsCost/trustChange/frustrationChange/resultText +
+// istniejące metamourEffect/workEffect tam, gdzie tematycznie
+// pasują. agendaSlots ograniczone do realnych trzech slotów
+// (obligation/relationship/inner) — finezja kategorii żyje w
+// "tags", tak jak w reszcie puli.
+
+eventPool.push({
+  id: "v054_relationship_different_pace",
+  title: "Różne tempo",
+  tags: ["relationship", "communication"],
+  weightTags: ["tension"],
+  agendaSlots: ["relationship"],
+  description:
+    "{partnerName} chce dogadać coś w pięć minut. Ty potrzebujesz najpierw pomyśleć, a potem dopiero mówić. " +
+    "Żadne z tych tempo nie jest złe. Tylko dziś muszą się jakoś spotkać.",
+  choices: [
+    {
+      id: "ask_for_pause",
+      label: "Prosisz o chwilę ciszy, zanim odpowiesz",
+      spoonsCost: 1,
+      trustChange: 3,
+      frustrationChange: -1,
+      resultText:
+        "{partnerName} czeka, trochę niecierpliwie. Kiedy w końcu mówisz, brzmi to jak Ty, a nie jak pośpiech."
+    },
+    {
+      id: "match_their_speed",
+      label: "Dopasowujesz się do ich tempa",
+      spoonsCost: 2,
+      trustChange: 2,
+      frustrationChange: 1,
+      resultText:
+        "Rozmowa idzie szybciej, niż byś chciał/a. Odpowiadasz zanim zdążysz to poczuć naprawdę."
+    },
+    {
+      id: "name_the_mismatch",
+      label: "Mówisz wprost, że macie różne tempo",
+      spoonsCost: 1,
+      trustChange: 4,
+      frustrationChange: 0,
+      resultText:
+        "{partnerName} milknie na sekundę, potem kiwa głową. To nie rozwiązuje niczego dziś, ale nazywa coś prawdziwego."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_relationship_unspoken_expectation",
+  title: "Niewypowiedziane oczekiwanie",
+  tags: ["relationship", "communication", "boundaries"],
+  weightTags: ["low-trust", "tension"],
+  agendaSlots: ["relationship"],
+  description:
+    "Czujesz, że {partnerName} czegoś od Ciebie oczekuje dziś wieczorem. Nikt tego nie powiedział na głos. " +
+    "Może się mylisz. Może nie.",
+  choices: [
+    {
+      id: "ask_outright",
+      label: "Pytasz wprost, czego się spodziewa",
+      spoonsCost: 1,
+      trustChange: 4,
+      frustrationChange: -2,
+      resultText:
+        "{partnerName} wygląda na zaskoczonego/ą pytaniem, ale odpowiada szczerze. Domysł znika, zostaje fakt."
+    },
+    {
+      id: "guess_and_deliver",
+      label: "Zgadujesz i próbujesz to dać, nic nie mówiąc",
+      spoonsCost: 3,
+      trustChange: 1,
+      frustrationChange: 2,
+      resultText:
+        "Trafiasz w połowie. {partnerName} jest wdzięczny/a, ale Ty zostajesz z uczuciem, że graliście w zgadywankę."
+    },
+    {
+      id: "let_it_stay_unspoken",
+      label: "Zostawiasz to niewypowiedziane",
+      spoonsCost: 0,
+      trustChange: -3,
+      frustrationChange: 4,
+      resultText:
+        "Wieczór mija bez incydentu. Ale coś w powietrzu zostaje nieodhaczone, jak lista, której nikt nie widzi."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_relationship_quiet_closeness",
+  title: "Bliskość bez programu",
+  tags: ["relationship", "self-care"],
+  weightTags: ["high-trust"],
+  agendaSlots: ["relationship", "inner"],
+  description:
+    "Nie ma kryzysu. Nie ma tematu do przegadania. {partnerName} jest po prostu obok, a Ty masz wybór, " +
+    "co zrobić z tą zwyczajną chwilą.",
+  choices: [
+    {
+      id: "stay_present",
+      label: "Zostajesz w tym bez robienia niczego więcej",
+      spoonsCost: 1,
+      trustChange: 3,
+      frustrationChange: -3,
+      resultText:
+        "Nic się nie wydarza. To właśnie jest w tym dobre. {partnerName} zasypia trochę wcześniej, spokojny/a."
+    },
+    {
+      id: "fill_it_with_plans",
+      label: "Wypełniasz ciszę planowaniem czegoś przyszłego",
+      spoonsCost: 2,
+      trustChange: 1,
+      frustrationChange: 0,
+      resultText:
+        "Rozmawiacie o tym, co będzie za miesiąc. Miła rozmowa. Ale ta konkretna chwila gdzieś Wam uciekła."
+    },
+    {
+      id: "retreat_to_own_head",
+      label: "Wycofujesz się myślami, mimo że siedzicie razem",
+      spoonsCost: 0,
+      trustChange: -1,
+      frustrationChange: 1,
+      resultText:
+        "{partnerName} nic nie mówi, ale zauważa, że jesteś gdzieś indziej. Bliskość zostaje na papierze."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_relationship_small_negotiation",
+  title: "Drobna negocjacja",
+  tags: ["relationship", "boundaries", "spoons"],
+  weightTags: ["low-spoons"],
+  agendaSlots: ["relationship"],
+  description:
+    "{partnerName} proponuje coś zupełnie zwyczajnego — wspólne gotowanie, spacer, drobiazg. " +
+    "Zwyczajna rzecz, która dziś kosztuje więcej, niż powinna.",
+  choices: [
+    {
+      id: "counter_propose",
+      label: "Proponujesz coś mniejszego w zamian",
+      spoonsCost: 1,
+      trustChange: 2,
+      frustrationChange: 0,
+      resultText:
+        "{partnerName} zgadza się bez dramatu. Negocjacja trwała trzy zdania i nikt nic nie stracił."
+    },
+    {
+      id: "agree_and_pay_for_it",
+      label: "Zgadzasz się na oryginalny plan",
+      spoonsCost: 3,
+      trustChange: 3,
+      frustrationChange: -1,
+      resultText:
+        "Jest miło. Jest też wyraźnie drożej, niż wyglądało to na papierze."
+    },
+    {
+      id: "decline_flatly",
+      label: "Mówisz po prostu nie, bez negocjacji",
+      spoonsCost: 0,
+      trustChange: -2,
+      frustrationChange: 3,
+      resultText:
+        "{partnerName} przyjmuje odmowę, ale plan zostaje odwołany bez żadnej alternatywy na stole."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_relationship_joke_landed_wrong",
+  title: "Żart, który nie wylądował",
+  tags: ["relationship", "communication"],
+  weightTags: ["tension"],
+  agendaSlots: ["relationship"],
+  description:
+    "Rzuciłeś/aś żart, który miał rozładować napięcie. Zamiast tego {partnerName} spoważniał/a. " +
+    "Cisza trwa o sekundę za długo.",
+  choices: [
+    {
+      id: "explain_the_intent",
+      label: "Tłumaczysz, o co Ci chodziło",
+      spoonsCost: 1,
+      trustChange: 2,
+      frustrationChange: -1,
+      resultText:
+        "{partnerName} rozumie intencję, choć żart dalej nie był śmieszny. Napięcie opada o jeden stopień."
+    },
+    {
+      id: "double_down",
+      label: "Brniesz dalej w ten sam ton",
+      spoonsCost: 0,
+      trustChange: -3,
+      frustrationChange: 4,
+      resultText:
+        "Drugi żart trafia jeszcze gorzej niż pierwszy. {partnerName} odwraca wzrok."
+    },
+    {
+      id: "just_apologize",
+      label: "Po prostu przepraszasz, bez tłumaczenia",
+      spoonsCost: 1,
+      trustChange: 3,
+      frustrationChange: -2,
+      resultText:
+        "Krótkie \"przepraszam, nie tak to miało zabrzmieć\" robi więcej niż długie wyjaśnienie."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_relationship_leftover_silence",
+  title: "Wczorajsza cisza jeszcze tu jest",
+  tags: ["relationship", "communication", "tension"],
+  weightTags: ["low-trust", "tension"],
+  agendaSlots: ["relationship"],
+  description:
+    "Wczorajsza niedokończona rozmowa z {partnerName} nie zniknęła, tylko przycupnęła gdzieś w kącie kuchni. " +
+    "Dziś rano jest wciąż tam, gdzie ją zostawiliście.",
+  choices: [
+    {
+      id: "pick_it_back_up",
+      label: "Wracasz do tematu z własnej inicjatywy",
+      spoonsCost: 2,
+      trustChange: 4,
+      frustrationChange: -2,
+      resultText:
+        "Nie kończycie tego dziś do końca, ale przynajmniej temat przestaje leżeć w kącie bez opieki."
+    },
+    {
+      id: "wait_for_them",
+      label: "Czekasz, aż {partnerName} wróci do tego pierwszy/a",
+      spoonsCost: 0,
+      trustChange: -1,
+      frustrationChange: 2,
+      resultText:
+        "Nikt nie wraca do tematu. Kuchnia jest zwyczajna, tylko trochę cichsza niż zwykle."
+    },
+    {
+      id: "name_that_you_are_avoiding",
+      label: "Mówisz wprost, że wolisz to dziś przemilczeć",
+      spoonsCost: 1,
+      trustChange: 1,
+      frustrationChange: 0,
+      resultText:
+        "{partnerName} przyjmuje to zaskakująco spokojnie. Uczciwe unikanie to wciąż uczciwość."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_work_unsendable_email",
+  title: "Mail, którego nie da się napisać",
+  tags: ["work", "obligation"],
+  weightTags: ["work-pressure", "obligation"],
+  agendaSlots: ["obligation"],
+  description:
+    "Kursor miga w pustym mailu od czterdziestu minut. Treść jest prosta. Nic w Tobie nie chce jej dziś napisać.",
+  choices: [
+    {
+      id: "force_three_sentences",
+      label: "Wyciskasz z siebie trzy krótkie zdania i wysyłasz",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      workEffect: { pressureChange: -6, stabilityChange: 1, burnoutChange: 2 },
+      resultText:
+        "Mail wychodzi, suchy i wystarczający. Nikt nie zauważy, ile kosztowały te trzy zdania."
+    },
+    {
+      id: "postpone_to_tomorrow",
+      label: "Odkładasz to na jutro",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      workEffect: { pressureChange: 4, stabilityChange: -1, burnoutChange: 0 },
+      resultText:
+        "Kursor przestaje migać, kiedy zamykasz laptopa. Mail czeka teraz na jutrzejszą wersję Ciebie."
+    },
+    {
+      id: "delegate_or_shorten_scope",
+      label: "Piszesz krótką prośbę o pomoc zamiast pełnej odpowiedzi",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 0,
+      workEffect: { pressureChange: -2, stabilityChange: 0, burnoutChange: -1 },
+      resultText:
+        "To nie jest odpowiedź, jakiej oczekiwano. Ale ktoś inny przejmuje część ciężaru."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_work_meeting_eats_day",
+  title: "Spotkanie, które zjadło dzień",
+  tags: ["work", "obligation", "time"],
+  weightTags: ["work-pressure", "burnout"],
+  agendaSlots: ["obligation"],
+  description:
+    "Spotkanie miało trwać pół godziny. Trwało dwie. Reszta planów na dziś przesunęła się cicho w bok.",
+  choices: [
+    {
+      id: "salvage_one_task",
+      label: "Ratujesz z dnia jedno najważniejsze zadanie",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      workEffect: { pressureChange: -3, stabilityChange: 1, burnoutChange: 1 },
+      resultText:
+        "Reszta dnia i tak jest stracona, ale ta jedna rzecz jest zrobiona. To coś."
+    },
+    {
+      id: "let_the_day_go",
+      label: "Odpuszczasz resztę dnia całkowicie",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      workEffect: { pressureChange: 2, stabilityChange: 0, burnoutChange: -2 },
+      resultText:
+        "Lista zadań zostaje nietknięta. Twoja głowa jest odrobinę cichsza niż była godzinę temu."
+    },
+    {
+      id: "cram_everything_late",
+      label: "Próbujesz wcisnąć wszystko wieczorem",
+      spoonsCost: 3,
+      trustChange: -1,
+      frustrationChange: 3,
+      workEffect: { pressureChange: -8, stabilityChange: -2, burnoutChange: 5 },
+      resultText:
+        "Lista jest odhaczona. Wieczór, który miał być Twój, już nie istnieje."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_work_micro_tasks_pileup",
+  title: "Trzynaście małych rzeczy",
+  tags: ["work", "obligation"],
+  weightTags: ["obligation", "low-spoons"],
+  agendaSlots: ["obligation"],
+  description:
+    "Żadne z tych zadań nie jest trudne z osobna. Razem tworzą ścianę, przez którą trzeba dziś jakoś przejść.",
+  choices: [
+    {
+      id: "batch_three_easiest",
+      label: "Robisz trzy najłatwiejsze i zostawiasz resztę",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      workEffect: { pressureChange: -2, stabilityChange: 0, burnoutChange: 0 },
+      resultText:
+        "Ściana jest wciąż tam, ale trochę cieńsza. Wystarczy na dziś."
+    },
+    {
+      id: "power_through_all",
+      label: "Przechodzisz przez wszystkie po kolei",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 1,
+      workEffect: { pressureChange: -7, stabilityChange: 1, burnoutChange: 3 },
+      resultText:
+        "Lista jest pusta. Ty jesteś pusty/a razem z nią."
+    },
+    {
+      id: "ignore_the_list_today",
+      label: "Zamykasz listę i nie otwierasz jej dziś więcej",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      workEffect: { pressureChange: 3, stabilityChange: -1, burnoutChange: -1 },
+      resultText:
+        "Trzynaście rzeczy czeka na jutro. Jutro będzie ich prawdopodobnie więcej."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_work_competence_vs_capacity",
+  title: "Umiesz to zrobić. Pytanie, czy dasz radę",
+  tags: ["work", "boundaries"],
+  weightTags: ["work-pressure", "high-frustration"],
+  agendaSlots: ["obligation"],
+  description:
+    "Zadanie trafia do Ciebie, bo jesteś w tym dobry/a. Nikt nie pyta, czy masz dziś na to miejsce.",
+  choices: [
+    {
+      id: "take_it_competently",
+      label: "Bierzesz zadanie, bo umiesz i tak jest łatwiej",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 2,
+      workEffect: { pressureChange: -4, stabilityChange: 2, burnoutChange: 3 },
+      resultText:
+        "Robisz to dobrze, jak zawsze. Nikt się nie dowie, ile to dziś kosztowało."
+    },
+    {
+      id: "flag_the_capacity_gap",
+      label: "Mówisz, że umiesz, ale dziś nie masz na to zasobów",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      workEffect: { pressureChange: 1, stabilityChange: -1, burnoutChange: -2 },
+      resultText:
+        "Cisza po tym zdaniu jest niezręczna. Ale zadanie trafia do kogoś innego albo czeka."
+    },
+    {
+      id: "do_it_badly_on_purpose",
+      label: "Robisz zadanie połowicznie, celowo",
+      spoonsCost: 1,
+      trustChange: -2,
+      frustrationChange: 1,
+      workEffect: { pressureChange: -1, stabilityChange: -2, burnoutChange: 0 },
+      resultText:
+        "To nie jest strategia, którą byłbyś/byłabyś z siebie dumny/a. Ale kompetencja ma dziś limit."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_work_refuse_being_reliable_one",
+  title: "Odmowa bycia tym ogarniętym",
+  tags: ["work", "boundaries", "masking"],
+  weightTags: ["work-pressure", "burnout"],
+  agendaSlots: ["obligation"],
+  description:
+    "Zespół znów patrzy w Twoją stronę, kiedy trzeba kogoś, kto \"to ogarnie\". Jesteś zmęczony/a bycia tą osobą.",
+  choices: [
+    {
+      id: "say_not_today",
+      label: "Mówisz wprost, że dziś nie jesteś tą osobą",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      workEffect: { pressureChange: 2, stabilityChange: -2, burnoutChange: -3 },
+      resultText:
+        "Krótka cisza, potem ktoś inny bierze sprawę. Reputacja \"ogarniętej osoby\" pęka odrobinę."
+    },
+    {
+      id: "accept_the_role_again",
+      label: "Znowu to bierzesz, jak zawsze",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 3,
+      workEffect: { pressureChange: -5, stabilityChange: 3, burnoutChange: 4 },
+      resultText:
+        "Wszystko idzie sprawnie. Rola \"tej ogarniętej\" trzyma się mocniej niż kiedykolwiek."
+    },
+    {
+      id: "make_a_joke_and_dodge",
+      label: "Żartem odwracasz uwagę i wymykasz się bez odmowy wprost",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 1,
+      workEffect: { pressureChange: 0, stabilityChange: 0, burnoutChange: 1 },
+      resultText:
+        "Nikt nie zauważa, że nic nie obiecałeś/aś. Ty wiesz, ile energii zajęło to udawanie lekkości."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_admin_one_form_too_many",
+  title: "Jeden formularz za dużo",
+  tags: ["obligation", "admin"],
+  weightTags: ["obligation", "low-spoons"],
+  agendaSlots: ["obligation"],
+  description:
+    "Formularz jest krótki. Instrukcja jego wypełnienia jest długa. Urząd nie interesuje się Twoją pojemnością na dziś.",
+  choices: [
+    {
+      id: "fill_it_now",
+      label: "Wypełniasz go teraz, do końca",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText:
+        "Formularz jest gotowy. Zostaje po nim to specyficzne zmęczenie, którego nie widać na zewnątrz."
+    },
+    {
+      id: "fill_half_and_stop",
+      label: "Wypełniasz połowę i zostawiasz resztę",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Formularz leży na wpół gotowy. Jutro będzie trzeba przypomnieć sobie, gdzie się skończyło."
+    },
+    {
+      id: "ask_someone_to_help",
+      label: "Prosisz kogoś o pomoc z formularzem",
+      spoonsCost: 1,
+      trustChange: 1,
+      frustrationChange: -1,
+      resultText:
+        "Formularz jest gotowy szybciej, niż myślałeś/aś. Proszenie o pomoc nie było tak trudne, jak się bałeś/aś."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_admin_laundry_mountain",
+  title: "Góra prania",
+  tags: ["obligation", "admin", "chaos"],
+  weightTags: ["low-spoons"],
+  agendaSlots: ["obligation"],
+  description:
+    "Góra prania rośnie w kącie pokoju od kilku dni. Nie jest niebezpieczna. Jest tylko coraz bardziej widoczna.",
+  choices: [
+    {
+      id: "do_one_load",
+      label: "Robisz jedno pranie, nie całą górę",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Góra jest wciąż górą, tylko odrobinę niższą. To wystarczy, żeby przestać na nią patrzeć z niechęcią."
+    },
+    {
+      id: "tackle_it_all",
+      label: "Bierzesz się za wszystko naraz",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: -3,
+      resultText:
+        "Pokój wygląda inaczej. Ty wyglądasz jak ktoś, kto właśnie wygrał wojnę z tekstyliami."
+    },
+    {
+      id: "close_the_door_on_it",
+      label: "Zamykasz drzwi do pokoju i nie patrzysz",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Góra prania czeka za zamkniętymi drzwiami. Poza zasięgiem wzroku, w pełni w zasięgu myśli."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_admin_grocery_decision_fatigue",
+  title: "Zmęczenie decyzyjne w sklepie",
+  tags: ["obligation", "admin", "spoons"],
+  weightTags: ["low-spoons"],
+  agendaSlots: ["obligation"],
+  description:
+    "Stoisz przed półką z pieczywem. To nie powinna być trudna decyzja. Dziś każda decyzja jest trudna.",
+  choices: [
+    {
+      id: "grab_the_usual",
+      label: "Bierzesz to samo co zawsze, bez myślenia",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Ten sam chleb co zawsze. Nuda ma dziś wartość — jedna decyzja mniej do podjęcia."
+    },
+    {
+      id: "compare_everything",
+      label: "Porównujesz wszystkie opcje dokładnie",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Wychodzisz z najlepszym możliwym chlebem i pustką w głowie, która nie była tego warta."
+    },
+    {
+      id: "leave_without_deciding",
+      label: "Wychodzisz ze sklepu bez pieczywa",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Lista zakupów zostaje nieodhaczona w jednym punkcie. Jutro będzie inny dzień na chleb."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_admin_unpaid_bill_reminder",
+  title: "Przypomnienie o rachunku",
+  tags: ["obligation", "admin"],
+  weightTags: ["obligation", "high-frustration"],
+  agendaSlots: ["obligation"],
+  description:
+    "Powiadomienie o zaległym rachunku wisi na ekranie od trzech dni. Kwota nie jest duża. Samo powiadomienie już jest ciężarem.",
+  choices: [
+    {
+      id: "pay_it_now",
+      label: "Płacisz od razu, żeby zniknęło z ekranu",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -3,
+      resultText:
+        "Powiadomienie znika. Ulga jest nieproporcjonalna do wielkości sprawy, ale prawdziwa."
+    },
+    {
+      id: "snooze_the_notification",
+      label: "Odkładasz powiadomienie na później",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Ekran jest czystszy przez chwilę. Rachunek wróci, dokładnie tam, gdzie był."
+    },
+    {
+      id: "set_autopay_to_stop_thinking",
+      label: "Ustawiasz automatyczną płatność, żeby nigdy więcej o tym nie myśleć",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText:
+        "To kosztuje więcej uwagi teraz, ale ten konkretny rodzaj ciężaru znika z Twojej głowy na dobre."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_admin_invisible_backlog",
+  title: "Zaległości, których nikt nie widzi",
+  tags: ["obligation", "admin", "inner"],
+  weightTags: ["obligation", "burnout"],
+  agendaSlots: ["obligation", "inner"],
+  description:
+    "Z zewnątrz wszystko wygląda w porządku. Tylko Ty wiesz, ile drobnych spraw czeka w kolejce, o której nikt nie pyta.",
+  choices: [
+    {
+      id: "write_the_full_list",
+      label: "Spisujesz całą listę zaległości, żeby ją zobaczyć",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Lista jest dłuższa, niż myślałeś/aś. Przynajmniej teraz jest widoczna, a nie tylko poczuwalna."
+    },
+    {
+      id: "pick_one_and_close_it",
+      label: "Wybierasz jedną zaległą sprawę i kończysz ją do końca",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText:
+        "Jedna sprawa mniej. Reszta kolejki nie zauważa różnicy, ale Ty tak."
+    },
+    {
+      id: "keep_carrying_silently",
+      label: "Nadal nosisz to w głowie, nic nie zapisując",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Kolejka zostaje niewidzialna dla wszystkich, łącznie z Tobą w te dni, kiedy udaje Ci się o niej zapomnieć."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_masking_laugh_too_loud",
+  title: "Śmiech trochę za głośny",
+  tags: ["masking", "social", "inner"],
+  weightTags: ["high-masking-debt"],
+  agendaSlots: ["inner"],
+  description:
+    "Śmiejesz się z żartu głośniej, niż było trzeba. To zadziałało — nikt nic nie podejrzewa. " +
+    "Ty wiesz dokładnie, ile to kosztowało.",
+  choices: [
+    {
+      id: "let_the_performance_stand",
+      label: "Zostawiasz to tak, jak wyszło, nie tłumacząc się",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Nikt nic nie zauważył. To właśnie jest cichy koszt trzymania formy — jest niewidoczny dla innych."
+    },
+    {
+      id: "quietly_step_away",
+      label: "Wymykasz się na chwilę, żeby złapać oddech",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Pięć minut w innym pokoju. Wystarczy, żeby wrócić z twarzą, która nie musi już nic udawać tak mocno."
+    },
+    {
+      id: "admit_it_to_one_person",
+      label: "Mówisz jednej zaufanej osobie, że dziś udajesz",
+      spoonsCost: 2,
+      trustChange: 3,
+      frustrationChange: -2,
+      resultText:
+        "To krótkie zdanie zdejmuje coś, czego nie wiedziałeś/aś, że niesiesz. Nie wszystko trzeba grać do końca."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_masking_fake_availability",
+  title: "Udawana dostępność",
+  tags: ["masking", "relationship", "boundaries"],
+  weightTags: ["high-masking-debt", "avoidance"],
+  agendaSlots: ["inner", "relationship"],
+  description:
+    "{partnerName} pyta, czy masz dziś czas i głowę na rozmowę. Odpowiedź \"tak\" wychodzi z Ciebie zanim zdążysz to sprawdzić naprawdę.",
+  choices: [
+    {
+      id: "correct_yourself",
+      label: "Poprawiasz się od razu, mówiąc prawdę",
+      spoonsCost: 1,
+      trustChange: 3,
+      frustrationChange: -1,
+      resultText:
+        "\"Właściwie, chyba nie dam rady tak, jak bym chciał/a\" — {partnerName} przyjmuje to bez pretensji."
+    },
+    {
+      id: "power_through_the_lie",
+      label: "Trzymasz się \"tak\" i próbujesz jakoś dać radę",
+      spoonsCost: 3,
+      trustChange: 1,
+      frustrationChange: 2,
+      resultText:
+        "Rozmowa się odbywa. Jesteś w niej obecny/a tylko połowicznie, i {partnerName} to gdzieś czuje."
+    },
+    {
+      id: "cancel_with_excuse",
+      label: "Wycofujesz się, wymyślając inny powód",
+      spoonsCost: 0,
+      trustChange: -2,
+      frustrationChange: 1,
+      resultText:
+        "Rozmowa nie dochodzi do skutku. Prawdziwy powód zostaje ukryty pod fałszywym."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_masking_smile_receipt",
+  title: "Rachunek za zbyt dużo uśmiechu",
+  tags: ["masking", "inner", "spoons"],
+  weightTags: ["high-masking-debt", "low-spoons"],
+  agendaSlots: ["inner"],
+  description:
+    "Wieczorem czujesz rachunek za cały dzień uśmiechania się na pokaz. Nikt Ci go nie wystawił. Sam/a go czujesz.",
+  choices: [
+    {
+      id: "cancel_evening_plans",
+      label: "Odwołujesz wszystko, co jeszcze było zaplanowane na wieczór",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText:
+        "Wieczór staje się pusty w dobrym sensie. Rachunek nie znika, ale przestaje rosnąć."
+    },
+    {
+      id: "push_through_evening_too",
+      label: "Kontynuujesz w tym samym trybie do końca dnia",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Dzień kończy się gładko na zewnątrz. Rachunek rośnie o kolejną pozycję."
+    },
+    {
+      id: "name_it_in_your_head",
+      label: "Nazywasz to po cichu, tylko dla siebie",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "\"To był dzień trzymania formy\" — samo nazwanie tego nie płaci rachunku, ale trochę go uwidacznia."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_masking_authenticity_vs_smoothness",
+  title: "Autentyczność kontra płynność",
+  tags: ["masking", "honesty", "social"],
+  weightTags: ["high-masking-debt", "tension"],
+  agendaSlots: ["inner", "relationship"],
+  description:
+    "Możesz powiedzieć, co naprawdę myślisz, i zaburzyć płynność rozmowy. Albo powiedzieć coś gładkiego i zostawić prawdę na później.",
+  choices: [
+    {
+      id: "say_the_real_thing",
+      label: "Mówisz to, co naprawdę myślisz",
+      spoonsCost: 2,
+      trustChange: 4,
+      frustrationChange: 1,
+      resultText:
+        "Rozmowa robi się niezręczna na chwilę. Jest też bardziej prawdziwa, niż była minutę wcześniej."
+    },
+    {
+      id: "say_the_smooth_thing",
+      label: "Mówisz coś gładkiego, co utrzyma rozmowę na powierzchni",
+      spoonsCost: 0,
+      trustChange: -1,
+      frustrationChange: -1,
+      resultText:
+        "Rozmowa płynie dalej bez zgrzytu. Prawda zostaje na później, które może nie nadejść."
+    },
+    {
+      id: "split_the_difference",
+      label: "Mówisz część prawdy, łagodząc resztę",
+      spoonsCost: 1,
+      trustChange: 2,
+      frustrationChange: 0,
+      resultText:
+        "To nie jest cała prawda. Ale to więcej niż nic, i mniej niż to, co kosztowałoby Cię więcej."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_body_shower_as_boss",
+  title: "Prysznic jako boss finałowy",
+  tags: ["body", "self-care", "spoons"],
+  weightTags: ["high-fatigue", "low-spoons"],
+  agendaSlots: ["inner"],
+  description:
+    "Prysznic wymaga dziś więcej niż zwykle: rozebrania się, decyzji o wodzie, stania pod nią, wytarcia się. " +
+    "Każdy krok osobno jest mały. Razem tworzą przeciwnika.",
+  choices: [
+    {
+      id: "do_the_full_shower",
+      label: "Przechodzisz przez cały rytuał do końca",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText:
+        "Boss finałowy pokonany. Czujesz się lepiej niż przed, i trochę bardziej zmęczony/a niż przed."
+    },
+    {
+      id: "quick_partial_version",
+      label: "Robisz skróconą, częściową wersję",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Nie idealnie, ale wystarczająco. Czasem połowa rytuału to cały dostępny dziś rytuał."
+    },
+    {
+      id: "skip_it_today",
+      label: "Odpuszczasz dzisiaj całkowicie",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Jutro to zrobisz. Albo pojutrze. Boss czeka cierpliwie, nie idzie nigdzie."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_body_sleepless_math",
+  title: "Matematyka bezsenności",
+  tags: ["body", "spoons"],
+  weightTags: ["high-fatigue"],
+  agendaSlots: ["inner"],
+  description:
+    "Liczysz w głowie, ile godzin snu Ci zostało, gdybyś zasnął/ęła w tej sekundzie. Liczba jest coraz mniejsza i coraz mniej pomaga.",
+  choices: [
+    {
+      id: "get_up_and_do_something_calm",
+      label: "Wstajesz i robisz coś spokojnego zamiast leżeć",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Nie śpisz więcej, ale przestajesz walczyć z łóżkiem. To osobny rodzaj odpoczynku."
+    },
+    {
+      id: "keep_trying_to_sleep",
+      label: "Zostajesz w łóżku i próbujesz dalej",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Matematyka bezsenności trwa dalej. Liczby robią się coraz bardziej absurdalne."
+    },
+    {
+      id: "accept_the_short_night",
+      label: "Godzisz się z tym, że noc będzie krótka",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Coś w Tobie przestaje walczyć. To nie sprawia, że śpisz, ale przestajesz się karać za to, że nie śpisz."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_body_forgot_to_eat",
+  title: "Zapomniałeś/aś zjeść",
+  tags: ["body", "spoons"],
+  weightTags: ["high-fatigue", "low-spoons"],
+  agendaSlots: ["inner"],
+  description:
+    "Jest po trzeciej po południu, kiedy zdajesz sobie sprawę, że dziś jeszcze nic nie jadłeś/aś. Ciało już dawno próbowało to zgłosić.",
+  choices: [
+    {
+      id: "make_a_real_meal",
+      label: "Robisz coś, co przypomina prawdziwy posiłek",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -3,
+      resultText:
+        "Zajmuje to więcej energii, niż powinno. Ale różnica w tym, jak się czujesz potem, jest wyraźna."
+    },
+    {
+      id: "eat_whatever_is_closest",
+      label: "Jesz cokolwiek, co jest najbliżej ręki",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "To nie był posiłek godny pochwały. Ciało i tak przyjmuje to z ulgą."
+    },
+    {
+      id: "keep_postponing",
+      label: "Odkładasz jedzenie jeszcze trochę",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Głód zamienia się w tępe zmęczenie, które będzie teraz towarzyszyć reszcie dnia."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_body_sensory_static_morning",
+  title: "Sensoryczny szum poranka",
+  tags: ["body", "static", "inner"],
+  weightTags: ["high-fatigue"],
+  agendaSlots: ["inner"],
+  description:
+    "Metka koszulki drapie. Lodówka brzęczy głośniej niż zwykle. Światło jest o jeden odcień za jasne. Nic z tego osobno nie powinno przeszkadzać.",
+  choices: [
+    {
+      id: "remove_one_irritant",
+      label: "Eliminujesz jeden konkretny drażniący czynnik",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText:
+        "Koszulka na lewą stronę albo zdjęta metka — mała rzecz, a szum w głowie wyraźnie cichnie."
+    },
+    {
+      id: "push_through_the_noise",
+      label: "Ignorujesz to i idziesz dalej z dniem",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Dzień toczy się dalej. Szum w tle też, cichy, ale niezmiennie obecny."
+    },
+    {
+      id: "give_yourself_a_quiet_minute",
+      label: "Dajesz sobie minutę w ciszy, zanim ruszysz dalej",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Minuta w ciszy nie naprawia wszystkiego. Ale reszta świata wraca odrobinę łagodniej."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_metamour_kind_message",
+  title: "Miła wiadomość od metamour",
+  tags: ["metamour", "communication"],
+  weightTags: ["metamour-signal"],
+  agendaSlots: ["relationship"],
+  description:
+    "Metamour pisze coś zwyczajnie miłego — bez ukrytej agendy, bez porównywania. Zaskakująco trudno to po prostu przyjąć.",
+  choices: [
+    {
+      id: "reply_warmly",
+      label: "Odpisujesz ciepło, bez dystansu",
+      spoonsCost: 1,
+      trustChange: 2,
+      frustrationChange: -2,
+      metamourEffect: { familiarityChange: 5, tensionChange: -3 },
+      resultText:
+        "Krótka wymiana wiadomości robi się nieoczekiwanie przyjemna. Metamour to naprawdę tylko osoba."
+    },
+    {
+      id: "reply_politely_distant",
+      label: "Odpisujesz uprzejmie, ale z dystansem",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 0,
+      metamourEffect: { familiarityChange: 1, tensionChange: 0 },
+      resultText:
+        "Wymiana jest poprawna. Ciepło wiadomości gdzieś po drodze się rozmywa."
+    },
+    {
+      id: "overthink_the_message",
+      label: "Analizujesz wiadomość pod kątem ukrytych znaczeń",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 2,
+      metamourEffect: { familiarityChange: 0, tensionChange: 2 },
+      resultText:
+        "Nie znajdujesz nic podejrzanego, bo nic tam nie było. Analiza i tak zajęła swoje."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_metamour_calendar_math",
+  title: "Matematyka kalendarzy",
+  tags: ["metamour", "calendar", "obligation"],
+  weightTags: ["metamour-signal", "obligation"],
+  agendaSlots: ["relationship"],
+  description:
+    "Trzy kalendarze — Twój, {partnerName} i metamour — próbują się dziś jakoś zsynchronizować. Logistyka poliamorii bez dramatu, tylko z Excelem.",
+  choices: [
+    {
+      id: "propose_a_slot_directly",
+      label: "Proponujesz konkretny termin od razu",
+      spoonsCost: 1,
+      trustChange: 2,
+      frustrationChange: -1,
+      metamourEffect: { familiarityChange: 2, tensionChange: -1 },
+      resultText:
+        "Termin pasuje wszystkim po drobnej korekcie. Logistyka rozwiązuje się szybciej niż niepokój przed nią."
+    },
+    {
+      id: "let_partner_coordinate",
+      label: "Zostawiasz koordynację {partnerName}",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      metamourEffect: { familiarityChange: 0, tensionChange: 1 },
+      resultText:
+        "Coś się w końcu ustala, bez Twojego udziału. Wygodne i lekko wyalienowujące naraz."
+    },
+    {
+      id: "overcomplicate_with_conditions",
+      label: "Dodajesz kilka dodatkowych warunków do terminu",
+      spoonsCost: 2,
+      trustChange: -1,
+      frustrationChange: 2,
+      metamourEffect: { familiarityChange: -1, tensionChange: 3 },
+      resultText:
+        "Prosty termin zamienia się w negocjację. Nikt nie jest zadowolony z efektu."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_metamour_comparison_spiral",
+  title: "Spirala porównań",
+  tags: ["metamour", "inner"],
+  weightTags: ["metamour-signal", "low-trust"],
+  agendaSlots: ["relationship", "inner"],
+  description:
+    "Zaczynasz porównywać się z metamour — kto jest zabawniejszy, kto potrzebuje mniej, kto \"lepiej\" to wszystko ogarnia. Spirala nie ma dobrego dna.",
+  choices: [
+    {
+      id: "interrupt_the_spiral",
+      label: "Świadomie przerywasz porównywanie",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -2,
+      metamourEffect: { familiarityChange: 0, tensionChange: -2 },
+      resultText:
+        "Nie jest to łatwe, ale udaje się zatrzymać spiralę, zanim zjedzie za daleko."
+    },
+    {
+      id: "ride_it_out_privately",
+      label: "Pozwalasz sobie na to porównywanie w milczeniu",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 3,
+      metamourEffect: { familiarityChange: 0, tensionChange: 1 },
+      resultText:
+        "Spirala kręci się dalej, zamknięta w Twojej głowie. Nikt inny o niej nie wie."
+    },
+    {
+      id: "voice_it_to_partner",
+      label: "Mówisz {partnerName} o tym porównywaniu",
+      spoonsCost: 2,
+      trustChange: 3,
+      frustrationChange: -1,
+      metamourEffect: { familiarityChange: 0, tensionChange: 0 },
+      resultText:
+        "{partnerName} nie ma magicznej odpowiedzi, ale samo powiedzenie tego na głos rozładowuje część napięcia."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_metamour_tenderness_and_jealousy",
+  title: "Czułość i zazdrość w jednym pokoju",
+  tags: ["metamour", "relationship", "inner"],
+  weightTags: ["metamour-signal", "tension"],
+  agendaSlots: ["relationship"],
+  description:
+    "Widzisz {partnerName} i metamour razem, czuli wobec siebie. Czujesz jednocześnie ciepło i coś ostrzejszego. Oba uczucia są prawdziwe naraz.",
+  choices: [
+    {
+      id: "sit_with_both_feelings",
+      label: "Zostajesz z obydwoma uczuciami, nie wybierając jednego",
+      spoonsCost: 2,
+      trustChange: 2,
+      frustrationChange: 0,
+      metamourEffect: { familiarityChange: 1, tensionChange: -1 },
+      resultText:
+        "Nie musisz wybierać między czułością a zazdrością. Obie mieszczą się w Tobie naraz, niewygodnie, ale prawdziwie."
+    },
+    {
+      id: "leave_the_room",
+      label: "Wychodzisz z pokoju na chwilę",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 1,
+      metamourEffect: { familiarityChange: 0, tensionChange: 1 },
+      resultText:
+        "Nikt nic nie mówi o Twoim wyjściu. Uczucia zostają z Tobą, tylko w innym pokoju."
+    },
+    {
+      id: "perform_being_fine",
+      label: "Zostajesz i udajesz, że wszystko jest w porządku",
+      spoonsCost: 1,
+      trustChange: -1,
+      frustrationChange: 2,
+      metamourEffect: { familiarityChange: 1, tensionChange: 0 },
+      resultText:
+        "Twarz mówi \"wszystko gra\". Reszta Ciebie prowadzi zupełnie inną rozmowę."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_recovery_not_every_silence_is_failure",
+  title: "Nie każda cisza to porażka",
+  tags: ["recovery", "self-care", "inner"],
+  weightTags: ["low-spoons"],
+  agendaSlots: ["inner"],
+  description:
+    "Nikt się dziś nie odezwał. Żadnych wiadomości, żadnych planów. Część Ciebie chce to nazwać porażką towarzyską.",
+  choices: [
+    {
+      id: "name_it_as_rest",
+      label: "Nazywasz ten dzień odpoczynkiem, nie porażką",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -3,
+      resultText:
+        "To małe przesunięcie w języku zmienia, jak czujesz resztę wieczoru. Cisza staje się wyborem, nie brakiem."
+    },
+    {
+      id: "reach_out_anxiously",
+      label: "Piszesz do kogoś, żeby przerwać ciszę",
+      spoonsCost: 2,
+      trustChange: 1,
+      frustrationChange: 0,
+      resultText:
+        "Ktoś odpisuje miło. Ulga jest realna, choć wynika trochę z niepokoju, a nie z chęci kontaktu."
+    },
+    {
+      id: "sit_with_the_discomfort",
+      label: "Siedzisz z tym niewygodnym uczuciem, nic nie robiąc",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Niewygodne uczucie nie znika od razu. Ale nie robi się też większe od ignorowania go."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_recovery_choosing_rest",
+  title: "Odpoczynek jako wybór",
+  tags: ["recovery", "self-care"],
+  weightTags: ["low-spoons"],
+  agendaSlots: ["inner"],
+  description:
+    "Masz dziś trochę wolnego czasu. Możesz go czymś wypełnić. Albo naprawdę nic nie robić — co brzmi podejrzanie prosto jak na coś tak trudnego.",
+  choices: [
+    {
+      id: "do_genuinely_nothing",
+      label: "Robisz naprawdę nic, celowo",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: -3,
+      resultText:
+        "Pierwsze dziesięć minut czujesz się winny/a. Potem cisza zaczyna działać tak, jak powinna."
+    },
+    {
+      id: "fill_it_with_productive_rest",
+      label: "Wypełniasz czas czymś \"produktywnie relaksującym\"",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "To miłe zajęcie. Nie jest jednak tym samym co odpoczynek bez celu do osiągnięcia."
+    },
+    {
+      id: "use_it_to_catch_up_on_tasks",
+      label: "Wykorzystujesz ten czas, żeby nadrobić zaległości",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "Lista zadań jest krótsza. Wolny czas zniknął razem z nią, niezauważony."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_recovery_not_now_as_decision",
+  title: "\"Nie teraz\" jako decyzja",
+  tags: ["recovery", "boundaries", "inner"],
+  weightTags: ["low-spoons", "avoidance"],
+  agendaSlots: ["inner"],
+  description:
+    "Ktoś prosi Cię o coś zupełnie rozsądnego. Rozsądna prośba, zły moment. \"Nie teraz\" wisi na końcu języka.",
+  choices: [
+    {
+      id: "say_not_now_clearly",
+      label: "Mówisz \"nie teraz\" jasno, bez tłumaczenia się nadmiernie",
+      spoonsCost: 1,
+      trustChange: 1,
+      frustrationChange: -2,
+      resultText:
+        "Krótkie zdanie, bez usprawiedliwień. Zaskakująco mało boli, kiedy się je wreszcie wypowie."
+    },
+    {
+      id: "say_yes_and_regret_it",
+      label: "Mówisz \"tak\", chociaż wiesz, że to zły moment",
+      spoonsCost: 2,
+      trustChange: 1,
+      frustrationChange: 2,
+      resultText:
+        "Robisz to, o co proszono. Żal, że się zgodziłeś/aś, przychodzi szybciej niż satysfakcja."
+    },
+    {
+      id: "overexplain_the_no",
+      label: "Odmawiasz, ale z długim tłumaczeniem dlaczego",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText:
+        "Odmowa dociera, opakowana w pięć zdań usprawiedliwień, których nikt nie potrzebował."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_chaos_bureaucracy_absurd",
+  title: "Formularz, który wymaga innego formularza",
+  tags: ["admin", "obligation", "chaos"],
+  weightTags: ["obligation"],
+  agendaSlots: ["obligation"],
+  description:
+    "Urząd żąda dokumentu, który można uzyskać wyłącznie po złożeniu tego dokumentu, o który właśnie prosisz. Kafkowska pętla, tylko z gorszą kawą.",
+  choices: [
+    {
+      id: "call_and_ask_directly",
+      label: "Dzwonisz i pytasz wprost, jak to w ogóle ma działać",
+      spoonsCost: 2,
+      trustChange: 0,
+      frustrationChange: -1,
+      resultText:
+        "Osoba po drugiej stronie śmieje się nerwowo i przyznaje, że to rzeczywiście nie ma sensu. Znajdujecie obejście."
+    },
+    {
+      id: "laugh_at_the_absurdity",
+      label: "Śmiejesz się z absurdu i odkładasz sprawę",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText:
+        "Pętla zostaje nierozwiązana, ale przynajmniej rozśmieszyła Cię, zanim zdążyła zirytować."
+    },
+    {
+      id: "try_to_beat_the_system",
+      label: "Próbujesz na siłę obejść system po swojemu",
+      spoonsCost: 3,
+      trustChange: 0,
+      frustrationChange: 3,
+      resultText:
+        "System wygrywa. System zawsze wygrywa. Zostajesz z pętlą i mniejszą ilością energii."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_chaos_narrator_distance",
+  title: "Ktoś jakby to komentuje",
+  tags: ["inner", "chaos"],
+  weightTags: ["tension"],
+  agendaSlots: ["inner"],
+  description:
+    "Przez chwilę obserwujesz swój dzień z dziwnego dystansu, jakby ktoś inny go komentował z boku. \"A teraz bohater/ka otwiera lodówkę po raz trzeci.\"",
+  choices: [
+    {
+      id: "lean_into_the_narration",
+      label: "Wchodzisz w ten dystans i traktujesz go z humorem",
+      spoonsCost: 0,
+      trustChange: 0,
+      frustrationChange: -2,
+      resultText:
+        "\"Bohater/ka zamyka lodówkę, tym razem z niczym w ręku.\" Dystans okazuje się zaskakująco kojący."
+    },
+    {
+      id: "shake_it_off",
+      label: "Otrząsasz się z tego uczucia i wracasz do siebie",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 0,
+      resultText:
+        "Dystans znika równie szybko, jak się pojawił. Zostajesz z sobą, w pełni, bez komentatora."
+    },
+    {
+      id: "worry_about_the_distance",
+      label: "Martwisz się, co ten dystans oznacza",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 2,
+      resultText:
+        "Analiza własnego dystansu tworzy kolejną warstwę dystansu. Lodówka nadal jest pusta."
+    }
+  ]
+});
+
+eventPool.push({
+  id: "v054_chaos_smart_stumble",
+  title: "Inteligentne potknięcie",
+  tags: ["relationship", "chaos", "communication"],
+  weightTags: ["tension"],
+  agendaSlots: ["relationship"],
+  description:
+    "Próbujesz powiedzieć coś mądrego i uważnego do {partnerName}. Zdanie wychodzi w połowie do przodu, w połowie do tyłu, i ląduje gdzieś zupełnie obok.",
+  choices: [
+    {
+      id: "own_the_stumble",
+      label: "Przyznajesz się do potknięcia i próbujesz jeszcze raz",
+      spoonsCost: 1,
+      trustChange: 2,
+      frustrationChange: -1,
+      resultText:
+        "Druga próba wychodzi lepiej. {partnerName} śmieje się z pierwszej, ale w dobry sposób."
+    },
+    {
+      id: "pretend_it_was_intentional",
+      label: "Udajesz, że tak miało być",
+      spoonsCost: 1,
+      trustChange: 0,
+      frustrationChange: 1,
+      resultText:
+        "{partnerName} patrzy z powątpiewaniem, ale nie drąży tematu. Zdanie zostaje, dziwne i niewyjaśnione."
+    },
+    {
+      id: "abandon_the_sentence",
+      label: "Porzucasz zdanie w połowie i zmieniasz temat",
+      spoonsCost: 0,
+      trustChange: -1,
+      frustrationChange: 1,
+      resultText:
+        "Cokolwiek chciałeś/aś powiedzieć, zostaje niewypowiedziane. Rozmowa płynie dalej, jakby nic się nie stało."
+    }
+  ]
+});
+// v0.54 Month One Content Expansion & Anti-Repetition Pass END

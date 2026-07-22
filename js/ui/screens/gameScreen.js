@@ -59,7 +59,7 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=460";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=540";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,

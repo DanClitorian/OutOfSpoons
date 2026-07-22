@@ -139,6 +139,37 @@ function computeEventWeight(event, state) {
   // obowiązkach. Bez aktywnego Wielkiego Testu (albo gdy jest jeszcze
   // daleko) te eventy nadal mogą wystąpić (bazowa waga = 1), tylko bez
   // bonusu.
+  // v0.54: Month One Content Expansion & Anti-Repetition Pass.
+  // Dwie DELIKATNE reguły ważenia (nie forced spawn, tylko bonus wagi),
+  // czytające stan WPROST — bez importu fatigueSystem.js/
+  // maskingDebtSystem.js (obie wartości są już ensure'owane wcześniej
+  // w cyklu dnia, zanim agenda w ogóle woła to losowanie: fatigue w
+  // dayCycle#startNewGame, maskingDebt w gameScreen przed
+  // ensureDailyAgenda). Zero nowego importu, zero refaktoru losowania.
+  //
+  // Wysokie zmęczenie (>=4 z 6, ten sam próg co "fatigue-high" na
+  // poranku v0.52.1) -> nieco częściej eventy ciała/odpoczynku
+  // oznaczone tagiem "high-fatigue".
+  const fatigueCurrent =
+    state && state.resources && state.resources.fatigue &&
+    typeof state.resources.fatigue.current === "number"
+      ? state.resources.fatigue.current
+      : null;
+  if (tags.includes("high-fatigue") && fatigueCurrent !== null && fatigueCurrent >= 4) {
+    weight += 3;
+  }
+
+  // Wysoki dług maskowania (>=4 z 6) -> nieco częściej eventy
+  // maskowania/zrzucania maski oznaczone tagiem "high-masking-debt".
+  const maskingDebtCurrent =
+    state && state.player && state.player.maskingDebt &&
+    typeof state.player.maskingDebt.current === "number"
+      ? state.player.maskingDebt.current
+      : null;
+  if (tags.includes("high-masking-debt") && maskingDebtCurrent !== null && maskingDebtCurrent >= 4) {
+    weight += 3;
+  }
+
   if (tags.includes("critical-event-approaching")) {
     const activeCriticalEvent = getCurrentCriticalEvent(state);
     if (activeCriticalEvent) {

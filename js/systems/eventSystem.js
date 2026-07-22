@@ -21,7 +21,7 @@
 // późniejszego, stabilnego odczytu tego samego wydarzenia bez ponownego
 // losowania.
 
-import { eventPool } from "../data/eventData.js?v=460";
+import { eventPool } from "../data/eventData.js?v=540";
 import { modifySpoons } from "./spoonsSystem.js";
 // v0.49: cache-bust ?v=490 — fatigueSystem.js zmienił semantykę
 // applyMorningSpoonsFromFatigue. Samo addFatigueDebt (używane tu przy
@@ -30,7 +30,7 @@ import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js?v=490";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=460";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=540";
 import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=310";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js?v=300";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js?v=300";

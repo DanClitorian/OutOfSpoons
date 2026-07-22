@@ -47,12 +47,12 @@ import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigu
 // przejściu dnia (idempotentny guard w samym systemie). Czysta,
 // minimalna integracja: import + jedno wywołanie w advanceToNextDay.
 import { recordWeeklyTrackingMark } from "./weeklyStakesTrackingSystem.js?v=520";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=490";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=540";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
 import { ensureMorningEventState, resolveMorningEvents } from "./morningEventSystem.js";
-import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=460";
+import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=540";
 // v0.5: wpisy w state.log zyskały pole "consequences" (jawne, mechaniczne
 // skutki wyboru: spoonsChange/trustChange/frustrationChange), pokazywane
 // teraz graczowi na ekranie refleksji. To kolejna niekompatybilna zmiana

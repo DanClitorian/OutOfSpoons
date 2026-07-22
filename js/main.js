@@ -24,7 +24,9 @@
 // 5 ekranow + versionBadge). devTools.js NIE zmienil sie w v0.52.
 // v0.53: Physical Spoon Row UI. Cache-bust uiManager (podbil importy
 // 6 ekranow z oosLayout + versionBadge). devTools bez zmian.
-import { initUI, showScreen } from "./ui/uiManager.js?v=530";
+// v0.54: Month One Content Expansion & Anti-Repetition Pass. Cache-bust
+// uiManager (podbil cala galaz eventData/eventWeightSystem + versionBadge).
+import { initUI, showScreen } from "./ui/uiManager.js?v=540";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
