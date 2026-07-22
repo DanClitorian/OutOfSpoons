@@ -1,0 +1,105 @@
+/* month-summary-v0-58.css
+ *
+ * v0.58: Month End Payoff & Run Continuity.
+ *
+ * month-summary-v0-30.css dał layout (.oos-month-summary grid) i kartę
+ * (.oos-month-summary__card) — v0.48 już nadpisał jej tło na płaskie
+ * (var(--vi-paper), zero gradientu). Ten plik dokłada WYŁĄCZNIE to,
+ * czego brakowało do narracyjnej struktury: podtytuł, akapit outcome,
+ * karty sekcji ("co najbardziej niosło miesiąc" / Wielki Test) i
+ * pojedyncze linie (relacja / zasoby / ciągłość). Zero gradientów,
+ * zero glow, zero obrazków, ten sam paper-first recipe co sekcje
+ * weekly summary (płaski panel + cienka linia + delikatny cień).
+ *
+ * .oos-month-summary__stats / __stat (v0.30, scoreboard) zostają w
+ * starym pliku NIEUŻYWANE — ekran już ich nie renderuje. Nie usuwamy
+ * starego CSS, żeby nie ryzykować przy innych, nieoczekiwanych
+ * odwołaniach; to martwy, nieszkodliwy balast.
+ */
+
+.oos-month-summary {
+  --ms-panel: var(--vi-paper, #FAF5EA);
+  --ms-ink: var(--vi-ink, #3F3830);
+  --ms-muted: var(--vi-ink-soft, #6F6255);
+  --ms-line: rgba(74, 69, 60, 0.22);
+  --ms-shadow: rgba(74, 69, 60, 0.10);
+}
+
+.oos-month-summary__subtitle {
+  margin: 14px 0 0;
+  max-width: 68ch;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--ms-muted);
+}
+
+.oos-month-summary__outcome {
+  margin: 18px 0 0;
+  max-width: 72ch;
+  font-size: clamp(1.02rem, 1.5vw, 1.2rem);
+  line-height: 1.7;
+  color: var(--ms-ink);
+}
+
+.oos-month-summary__sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.oos-month-summary__section {
+  background: var(--ms-panel);
+  border: 1px solid var(--ms-line);
+  border-radius: 14px;
+  padding: 16px 18px 18px;
+  box-shadow: 0 6px 16px var(--ms-shadow);
+}
+
+.oos-month-summary__section-heading {
+  margin: 0 0 10px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ms-muted);
+}
+
+.oos-month-summary__section-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ms-ink);
+}
+
+/* Sekcja Wielkiego Testu renderuje się przez ten sam .oos-month-summary__section,
+   ale poza gridem __sections — pełna szerokość, żeby wyróżnić ją bez
+   dodatkowych ozdobników. */
+.oos-month-summary__card > .oos-month-summary__section {
+  margin-top: 16px;
+}
+
+.oos-month-summary__line {
+  margin: 14px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ms-ink);
+}
+
+.oos-month-summary__continuity {
+  margin: 20px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--ms-line);
+  font-size: 15px;
+  line-height: 1.6;
+  font-style: italic;
+  color: var(--ms-muted);
+}
+
+@media (max-width: 760px) {
+  .oos-month-summary__sections {
+    grid-template-columns: 1fr;
+  }
+}

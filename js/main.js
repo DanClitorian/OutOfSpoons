@@ -35,12 +35,15 @@
 // (podbil cala galaz agendy/eventWeight/gameScreen/weeklySummary +
 // versionBadge) i devTools (nowe helpery showDayTexture/setDayTexture/
 // clearDayTextureHistory).
-import { initUI, showScreen } from "./ui/uiManager.js?v=570";
+// v0.58: Month End Payoff & Run Continuity. Cache-bust uiManager
+// (podbil monthSummaryScreen/weeklySummaryScreen/versionBadge) i devTools
+// (bump monthlyLoopSystem.js).
+import { initUI, showScreen } from "./ui/uiManager.js?v=580";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
 // w normalnym gameplayu, dopóki nie zostanie ręcznie wywołane z konsoli.
-import "./dev/devTools.js?v=570";
+import "./dev/devTools.js?v=580";
 
 document.addEventListener("DOMContentLoaded", () => {
   initUI("app");

@@ -3,17 +3,23 @@
 // v0.30: Month One Complete Loop.
 // Ekran krótkiego podsumowania pierwszego miesiąca.
 //
-// v0.30.5: stabilizacja — importy podbite do ?v=305 (uiManager.js i
-// monthlyLoopSystem.js oba zmieniły zawartość: uiManager.js dostał
-// nowe query stringi na swoich importach, monthlyLoopSystem.js NIE
-// zmienił się bezpośrednio, ale criticalEventSystem.js, od którego
-// zależy, dostał nowe pole completedDay — bump zapewnia spójność
-// całego łańcucha).
+// v0.30.5: stabilizacja — importy podbite do ?v=305.
+//
+// v0.58: Month End Payoff & Run Continuity. Ekran przestaje pokazywać
+// tabelę liczb (usunięty buildStats: decisions/repairs/scars/...) i
+// renderuje narracyjną strukturę zbudowaną przez
+// monthlyLoopSystem.js#buildMonthSummary: hero + outcome + do 3 kart
+// "co najbardziej niosło miesiąc" + opcjonalna karta Wielkiego Testu +
+// linia o relacji + linia o zasobach + linia ciągłości + CTA, które
+// TERAZ realnie woła advanceToNextMonth(state) przed przejściem dalej
+// (miesiąc przechodzi do kolejnego numeru, gra się NIE resetuje).
+// Działa dla dowolnego miesiąca N, nie tylko pierwszego.
 
 import { getState } from "../../state/gameState.js";
-import { showScreen } from "../uiManager.js?v=305";
+import { saveGame } from "../../state/saveManager.js";
+import { showScreen } from "../uiManager.js?v=580";
 import { createTopBar } from "../oosLayout.js?v=530";
-import { consumePendingMonthSummary, getLatestMonthSummary } from "../../systems/monthlyLoopSystem.js?v=305";
+import { consumePendingMonthSummary, getLatestMonthSummary, advanceToNextMonth } from "../../systems/monthlyLoopSystem.js?v=580";
 
 export function renderMonthSummaryScreen(root) {
   const state = getState();
@@ -35,23 +41,68 @@ export function renderMonthSummaryScreen(root) {
 
   const title = document.createElement("h1");
   title.className = "oos-month-summary__title";
-  title.textContent = summary ? summary.title : "Pierwszy miesiąc domknięty";
-
-  const body = document.createElement("p");
-  body.className = "oos-month-summary__body";
-  body.textContent = summary
-    ? summary.body
-    : "Gra zapisała pierwszy pełny cykl. Nie wszystko musi mieć werdykt, żeby zostawić ślad.";
+  title.textContent = summary ? summary.title : "Miesiąc domknięty";
 
   card.appendChild(eyebrow);
   card.appendChild(title);
-  card.appendChild(body);
-  card.appendChild(buildStats(summary));
+
+  if (summary && summary.subtitle) {
+    const subtitle = document.createElement("p");
+    subtitle.className = "oos-month-summary__subtitle";
+    subtitle.textContent = summary.subtitle;
+    card.appendChild(subtitle);
+  }
+
+  // Outcome — jedno wyraźne podsumowanie, NIGDY punktacja.
+  if (summary) {
+    const outcome = document.createElement("p");
+    outcome.className = "oos-month-summary__outcome";
+    outcome.textContent = summary.outcomeText;
+    card.appendChild(outcome);
+  } else {
+    const fallback = document.createElement("p");
+    fallback.className = "oos-month-summary__outcome";
+    fallback.textContent = "Gra zapisała kolejny pełny cykl. Nie wszystko musi mieć werdykt, żeby zostawić ślad.";
+    card.appendChild(fallback);
+  }
+
+  // Do 3 kart "co najbardziej niosło miesiąc" — tylko te, które
+  // faktycznie mają coś do powiedzenia (buildCarryingSections już
+  // filtruje po realnym stanie).
+  if (summary && Array.isArray(summary.sections) && summary.sections.length > 0) {
+    const sectionsWrap = document.createElement("div");
+    sectionsWrap.className = "oos-month-summary__sections";
+    for (const s of summary.sections) {
+      sectionsWrap.appendChild(buildSection(s.title, s.text));
+    }
+    card.appendChild(sectionsWrap);
+  }
+
+  // Wielki Test — tylko jeśli faktycznie się rozliczył.
+  if (summary && summary.criticalSection) {
+    card.appendChild(buildSection(summary.criticalSection.title, summary.criticalSection.text));
+  }
+
+  // Relacja / Zasoby — stałe, pojedyncze linie.
+  if (summary && summary.relationshipLine) {
+    card.appendChild(buildLine(summary.relationshipLine));
+  }
+  if (summary && summary.resourcesLine) {
+    card.appendChild(buildLine(summary.resourcesLine));
+  }
+
+  // Ciągłość — co przechodzi dalej.
+  if (summary && summary.continuityLine) {
+    const continuity = document.createElement("p");
+    continuity.className = "oos-month-summary__continuity";
+    continuity.textContent = summary.continuityLine;
+    card.appendChild(continuity);
+  }
 
   const note = document.createElement("p");
   note.className = "oos-month-summary__note";
   note.textContent =
-    "To nie jest zakończenie. To pierwszy moment, w którym gra może spojrzeć wstecz bez udawania, że decyzje były osobne.";
+    "To nie jest zakończenie. To moment, w którym gra może spojrzeć wstecz bez udawania, że decyzje były osobne.";
   card.appendChild(note);
 
   const actions = document.createElement("div");
@@ -60,8 +111,13 @@ export function renderMonthSummaryScreen(root) {
   const continueButton = document.createElement("button");
   continueButton.type = "button";
   continueButton.className = "oos-button oos-month-summary__button";
-  continueButton.textContent = "Wejść w kolejny miesiąc";
+  continueButton.textContent = "Wejdź w kolejny miesiąc";
   continueButton.addEventListener("click", () => {
+    // v0.58: realne przejście dalej — WYŁĄCZNIE monthProgress.
+    // Gracz/partner/npcs/fatigue/spoons/relationshipModel/memories/
+    // scars/work/achievements zostają całkowicie nietknięte.
+    advanceToNextMonth(state);
+    saveGame(state);
     showScreen("game");
   });
 
@@ -72,34 +128,26 @@ export function renderMonthSummaryScreen(root) {
   root.appendChild(wrapper);
 }
 
-function buildStats(summary) {
-  const stats = document.createElement("div");
-  stats.className = "oos-month-summary__stats";
+function buildSection(titleText, bodyText) {
+  const section = document.createElement("div");
+  section.className = "oos-month-summary__section";
 
-  const values = summary && summary.stats ? summary.stats : {};
-  const items = [
-    ["Decyzje zapisane w dzienniku", values.decisions || 0],
-    ["Naprawy relacji", values.repairs || 0],
-    ["Aktywne blizny", values.scars || 0],
-    ["Momenty sieci relacji", values.metamourMoments || 0],
-    ["Momenty presji pracy", values.workMoments || 0],
-    ["Aktywne wzorce", values.activePatterns || 0]
-  ];
+  const heading = document.createElement("p");
+  heading.className = "oos-month-summary__section-heading";
+  heading.textContent = titleText;
 
-  for (const [label, value] of items) {
-    const item = document.createElement("div");
-    item.className = "oos-month-summary__stat";
+  const body = document.createElement("p");
+  body.className = "oos-month-summary__section-body";
+  body.textContent = bodyText;
 
-    const number = document.createElement("strong");
-    number.textContent = String(value);
+  section.appendChild(heading);
+  section.appendChild(body);
+  return section;
+}
 
-    const text = document.createElement("span");
-    text.textContent = label;
-
-    item.appendChild(number);
-    item.appendChild(text);
-    stats.appendChild(item);
-  }
-
-  return stats;
+function buildLine(text) {
+  const line = document.createElement("p");
+  line.className = "oos-month-summary__line";
+  line.textContent = text;
+  return line;
 }

@@ -62,7 +62,9 @@ import { buildWeeklyStaticNote } from "../../systems/staticSystem.js?v=270";
 
 import { buildWeeklyMetamourNote } from "../../systems/metamourSystem.js?v=300";
 import { buildWeeklyWorkNote, getWorkPressureContext } from "../../systems/workPressureSystem.js?v=300";
-import { evaluateMonthlyLoopAfterWeeklySummary, hasPendingMonthSummary } from "../../systems/monthlyLoopSystem.js?v=305";
+// v0.58: Month End Payoff & Run Continuity — evaluateMonthlyLoopAfterWeeklySummary
+// uogolniony na dowolny miesiac N (nie tylko pierwszy), sygnatura bez zmian.
+import { evaluateMonthlyLoopAfterWeeklySummary, hasPendingMonthSummary } from "../../systems/monthlyLoopSystem.js?v=580";
 // v0.47: tylko odczyt stanu osiągnięć (ensure jest bezpieczne i idempotentne,
 // patrz achievementSystem.js). Ten ekran NICZEGO nie odblokowuje.
 import { ensureAchievementState } from "../../systems/achievementSystem.js?v=400";

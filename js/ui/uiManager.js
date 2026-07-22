@@ -143,14 +143,18 @@ import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=570";
 // (w tym poranek v0.50) NIETKNIETE.
 import { renderEveningScreen } from "./screens/eveningScreen.js?v=570";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=570";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=580";
 // v0.48: Visual Identity Redesign. Podbity WYLACZNIE import
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=570";
+import { appendVersionBadge } from "./versionBadge.js?v=580";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=570";
-import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=530";
+// v0.58: Month End Payoff & Run Continuity. monthSummaryScreen.js
+// przebudowany (narracyjna struktura zamiast tabeli liczb) ->
+// podbite. monthlyLoopSystem.js tez zmienil tresc, ale weeklySummaryScreen
+// juz jest bumpowany osobno (patrz jego wlasny import ?v=580).
+import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=580";
 import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";
 import { renderAchievementsScreen } from "./screens/achievementsScreen.js?v=410";
 import { renderSoloRecoveryScreen } from "./screens/soloRecoveryScreen.js?v=430";
