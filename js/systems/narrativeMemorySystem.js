@@ -86,27 +86,47 @@ export function recordNarrativeMemoryFromChoice(state, event, choice, consequenc
   const candidate = pickStrongestCandidate(event, choice, consequences);
   if (!candidate) return null;
 
+  return pushMemory(state, mem, event, choice, candidate.type, candidate.intensity, candidate.tags);
+}
+
+/**
+ * v0.56: Relationship Model Consequence Pass. Helper do zapisu memory
+ * dla systemów, które SAME już wiedzą, jaki typ/intensity chcą
+ * zapisać (np. relationshipModelConsequenceSystem.js po interpretacji
+ * modelu relacji) — bez przechodzenia przez pickStrongestCandidate,
+ * które nie zna kontraktu relacji. Reszta zachowania (id, lifespan,
+ * teksty, limit 8, dedupe) jest identyczna jak w
+ * recordNarrativeMemoryFromChoice — to ten sam pushMemory().
+ */
+export function recordNarrativeMemoryDirect(state, event, choice, type, intensity) {
+  const mem = ensureNarrativeMemoryState(state);
+  if (!mem || !event || !choice || !type) return null;
+  const safeIntensity = Math.max(1, Math.min(3, Math.round(Number(intensity) || 1)));
+  return pushMemory(state, mem, event, choice, type, safeIntensity, []);
+}
+
+function pushMemory(state, mem, event, choice, type, intensity, tags) {
   const day = typeof state.day === "number" ? state.day : 0;
-  const lifespan = LIFESPAN_BY_INTENSITY[candidate.intensity] || LIFESPAN_BY_INTENSITY[1];
-  const texts = buildMemoryTexts(candidate.type, candidate.intensity);
+  const lifespan = LIFESPAN_BY_INTENSITY[intensity] || LIFESPAN_BY_INTENSITY[1];
+  const texts = buildMemoryTexts(type, intensity);
 
   const memory = {
     id: `mem_${day}_${event.id}_${choice.id}`,
     createdDay: day,
     expiresDay: day + lifespan,
-    type: candidate.type,
-    intensity: candidate.intensity,
+    type,
+    intensity,
     title: texts.title,
     note: texts.note,
-    tags: candidate.tags,
+    tags: tags || [],
     sourceEventId: event.id,
     sourceChoiceId: choice.id
   };
 
   // Uniknij duplikatu tego samego id (praktycznie niemożliwe w jeden
   // dzień — agenda nie powtarza eventu tego samego dnia — ale
-  // defensywnie, żeby recordNarrativeMemoryFromChoice było bezpieczne
-  // do wywołania więcej niż raz na ten sam wybór).
+  // defensywnie, żeby zapis memory było bezpieczne do wywołania więcej
+  // niż raz na ten sam wybór).
   mem.memories = mem.memories.filter((m) => m.id !== memory.id);
   mem.memories.push(memory);
 
@@ -401,6 +421,28 @@ function buildMemoryTexts(type, intensity) {
     connection: {
       title: "Bliskość",
       note: "Coś dobrego z wczoraj wciąż tu jest, nienazwane, ale obecne."
+    },
+    // v0.56: Relationship Model Consequence Pass — cztery dodatkowe
+    // typy, używane WYŁĄCZNIE przez recordNarrativeMemoryDirect
+    // (relationshipModelConsequenceSystem.js), nigdy przez
+    // pickStrongestCandidate powyżej.
+    agreement: {
+      title: "Ustalenia",
+      note: "Rozmowa o zasadach zostaje na dłużej niż sama rozmowa."
+    },
+    clarity: {
+      title: "Jasność",
+      note: intensity >= 3
+        ? "Coś, co było mgłą, ma dziś trochę wyraźniejszy kształt."
+        : "Ustalenia zapamiętują więcej niż telefon."
+    },
+    secrecy: {
+      title: "Sekret",
+      note: "Nie zniknął. Po prostu nikt jeszcze o nim nie wie."
+    },
+    boundary: {
+      title: "Granica",
+      note: "Postawiona wczoraj granica nadal stoi. Trochę krzywo, ale stoi."
     }
   };
 

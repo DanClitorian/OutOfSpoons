@@ -30,8 +30,8 @@ import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js?v=490";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=550";
-import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=310";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=560";
+import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=560";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js?v=300";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js?v=300";
 import { applyRepairFromChoice } from "./relationshipRepairSystem.js?v=300";
@@ -46,7 +46,11 @@ import { applyRelationshipAgreementFromChoice } from "./relationshipAgreementSys
 // v0.55: Narrative Consequence Memory. Odczyt WYLACZNIE tego, co ten
 // plik i tak juz liczy (consequences) — zaden nowy import ciezkich
 // systemow, zadna zmiana istniejacej logiki.
-import { recordNarrativeMemoryFromChoice } from "./narrativeMemorySystem.js?v=550";
+import { recordNarrativeMemoryFromChoice, recordNarrativeMemoryDirect } from "./narrativeMemorySystem.js?v=560";
+// v0.56: Relationship Model Consequence Pass. Interpretuje TE SAME
+// wybory przez pryzmat kontraktu relacji — nie duplikuje secrecy/
+// romance/agreement, patrz naglowek pliku dla dokladnej granicy.
+import { applyRelationshipModelConsequenceFromChoice } from "./relationshipModelConsequenceSystem.js?v=560";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -222,12 +226,30 @@ export function applyChoice(state, event, choiceId) {
   // modyfikuje clarity modelu relacji, nie zmienia automatycznie typu relacji.
   const agreementResult = applyRelationshipAgreementFromChoice(state, event, choice);
 
+  // v0.56: Relationship Model Consequence Pass. Wolane PO agreementResult
+  // (zeby moc go sprawdzic i NIE dublowac jego clarity change), PO
+  // romanceResult/metamourResult (zeby czytac ich klasyfikacje/tension).
+  // Nie zmienia spoons — model relacji to kontrakt, nie koszt decyzji.
+  const relationshipModelResult = applyRelationshipModelConsequenceFromChoice(state, event, choice, {
+    romanceResult,
+    metamourResult,
+    agreementResult
+  });
+
   if (secrecyResult.trustChange) {
     modifyTrust(state, partnerId, secrecyResult.trustChange);
   }
 
   if (secrecyResult.frustrationChange) {
     modifyFrustration(state, partnerId, secrecyResult.frustrationChange);
+  }
+
+  if (relationshipModelResult.trustChange) {
+    modifyTrust(state, partnerId, relationshipModelResult.trustChange);
+  }
+
+  if (relationshipModelResult.frustrationChange) {
+    modifyFrustration(state, partnerId, relationshipModelResult.frustrationChange);
   }
 
   // v0.35: Conflict Escalation. Nie zmienia spoons/trust/frustration —
@@ -384,6 +406,11 @@ export function applyChoice(state, event, choiceId) {
           note: romanceResult.note
         }
       : { applied: false },
+    // v0.56: Relationship Model Consequence Pass. Tylko log/reflection —
+    // UI nigdy nie pokazuje clarity jako liczby.
+    relationshipModelEffect: relationshipModelResult.applied
+      ? { applied: true, note: relationshipModelResult.note }
+      : { applied: false },
     // v0.35: Conflict Escalation. Tylko log/devTools/reflection —
     // żadnych liczb w UI gracza i żadnego game over w tej wersji.
     conflictEffect: {
@@ -408,6 +435,16 @@ export function applyChoice(state, event, choiceId) {
   // (po presji wzorcow i bliznach relacyjnych). Tworzy slad TYLKO
   // jesli decyzja byla wyrazna — neutralne wybory nie zostawiaja nic.
   recordNarrativeMemoryFromChoice(state, event, choice, consequences);
+
+  // v0.56: Relationship Model Consequence Pass. Osobny, bezposredni
+  // zapis memory (recordNarrativeMemoryDirect) — TYLKO dla wyraznych
+  // sladow modelu relacji (intensity >= 2), zeby nie zasmiecac puli
+  // drobnymi modyfikatorami. Typ memory znany juz na wejsciu (nie
+  // przechodzi przez pickStrongestCandidate, ktore nie zna kontraktu
+  // relacji).
+  if (relationshipModelResult.applied && relationshipModelResult.memoryIntensity >= 2) {
+    recordNarrativeMemoryDirect(state, event, choice, relationshipModelResult.memoryType, relationshipModelResult.memoryIntensity);
+  }
 
   completeCurrentAgendaItem(state);
 

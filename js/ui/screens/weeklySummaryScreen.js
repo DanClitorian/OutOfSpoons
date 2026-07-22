@@ -73,7 +73,10 @@ import { buildWeeklyTraceSummary } from "../../systems/weeklyStakesTrackingSyste
 // v0.55: Narrative Consequence Memory — maly blok "Co wracalo w
 // tle", renderowany WYLACZNIE istniejacymi klasami sekcji
 // konsekwencji (zero nowego CSS).
-import { buildWeeklyMemorySummary } from "../../systems/narrativeMemorySystem.js?v=550";
+import { buildWeeklyMemorySummary } from "../../systems/narrativeMemorySystem.js?v=560";
+// v0.56: Relationship Model Consequence Pass — maksymalnie jedno
+// zdanie o tym, jak dzialaly ustalenia relacji w tym tygodniu.
+import { buildRelationshipModelWeeklyLine } from "../../systems/relationshipModelConsequenceSystem.js?v=560";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -150,6 +153,13 @@ export function renderWeeklySummaryScreen(container) {
   const memorySection = buildNarrativeMemorySection(state);
   if (memorySection) {
     main.appendChild(memorySection);
+  }
+
+  // v0.56: sekcja opcjonalna — jak wyzej, renderuje sie TYLKO gdy
+  // jest co powiedziec (buildRelationshipModelWeeklyLine moze zwrocic null).
+  const relationshipModelSection = buildRelationshipModelSection(state);
+  if (relationshipModelSection) {
+    main.appendChild(relationshipModelSection);
   }
 
   // 5. Teaser kolejnego tygodnia.
@@ -558,6 +568,32 @@ function buildNarrativeMemorySection(state) {
     });
     section.appendChild(list);
   }
+
+  return section;
+}
+
+/**
+ * v0.56: Relationship Model Consequence Pass. Ta sama konwencja
+ * wizualna co buildNarrativeMemorySection powyzej (zero nowego CSS) —
+ * tylko naglowek + jedno zdanie, bez listy, bez tabeli, bez liczb.
+ * Zwraca null, gdy nie ma nic wartego wzmianki.
+ */
+function buildRelationshipModelSection(state) {
+  const line = buildRelationshipModelWeeklyLine(state);
+  if (!line) return null;
+
+  const section = document.createElement("section");
+  section.className = "oos-weekly-summary__section oos-weekly-summary__section--consequences";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-weekly-summary__section-heading";
+  heading.textContent = "Ustalenia relacji";
+  section.appendChild(heading);
+
+  const body = document.createElement("p");
+  body.className = "oos-weekly-summary__consequence-item";
+  body.textContent = line;
+  section.appendChild(body);
 
   return section;
 }

@@ -9,7 +9,7 @@
 // zmienił, to czysty cache-bust.
 
 import { eventPool } from "../data/eventData.js?v=540";
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=550";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=560";
 
 const AGENDA_SLOT_ORDER = ["obligation", "relationship", "inner"];
 

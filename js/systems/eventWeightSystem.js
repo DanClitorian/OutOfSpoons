@@ -12,7 +12,11 @@ import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEv
 // v0.55: Narrative Consequence Memory. Lekki odczyt aktywnych
 // sladow (Set typow, intensity >= 2) — bez importu ciezkich
 // systemow, jedna mala, czysta funkcja odczytu.
-import { getNarrativeMemoryWeightTags } from "./narrativeMemorySystem.js?v=550";
+import { getNarrativeMemoryWeightTags } from "./narrativeMemorySystem.js?v=560";
+// v0.56: Relationship Model Consequence Pass. Lekki odczyt (Set
+// flag: low-clarity/poly-open/monogamy/recent-friction) — zero
+// nowej mechaniki, tylko wplyw na losowanie.
+import { getRelationshipModelWeightTags } from "./relationshipModelConsequenceSystem.js?v=560";
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
@@ -208,6 +212,31 @@ function computeEventWeight(event, state) {
 
   if (memoryTypes.has("metamour") && tags.includes("metamour-signal")) {
     weight += 2;
+  }
+
+  // v0.56: Relationship Model Consequence Pass. Piec DELIKATNYCH
+  // bonusow (+2/+3, nigdy forced spawn, NIGDY ujemnych — zaden model
+  // nie jest "gorszy", wiec zaden nie dostaje kary wagi). Monogamia
+  // po prostu nie dostaje bonusu do metamour/boundaries — to
+  // wystarczy, zeby byla WZGLEDNIE rzadsza bez blokowania jej.
+  const modelFlags = getRelationshipModelWeightTags(state);
+
+  if (
+    modelFlags.has("low-clarity") &&
+    (tags.includes("repair") || tags.includes("tension") || allTags.includes("communication") || allTags.includes("relationship"))
+  ) {
+    weight += 2;
+  }
+
+  if (
+    modelFlags.has("poly-open") &&
+    (tags.includes("metamour-signal") || allTags.includes("boundaries") || allTags.includes("metamour"))
+  ) {
+    weight += 2;
+  }
+
+  if (modelFlags.has("recent-friction") && (tags.includes("repair") || allTags.includes("communication"))) {
+    weight += 3;
   }
 
   if (tags.includes("critical-event-approaching")) {

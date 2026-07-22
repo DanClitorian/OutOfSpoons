@@ -50,13 +50,13 @@ import { recordWeeklyTrackingMark } from "./weeklyStakesTrackingSystem.js?v=520"
 // v0.55: Narrative Consequence Memory. Wygasanie sladow — raz
 // dziennie, PO inkrementacji state.day (patrz decayNarrativeMemory
 // dla guardu lastDecayedDay przeciw podwojnemu odpaleniu).
-import { decayNarrativeMemory } from "./narrativeMemorySystem.js?v=550";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=550";
+import { decayNarrativeMemory } from "./narrativeMemorySystem.js?v=560";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=560";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
 import { ensureMorningEventState, resolveMorningEvents } from "./morningEventSystem.js";
-import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=550";
+import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=560";
 // v0.5: wpisy w state.log zyskały pole "consequences" (jawne, mechaniczne
 // skutki wyboru: spoonsChange/trustChange/frustrationChange), pokazywane
 // teraz graczowi na ekranie refleksji. To kolejna niekompatybilna zmiana

@@ -22,7 +22,7 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=550";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=560";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js?v=300";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js?v=300";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js?v=300";
@@ -49,7 +49,10 @@ import { buildReflectionAgreementLine } from "../../systems/relationshipAgreemen
 // v0.55: Narrative Consequence Memory — jedno krotkie zdanie TYLKO
 // jesli TA decyzja wlasnie zostawila wyrazny slad. Zwraca null w
 // normalnym przypadku (jak reszta linii ponizej).
-import { buildReflectionMemoryLine } from "../../systems/narrativeMemorySystem.js?v=550";
+import { buildReflectionMemoryLine } from "../../systems/narrativeMemorySystem.js?v=560";
+// v0.56: Relationship Model Consequence Pass — jedno krotkie zdanie
+// TYLKO gdy model relacji realnie zadzialal przy TYM wyborze.
+import { buildRelationshipModelReflectionLine } from "../../systems/relationshipModelConsequenceSystem.js?v=560";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -156,6 +159,7 @@ export function renderReflectionScreen(container, data) {
   const secrecyText = buildReflectionSecrecyLine(state, lastEntry);
   const agreementText = buildReflectionAgreementLine(state, lastEntry);
   const memoryText = buildReflectionMemoryLine(state, lastEntry);
+  const relationshipModelText = buildRelationshipModelReflectionLine(state, lastEntry);
 
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
@@ -186,7 +190,8 @@ export function renderReflectionScreen(container, data) {
       conflictText,
       secrecyText,
       agreementText,
-      memoryText
+      memoryText,
+      relationshipModelText
     )
   );
 
@@ -255,7 +260,8 @@ function buildNarrativeText(
   conflictText,
   secrecyText,
   agreementText,
-  memoryText
+  memoryText,
+  relationshipModelText
 ) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
   const parts = [
@@ -273,7 +279,8 @@ function buildNarrativeText(
     conflictText,
     secrecyText,
     agreementText,
-    memoryText
+    memoryText,
+    relationshipModelText
   ].filter(Boolean);
   return parts.join(" ");
 }

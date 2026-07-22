@@ -59,7 +59,7 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=550";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=560";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,
@@ -123,7 +123,7 @@ import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLi
 import { buildTrackingHorizonLine, buildTrackingMorningSignal } from "../../systems/weeklyStakesTrackingSystem.js?v=520";
 // v0.55: Narrative Consequence Memory — jeden mozliwy, literacki
 // callback na poranku (patrz sekcja 2c w buildMorningSignals).
-import { buildMorningMemorySignal } from "../../systems/narrativeMemorySystem.js?v=550";
+import { buildMorningMemorySignal } from "../../systems/narrativeMemorySystem.js?v=560";
 import {
   ensureSoloRecoveryState,
   isSoloRecoveryActive,

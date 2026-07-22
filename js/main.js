@@ -28,7 +28,10 @@
 // uiManager (podbil cala galaz eventData/eventWeightSystem + versionBadge).
 // v0.55: Narrative Consequence Memory. Cache-bust uiManager (podbil
 // cala galaz eventData/eventWeightSystem/dayCycle/ekranow + versionBadge).
-import { initUI, showScreen } from "./ui/uiManager.js?v=550";
+// v0.56: Relationship Model Consequence Pass. Cache-bust uiManager
+// (podbil cala galaz eventSystem/eventWeightSystem/narrativeMemory/
+// ekranow + versionBadge).
+import { initUI, showScreen } from "./ui/uiManager.js?v=560";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
