@@ -1,0 +1,91 @@
+/* reflection-gamefeel-v0-59.css
+ *
+ * v0.59: Reflection Screen Game Feel & Consequence Clarity.
+ *
+ * Namespaced pod .oos-reflection-summary (wewnątrz istniejącego
+ * .oos-narrative z v0.18). Reużywa tokeny paper-first z v0.48
+ * (--vi-*) — zero nowej palety, zero gradientów, zero glow, zero
+ * obrazków. Odstępy dobrane pod 1366x768 bez scrollowego dramatu:
+ * karty w gridzie auto-fit, żeby 1-3 karty nigdy nie wyglądały na
+ * osierocone przy różnej szerokości ekranu.
+ */
+
+.oos-reflection-summary__choice {
+  margin: 0 0 6px;
+  font-size: clamp(11px, 1vw, 13px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+/* Hero: resultText trochę większy i bardziej literacki niż zwykły
+   pasek narracji (patrz .oos-narrative-text w game-ui-v0-18.css). */
+.oos-reflection-summary__result {
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+  line-height: 1.6;
+}
+
+.oos-reflection-summary__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.oos-reflection-summary__card {
+  background: var(--vi-paper, #FAF5EA);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line, rgba(74, 69, 60, 0.22));
+  border-radius: 4px;
+  padding: 12px 14px 14px;
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.08);
+}
+
+.oos-reflection-summary__card-title {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-reflection-summary__card-text {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--vi-ink, #3F3830);
+}
+
+.oos-reflection-summary__trace {
+  margin: 16px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--vi-line, rgba(74, 69, 60, 0.18));
+  font-size: 13.5px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-reflection-summary__closing {
+  margin: 14px 0 0;
+  font-size: 14px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+/* Wieczorne / ciemniejsze warianty ekranu (spójnie z resztą gry, na
+   wypadek gdyby reflection kiedyś renderowało się na ciemnym tle) —
+   defensywne, dziś reflection nie ma ciemnego wariantu, ale token
+   fallback jest tani i bezpieczny. */
+.oos-game--evening .oos-reflection-summary__card {
+  background: var(--vi-paper);
+}
+
+@media (max-width: 760px) {
+  .oos-reflection-summary__cards {
+    grid-template-columns: 1fr;
+  }
+}

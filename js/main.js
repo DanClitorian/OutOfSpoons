@@ -38,7 +38,9 @@
 // v0.58: Month End Payoff & Run Continuity. Cache-bust uiManager
 // (podbil monthSummaryScreen/weeklySummaryScreen/versionBadge) i devTools
 // (bump monthlyLoopSystem.js).
-import { initUI, showScreen } from "./ui/uiManager.js?v=580";
+// v0.59: Reflection Screen Game Feel & Consequence Clarity. Cache-bust
+// uiManager (podbil reflectionScreen.js + versionBadge).
+import { initUI, showScreen } from "./ui/uiManager.js?v=590";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia

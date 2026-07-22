@@ -137,7 +137,10 @@ import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.j
 // az do index.html.
 import { renderGameScreen } from "./screens/gameScreen.js?v=570";
 import { renderEventScreen } from "./screens/eventScreen.js?v=570";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=570";
+// v0.59: Reflection Screen Game Feel & Consequence Clarity — nowy
+// system reflectionSummarySystem.js + calkowicie przepisany render
+// reflectionScreen.js.
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=590";
 // v0.51: Contextual Evening Recovery. Podbity WYLACZNIE import
 // eveningScreen.js (?v=510) - kontekstowy wieczor; pozostale ekrany
 // (w tym poranek v0.50) NIETKNIETE.
@@ -148,7 +151,7 @@ import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=58
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=580";
+import { appendVersionBadge } from "./versionBadge.js?v=590";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=570";
 // v0.58: Month End Payoff & Run Continuity. monthSummaryScreen.js
 // przebudowany (narracyjna struktura zamiast tabeli liczb) ->

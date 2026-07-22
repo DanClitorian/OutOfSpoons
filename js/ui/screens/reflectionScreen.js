@@ -8,158 +8,47 @@
 // liczby dla swojej decyzji (event screen celowo ich już nie pokazuje).
 //
 // v0.18: Gameplay UI Layout Reset — przebudowany na nowy, izolowany
-// system .oos-* (patrz js/ui/oosLayout.js). Kafle wyników (Spoons/
-// Zaufanie/Frustracja) używają teraz oos-result-tile — jawnie
-// NIEKLIKALNEGO komponentu (cursor:default, pointer-events:none, brak
-// hover) — i są bezpośrednim rodzeństwem przycisku CTA w jednym rzędzie
-// panelu akcji, więc są zawsze na tej samej osi.
+// system .oos-* (patrz js/ui/oosLayout.js).
 //
-// v0.31: Content Expansion Pack 1. eventData.js dostał 9 nowych
-// eventów, dayAgendaSystem.js zmienił WŁASNY import eventData.js —
-// oba importy podbite do ?v=310. Ten plik funkcjonalnie się nie
-// zmienił, to czysty cache-bust.
+// v0.59: Reflection Screen Game Feel & Consequence Clarity. Ekran
+// PRZESTAJE sklejać do 16 fragmentów tekstu w jeden akapit i PRZESTAJE
+// pokazywać surowe liczby (spoons/trust/frustration/fatigue) na
+// kaflach wyników. Cała logika WYBORU, co pokazać, przeniesiona do
+// js/systems/reflectionSummarySystem.js#buildReflectionSummary —
+// ten plik jest teraz WYŁĄCZNIE odpowiedzialny za render:
+//   1. Hero: opcjonalny label wyboru + resultText jako główny,
+//      największy tekst.
+//   2. Maks. 3 karty najważniejszych konsekwencji (tytuły tematyczne:
+//      "W ciele" / "W relacji" / "W pracy" / "W tle" / "W ustaleniach"
+//      / "W sieci relacji" / "W pamięci dnia" / "W napięciu" — NIGDY
+//      nazwy systemów).
+//   3. Jedna opcjonalna linia "cichego śladu".
+//   4. Do 3 małych chipów tekstowych zamiast liczbowych kafli (zero
+//      liczb — patrz buildChips w reflectionSummarySystem.js).
+//   5. CTA — bez zmian we flow (agenda/evening dokładnie jak wcześniej).
+// Mechanika, state.log, i wszystkie build*Reflection funkcje w innych
+// plikach są NIETKNIĘTE — ten patch zmienia WYŁĄCZNIE prezentację.
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
 import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=570";
-import { recordPatternFromChoice } from "../../systems/patternSystem.js?v=300";
-import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js?v=300";
-import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js?v=300";
-import { buildRelationshipRepairReflection } from "../../systems/relationshipRepairSystem.js?v=300";
-import { buildReflectionStaticLine } from "../../systems/staticSystem.js?v=300";
-import { eventPool } from "../../data/eventData.js?v=540";
 import {
   createGameShell,
   createTopBar,
   createSidebar,
   createScenePanel,
-  createNarrativeStrip,
-  createResultTile,
   createCtaButton
 } from "../oosLayout.js?v=530";
+// v0.59: cała selekcja/priorytetyzacja konsekwencji żyje tu.
+import { buildReflectionSummary, buildReflectionClosingLine } from "../../systems/reflectionSummarySystem.js?v=590";
 
-import { buildMetamourReflection } from "../../systems/metamourSystem.js?v=300";
-import { buildWorkReflection } from "../../systems/workPressureSystem.js?v=300";
-import { buildReflectionStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
-import { buildReflectionMaskingDebtLine } from "../../systems/maskingDebtSystem.js?v=330";
-import { buildReflectionConflictLine } from "../../systems/conflictEscalationSystem.js?v=350";
-import { buildReflectionSecrecyLine } from "../../systems/secrecyConsequenceSystem.js?v=380";
-import { buildReflectionAgreementLine } from "../../systems/relationshipAgreementSystem.js?v=390";
-// v0.55: Narrative Consequence Memory — jedno krotkie zdanie TYLKO
-// jesli TA decyzja wlasnie zostawila wyrazny slad. Zwraca null w
-// normalnym przypadku (jak reszta linii ponizej).
-import { buildReflectionMemoryLine } from "../../systems/narrativeMemorySystem.js?v=560";
-// v0.56: Relationship Model Consequence Pass — jedno krotkie zdanie
-// TYLKO gdy model relacji realnie zadzialal przy TYM wyborze.
-import { buildRelationshipModelReflectionLine } from "../../systems/relationshipModelConsequenceSystem.js?v=560";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
-  const resultText = (data && data.resultText) || (lastEntry ? lastEntry.resultText : "");
-  const consequences = lastEntry ? lastEntry.consequences : null;
+  const fallbackResultText = (data && data.resultText) || (lastEntry ? lastEntry.resultText : "");
 
-  // v0.22: Pattern Foundation / Narrative Echoes. Zapisuje wpis do
-  // historii wzorców (state.patterns.history), JEŚLI konsekwencja albo
-  // treść decyzji dają jakiś tag (patrz patternSystem.js). To NIE jest
-  // pojedyncze echo per decyzja — to surowy sygnał, z którego dopiero
-  // WZORZEC (3+ razy w 5 dni) generuje echo. Jeśli ta konkretna decyzja
-  // akurat aktywowała/odnowiła wzorzec, dostajemy jedno krótkie zdanie
-  // do narracji ("Znowu to robisz. ..."). Idempotentne przez key oparty
-  // o day/eventId/choiceId, więc bezpieczne przy ponownym renderze.
-  // Nie zmienia resultText ani konsekwencji, nie pokazuje przewidywanych
-  // efektów na kartach.
-  let patternEcho = null;
-  if (lastEntry) {
-    const originalEvent = eventPool.find((event) => event.id === lastEntry.eventId);
-    const originalChoice = originalEvent
-      ? originalEvent.choices.find((choice) => choice.id === lastEntry.choiceId)
-      : null;
-
-    const triggered = recordPatternFromChoice(state, {
-      day: lastEntry.day,
-      eventId: lastEntry.eventId,
-      choiceId: lastEntry.choiceId,
-      choiceLabel: originalChoice ? originalChoice.label : null,
-      choiceDescription: lastEntry.resultText,
-      consequences: lastEntry.consequences
-    });
-
-    if (triggered.length > 0) {
-      patternEcho = triggered[0].text;
-    }
-  }
-
-  // v0.24: Pattern Pressure. Jeśli TA decyzja miała zmodyfikowany koszt
-  // przez aktywny wzorzec (patrz eventSystem.js#applyChoice), dostajemy
-  // jedno krótkie, subtelne zdanie do narracji — dopiero TU, po fakcie,
-  // nigdy przed wyborem. buildPatternPressureReflection() zwraca null,
-  // jeśli presja nie zadziałała (zwykły przypadek), więc nic się nie
-  // zmienia dla większości decyzji.
-  let pressureText = null;
-  if (lastEntry && lastEntry.patternPressure) {
-    const originalEvent = eventPool.find((event) => event.id === lastEntry.eventId);
-    const originalChoice = originalEvent
-      ? originalEvent.choices.find((choice) => choice.id === lastEntry.choiceId)
-      : null;
-
-    pressureText = buildPatternPressureReflection(
-      state,
-      originalEvent,
-      originalChoice,
-      lastEntry.patternPressure
-    );
-  }
-
-  // v0.25: Relationship Scars. Jeśli TA decyzja miała pomniejszony
-  // zysk zaufania przez aktywną bliznę relacyjną (patrz
-  // eventSystem.js#applyChoice), dostajemy jedno krótkie, subtelne
-  // zdanie do narracji — dopiero TU, po fakcie, nigdy przed wyborem.
-  // buildRelationshipScarReflection() zwraca null, jeśli blizna nie
-  // zadziałała (zwykły przypadek).
-  let scarText = null;
-  if (lastEntry && lastEntry.relationshipScarEffect) {
-    scarText = buildRelationshipScarReflection(state, lastEntry.relationshipScarEffect);
-  }
-
-  // v0.26: Repair Events. Jeśli TA decyzja była świadomym wyborem
-  // naprawczym (repairAction), który faktycznie obniżył intensity
-  // aktywnej blizny (patrz eventSystem.js#applyChoice), dostajemy jedno
-  // krótkie, subtelne zdanie do narracji — dopiero TU, po fakcie.
-  // buildRelationshipRepairReflection() zwraca null, jeśli naprawa nie
-  // zadziałała (zwykły przypadek — repairAction jest dostępny tylko w
-  // specjalnych eventach naprawczych).
-  let repairText = null;
-  if (lastEntry && lastEntry.relationshipRepairEffect) {
-    repairText = buildRelationshipRepairReflection(state, lastEntry.relationshipRepairEffect);
-  }
-
-  // v0.27: The Static. Jeśli szum wewnętrzny był dziś aktywny
-  // (intensity >= 2, przeliczony raz dziennie w gameScreen.js — tu
-  // tylko go CZYTAMY), dostajemy JEDNO krótkie zdanie do narracji.
-  // Maksymalnie jedno zdanie — nie dokłada się do ściany tekstu z
-  // Pattern Pressure/Relationship Scars/Repair.
-  const staticText = buildReflectionStaticLine(state, lastEntry);
-  const metamourText = buildMetamourReflection(state, lastEntry ? lastEntry.metamourEffect : null);
-  const workText = buildWorkReflection(state, lastEntry ? lastEntry.workEffect : null);
-
-  // v0.32: Game Feel / Daily Stakes Pass. Jedno krótkie zdanie, TYLKO
-  // CZASEM (nigdy przy niskim napięciu dnia, patrz
-  // dailyStakesSystem.js#buildReflectionStakesLine) — żeby nie
-  // dokładać się do ściany tekstu z pozostałych systemów powyżej.
-  const stakesText = buildReflectionStakesLine(state, lastEntry);
-
-  // v0.33: Masking Debt. Jeśli TA decyzja była wykryta jako maskująca
-  // (patrz eventSystem.js#applyChoice), dostajemy jedno krótkie zdanie
-  // — dopiero TU, po fakcie, nigdy przed wyborem, i nigdy jako liczba
-  // ("masking debt +1"). buildReflectionMaskingDebtLine() zwraca null
-  // w normalnym przypadku (wybór niemaskujący).
-  const maskingDebtText = buildReflectionMaskingDebtLine(state, lastEntry);
-  const conflictText = buildReflectionConflictLine(state, lastEntry);
-  const secrecyText = buildReflectionSecrecyLine(state, lastEntry);
-  const agreementText = buildReflectionAgreementLine(state, lastEntry);
-  const memoryText = buildReflectionMemoryLine(state, lastEntry);
-  const relationshipModelText = buildRelationshipModelReflectionLine(state, lastEntry);
+  const summary = buildReflectionSummary(state, lastEntry);
 
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
@@ -174,26 +63,9 @@ export function renderReflectionScreen(container, data) {
     title: "Skutek decyzji"
   });
 
-  const narrative = createNarrativeStrip(
-    buildNarrativeText(
-      resultText,
-      consequences,
-      patternEcho,
-      pressureText,
-      scarText,
-      repairText,
-      staticText,
-      metamourText,
-      workText,
-      stakesText,
-      maskingDebtText,
-      conflictText,
-      secrecyText,
-      agreementText,
-      memoryText,
-      relationshipModelText
-    )
-  );
+  const narrative = summary
+    ? buildReflectionNarrative(summary)
+    : buildFallbackNarrative(fallbackResultText);
 
   const goesBackToAgenda = hasRemainingAgendaItems(state);
 
@@ -211,7 +83,7 @@ export function renderReflectionScreen(container, data) {
     }
   );
 
-  const tiles = consequences ? buildResultTiles(consequences) : [];
+  const chips = summary ? buildChipTiles(summary.chips) : [];
 
   const shell = createGameShell({
     screenClass: "reflection",
@@ -219,70 +91,109 @@ export function renderReflectionScreen(container, data) {
     sidebar,
     scene,
     narrative,
-    actions: [...tiles, cta],
+    actions: [...chips, cta],
     actionsVariant: "reflection"
   });
 
   container.appendChild(shell);
 }
 
-// v0.19.1: Frustracja i Przeciążenie mają ODWROTNĄ semantykę koloru —
-// ich WZROST jest złym efektem (czerwony), a SPADEK dobrym (zielony).
-// Spoons i Zaufanie zachowują domyślną semantykę (wzrost = dobry =
-// zielony) — patrz createResultTile() / resolveResultDirection() w
-// oosLayout.js.
-function buildResultTiles(consequences) {
-  const items = [
-    { icon: "🥄", label: "Spoons", value: consequences.spoonsChange },
-    { icon: "🤝", label: "Zaufanie", value: consequences.trustChange },
-    { icon: "🌡️", label: "Frustracja", value: consequences.frustrationChange, desirableDirection: "down" }
-  ];
+// --------------------------------------------------------------------
+// Render — hero + do 3 kart + cichy ślad + linia domknięcia.
+// --------------------------------------------------------------------
 
-  if (typeof consequences.fatigueChange === "number" && consequences.fatigueChange !== 0) {
-    items.push({ icon: "🌀", label: "Przeciążenie", value: consequences.fatigueChange, desirableDirection: "down" });
+function buildReflectionNarrative(summary) {
+  const strip = document.createElement("section");
+  strip.className = "oos-narrative oos-reflection-summary";
+
+  if (summary.choiceLabel) {
+    const eyebrow = document.createElement("p");
+    eyebrow.className = "oos-reflection-summary__choice";
+    eyebrow.textContent = summary.choiceLabel;
+    strip.appendChild(eyebrow);
   }
 
-  return items.map((item) => createResultTile(item));
+  const result = document.createElement("p");
+  result.className = "oos-narrative-text oos-reflection-summary__result";
+  result.textContent = summary.resultText || "";
+  strip.appendChild(result);
+
+  if (summary.cards.length > 0) {
+    const cardsWrap = document.createElement("div");
+    cardsWrap.className = "oos-reflection-summary__cards";
+    for (const card of summary.cards) {
+      cardsWrap.appendChild(buildCard(card.title, card.text));
+    }
+    strip.appendChild(cardsWrap);
+  }
+
+  if (summary.quietTrace) {
+    const trace = document.createElement("p");
+    trace.className = "oos-reflection-summary__trace";
+    trace.textContent = summary.quietTrace;
+    strip.appendChild(trace);
+  }
+
+  const closing = buildReflectionClosingLine(summary);
+  if (closing) {
+    const closingEl = document.createElement("p");
+    closingEl.className = "oos-reflection-summary__closing";
+    closingEl.textContent = closing;
+    strip.appendChild(closingEl);
+  }
+
+  return strip;
 }
 
-function buildNarrativeText(
-  resultText,
-  consequences,
-  patternEcho,
-  pressureText,
-  scarText,
-  repairText,
-  staticText,
-  metamourText,
-  workText,
-  stakesText,
-  maskingDebtText,
-  conflictText,
-  secrecyText,
-  agreementText,
-  memoryText,
-  relationshipModelText
-) {
-  const interpretation = consequences ? buildInterpretation(consequences) : null;
-  const parts = [
-    resultText,
-    interpretation,
-    patternEcho,
-    pressureText,
-    scarText,
-    repairText,
-    staticText,
-    metamourText,
-    workText,
-    stakesText,
-    maskingDebtText,
-    conflictText,
-    secrecyText,
-    agreementText,
-    memoryText,
-    relationshipModelText
-  ].filter(Boolean);
-  return parts.join(" ");
+function buildFallbackNarrative(resultText) {
+  const strip = document.createElement("section");
+  strip.className = "oos-narrative oos-reflection-summary";
+
+  const result = document.createElement("p");
+  result.className = "oos-narrative-text oos-reflection-summary__result";
+  result.textContent = resultText || "";
+  strip.appendChild(result);
+
+  return strip;
+}
+
+function buildCard(titleText, bodyText) {
+  const card = document.createElement("div");
+  card.className = "oos-reflection-summary__card";
+
+  const title = document.createElement("p");
+  title.className = "oos-reflection-summary__card-title";
+  title.textContent = titleText;
+
+  const body = document.createElement("p");
+  body.className = "oos-reflection-summary__card-text";
+  body.textContent = bodyText;
+
+  card.appendChild(title);
+  card.appendChild(body);
+  return card;
+}
+
+// --------------------------------------------------------------------
+// Chipy — reużywają istniejące klasy .oos-result-tile (zero nowego
+// CSS potrzebnego tu), ale BEZ elementu wartości — tylko etykieta
+// tekstowa, nigdy liczba. Neutralny wariant kolorystyczny (chip nie
+// jest "dobry/zły", tylko krótką notatką).
+// --------------------------------------------------------------------
+
+function buildChipTiles(chips) {
+  if (!Array.isArray(chips)) return [];
+  return chips.map((text) => {
+    const tile = document.createElement("div");
+    tile.className = "oos-result-tile oos-result-tile--neutral";
+
+    const label = document.createElement("span");
+    label.className = "oos-result-tile-label";
+    label.textContent = text;
+
+    tile.appendChild(label);
+    return tile;
+  });
 }
 
 function buildDayProgressText(state) {
@@ -293,34 +204,4 @@ function buildDayProgressText(state) {
   const total = state.dailyAgenda.slots.length;
   const completed = state.dailyAgenda.slots.filter((item) => item.completed).length;
   return `${completed}/${total}`;
-}
-
-function buildInterpretation(consequences) {
-  const sentences = [];
-
-  if (consequences.trustChange > 0) {
-    sentences.push("Ta decyzja trochę wzmocniła poczucie bezpieczeństwa w relacji.");
-  } else if (consequences.trustChange < 0) {
-    sentences.push("Ta decyzja mogła zostawić w relacji trochę niepewności.");
-  }
-
-  if (consequences.frustrationChange > 0) {
-    sentences.push("Frustracja partnera wzrosła.");
-  } else if (consequences.frustrationChange < 0) {
-    sentences.push("Napięcie trochę opadło.");
-  }
-
-  if (consequences.spoonsChange < 0) {
-    sentences.push("Koszt tej decyzji poczujesz jeszcze dziś.");
-  }
-
-  if (consequences.fatigueChange > 0) {
-    sentences.push("Ta decyzja zwiększyła przeciążenie, które przejdzie na kolejny dzień.");
-  }
-
-  if (sentences.length === 0) {
-    return null;
-  }
-
-  return sentences.join(" ");
 }
