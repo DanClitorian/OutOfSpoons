@@ -22,7 +22,7 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=540";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=550";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js?v=300";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js?v=300";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js?v=300";
@@ -46,6 +46,10 @@ import { buildReflectionMaskingDebtLine } from "../../systems/maskingDebtSystem.
 import { buildReflectionConflictLine } from "../../systems/conflictEscalationSystem.js?v=350";
 import { buildReflectionSecrecyLine } from "../../systems/secrecyConsequenceSystem.js?v=380";
 import { buildReflectionAgreementLine } from "../../systems/relationshipAgreementSystem.js?v=390";
+// v0.55: Narrative Consequence Memory — jedno krotkie zdanie TYLKO
+// jesli TA decyzja wlasnie zostawila wyrazny slad. Zwraca null w
+// normalnym przypadku (jak reszta linii ponizej).
+import { buildReflectionMemoryLine } from "../../systems/narrativeMemorySystem.js?v=550";
 export function renderReflectionScreen(container, data) {
   const state = getState();
   const lastEntry = state.log[state.log.length - 1];
@@ -151,6 +155,7 @@ export function renderReflectionScreen(container, data) {
   const conflictText = buildReflectionConflictLine(state, lastEntry);
   const secrecyText = buildReflectionSecrecyLine(state, lastEntry);
   const agreementText = buildReflectionAgreementLine(state, lastEntry);
+  const memoryText = buildReflectionMemoryLine(state, lastEntry);
 
   const dayProgressText = buildDayProgressText(state);
   const topbar = createTopBar(
@@ -180,7 +185,8 @@ export function renderReflectionScreen(container, data) {
       maskingDebtText,
       conflictText,
       secrecyText,
-      agreementText
+      agreementText,
+      memoryText
     )
   );
 
@@ -248,7 +254,8 @@ function buildNarrativeText(
   maskingDebtText,
   conflictText,
   secrecyText,
-  agreementText
+  agreementText,
+  memoryText
 ) {
   const interpretation = consequences ? buildInterpretation(consequences) : null;
   const parts = [
@@ -265,7 +272,8 @@ function buildNarrativeText(
     maskingDebtText,
     conflictText,
     secrecyText,
-    agreementText
+    agreementText,
+    memoryText
   ].filter(Boolean);
   return parts.join(" ");
 }

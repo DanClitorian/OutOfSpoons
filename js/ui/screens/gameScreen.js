@@ -59,7 +59,7 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=540";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=550";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,
@@ -121,6 +121,9 @@ import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLi
 // v0.52: Weekly Stakes Tracking — czyste odczyty śladu tygodnia
 // (linia w bloku "Na horyzoncie" + warunkowa karteczka sygnału).
 import { buildTrackingHorizonLine, buildTrackingMorningSignal } from "../../systems/weeklyStakesTrackingSystem.js?v=520";
+// v0.55: Narrative Consequence Memory — jeden mozliwy, literacki
+// callback na poranku (patrz sekcja 2c w buildMorningSignals).
+import { buildMorningMemorySignal } from "../../systems/narrativeMemorySystem.js?v=550";
 import {
   ensureSoloRecoveryState,
   isSoloRecoveryActive,
@@ -877,6 +880,12 @@ function buildMorningSignals(state) {
   // widocznych kart pozostaje bez zmian.
   push(buildTrackingMorningSignal(state));
 
+  // 2c. v0.55: Narrative Consequence Memory — WYLACZNIE dla mocnych
+  // sladow (intensity >= 2), maks. jeden, nigdy lista. Priorytet 62
+  // konkuruje jak kazdy inny sygnal; whitelist ponizej decyduje, czy
+  // w ogole ma prawo sie pokazac.
+  push(buildMorningMemorySignal(state));
+
   // 3. Konflikt — im wyżej na drabinie stanów, tym ważniejszy.
   const conflictLine = buildMorningConflictLine(state);
   if (conflictLine) {
@@ -1066,7 +1075,10 @@ const MORNING_SIGNAL_WHITELIST = new Set([
   "fatigue-high",
   "achievement",
   "weekly-trace-fragile",
-  "weekly-trace-good"
+  "weekly-trace-good",
+  // v0.55: Narrative Consequence Memory — dopuszczony SWIADOMIE,
+  // tylko dla mocnych sladow (patrz buildMorningMemorySignal).
+  "narrative-memory"
 ]);
 
 const CONFLICT_SIGNAL_MIN_PRIORITY = 88;

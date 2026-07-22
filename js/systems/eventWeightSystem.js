@@ -9,6 +9,10 @@ import { getWorkPressureContext, hasWorkSignal } from "./workPressureSystem.js?v
 // ważenia eventów "critical-event-approaching" (patrz niżej), które
 // mają zapowiadać nadchodzący Wielki Test w codziennych obowiązkach.
 import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=305";
+// v0.55: Narrative Consequence Memory. Lekki odczyt aktywnych
+// sladow (Set typow, intensity >= 2) — bez importu ciezkich
+// systemow, jedna mala, czysta funkcja odczytu.
+import { getNarrativeMemoryWeightTags } from "./narrativeMemorySystem.js?v=550";
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
@@ -168,6 +172,42 @@ function computeEventWeight(event, state) {
       : null;
   if (tags.includes("high-masking-debt") && maskingDebtCurrent !== null && maskingDebtCurrent >= 4) {
     weight += 3;
+  }
+
+  // v0.55: Narrative Consequence Memory. Pieciu DELIKATNYCH regul
+  // (bonus +2, NIGDY forced spawn), po jednej na typ sladu. Zadna z
+  // nich nie wymusza tego samego typu eventu w kolko: kazdy slad
+  // wygasa po 3-7 dniach (patrz narrativeMemorySystem.js), a bonus
+  // dziala tylko obok bazowej wagi = 1, nigdy jej nie zastepuje.
+  const memoryTypes = getNarrativeMemoryWeightTags(state);
+
+  if (memoryTypes.has("avoidance") && (tags.includes("avoidance") || tags.includes("tension"))) {
+    weight += 2;
+  }
+
+  if (
+    (memoryTypes.has("repair") || memoryTypes.has("honesty")) &&
+    (tags.includes("repair") || allTags.includes("communication"))
+  ) {
+    weight += 2;
+  }
+
+  if (
+    (memoryTypes.has("work") || memoryTypes.has("overextension")) &&
+    (tags.includes("work-pressure") || tags.includes("obligation"))
+  ) {
+    weight += 2;
+  }
+
+  if (
+    (memoryTypes.has("body") || memoryTypes.has("rest")) &&
+    (tags.includes("low-spoons") || allTags.includes("body") || allTags.includes("recovery"))
+  ) {
+    weight += 2;
+  }
+
+  if (memoryTypes.has("metamour") && tags.includes("metamour-signal")) {
+    weight += 2;
   }
 
   if (tags.includes("critical-event-approaching")) {

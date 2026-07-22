@@ -70,6 +70,10 @@ import { ensureAchievementState } from "../../systems/achievementSystem.js?v=400
 // (czysty odczyt; celowo BEZ ensure, żeby pokazać ślad WŁAŚNIE
 // ocenionego tygodnia zanim nowy tydzień go zresetuje).
 import { buildWeeklyTraceSummary } from "../../systems/weeklyStakesTrackingSystem.js?v=520";
+// v0.55: Narrative Consequence Memory — maly blok "Co wracalo w
+// tle", renderowany WYLACZNIE istniejacymi klasami sekcji
+// konsekwencji (zero nowego CSS).
+import { buildWeeklyMemorySummary } from "../../systems/narrativeMemorySystem.js?v=550";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -139,6 +143,14 @@ export function renderWeeklySummaryScreen(container) {
 
   // 4. Konsekwencje — co ten tydzień zmienia na kolejny.
   main.appendChild(buildConsequencesSection(state, challengeSummary, criticalSummary, dominantPatterns));
+
+  // v0.55: sekcja opcjonalna — renderuje sie TYLKO gdy jest co
+  // pokazac (buildWeeklyMemorySummary zwraca null, jesli tydzien nie
+  // zostawil zadnego sladu wartego wzmianki).
+  const memorySection = buildNarrativeMemorySection(state);
+  if (memorySection) {
+    main.appendChild(memorySection);
+  }
 
   // 5. Teaser kolejnego tygodnia.
   main.appendChild(buildNextWeekTeaser(state, criticalSummary, dominantPatterns, summary));
@@ -510,6 +522,45 @@ function buildAchievementBadge(entry, tagText) {
 // --------------------------------------------------------------------
 // 4. Konsekwencje — co ten tydzień zmienia na kolejny
 // --------------------------------------------------------------------
+
+/**
+ * v0.55: Narrative Consequence Memory. Mala, cicha sekcja — sam
+ * naglowek + lead + max 3 pozycje, w TEJ SAMEJ konwencji wizualnej co
+ * buildConsequencesSection powyzej (te same klasy CSS, zero nowych
+ * regul). Zwraca null, gdy nie ma nic aktywnego do pokazania — sekcja
+ * wtedy w ogole sie nie pojawia (nie ma pustej ramki/dashboardu).
+ */
+function buildNarrativeMemorySection(state) {
+  const summary = buildWeeklyMemorySummary(state);
+  if (!summary) return null;
+
+  const section = document.createElement("section");
+  section.className = "oos-weekly-summary__section oos-weekly-summary__section--consequences";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-weekly-summary__section-heading";
+  heading.textContent = "Co wracało w tle";
+  section.appendChild(heading);
+
+  const lead = document.createElement("p");
+  lead.className = "oos-weekly-summary__consequence-item";
+  lead.textContent = summary.leadText;
+  section.appendChild(lead);
+
+  if (summary.items.length > 0) {
+    const list = document.createElement("ul");
+    list.className = "oos-weekly-summary__consequence-list";
+    summary.items.forEach((text) => {
+      const item = document.createElement("li");
+      item.className = "oos-weekly-summary__consequence-item";
+      item.textContent = text;
+      list.appendChild(item);
+    });
+    section.appendChild(list);
+  }
+
+  return section;
+}
 
 function buildConsequencesSection(state, challengeSummary, criticalSummary, dominantPatterns) {
   const section = document.createElement("section");

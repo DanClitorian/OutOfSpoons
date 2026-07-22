@@ -30,7 +30,7 @@ import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js?v=490";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=540";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=550";
 import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=310";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js?v=300";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js?v=300";
@@ -43,6 +43,10 @@ import { evaluateRelationshipEndAfterChoice } from "./relationshipEndStateSystem
 import { applyRomanceInterestFromChoice } from "./romanceInterestSystem.js?v=370";
 import { applySecrecyConsequenceFromChoice } from "./secrecyConsequenceSystem.js?v=380";
 import { applyRelationshipAgreementFromChoice } from "./relationshipAgreementSystem.js?v=390";
+// v0.55: Narrative Consequence Memory. Odczyt WYLACZNIE tego, co ten
+// plik i tak juz liczy (consequences) — zaden nowy import ciezkich
+// systemow, zadna zmiana istniejacej logiki.
+import { recordNarrativeMemoryFromChoice } from "./narrativeMemorySystem.js?v=550";
 function pickRandom(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
@@ -398,6 +402,12 @@ export function applyChoice(state, event, choiceId) {
       reason: relationshipEndResult.reason
     }
   });
+
+  // v0.55: Narrative Consequence Memory. Odpalane PO wszystkich
+  // efektach, na tych samych EFEKTYWNYCH consequences co state.log
+  // (po presji wzorcow i bliznach relacyjnych). Tworzy slad TYLKO
+  // jesli decyzja byla wyrazna — neutralne wybory nie zostawiaja nic.
+  recordNarrativeMemoryFromChoice(state, event, choice, consequences);
 
   completeCurrentAgendaItem(state);
 

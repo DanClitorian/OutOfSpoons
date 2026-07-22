@@ -47,12 +47,16 @@ import { ensureFatigueState, updateFatigueAfterDay, applyMorningSpoonsFromFatigu
 // przejściu dnia (idempotentny guard w samym systemie). Czysta,
 // minimalna integracja: import + jedno wywołanie w advanceToNextDay.
 import { recordWeeklyTrackingMark } from "./weeklyStakesTrackingSystem.js?v=520";
-import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=540";
+// v0.55: Narrative Consequence Memory. Wygasanie sladow — raz
+// dziennie, PO inkrementacji state.day (patrz decayNarrativeMemory
+// dla guardu lastDecayedDay przeciw podwojnemu odpaleniu).
+import { decayNarrativeMemory } from "./narrativeMemorySystem.js?v=550";
+import { getEventForDay, getEventById, getFirstAvailableEvent, applyChoice } from "./eventSystem.js?v=550";
 import { buildPlayer, calculateStartingSpoons } from "./characterSystem.js";
 import { generatePartner } from "./partnerSystem.js";
 
 import { ensureMorningEventState, resolveMorningEvents } from "./morningEventSystem.js";
-import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=540";
+import { ensureDailyAgenda, getCurrentAgendaItem } from "./dayAgendaSystem.js?v=550";
 // v0.5: wpisy w state.log zyskały pole "consequences" (jawne, mechaniczne
 // skutki wyboru: spoonsChange/trustChange/frustrationChange), pokazywane
 // teraz graczowi na ekranie refleksji. To kolejna niekompatybilna zmiana
@@ -210,6 +214,11 @@ export function advanceToNextDay() {
   state.day += 1;
   state.phase = "morning";
   state.currentEventId = null;
+
+  // v0.55: DECAY sladow narracyjnych — po inkrementacji dnia, zeby
+  // slad utworzony WCZORAJ (expiresDay liczony od dnia utworzenia)
+  // przezyl dokladnie tyle dni, ile deklaruje jego intensity.
+  decayNarrativeMemory(state);
 
   applyMorningSpoonsFromFatigue(state, DAILY_SPOONS_REGEN);
 
