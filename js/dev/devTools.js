@@ -83,6 +83,8 @@ import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHi
 import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=300";
 import { getMonthlyLoopDebugSummary, forceMonthSummaryPending } from "../systems/monthlyLoopSystem.js?v=305";
 import { ensureDailyStakesState, calculateDailyStakes, getDailyStakesDebugSummary } from "../systems/dailyStakesSystem.js?v=320";
+// v0.57: Daily Texture & Pacing Director.
+import { getDayTextureDebugSummary, forceDayTexture, clearDayTextureHistory as clearDayTextureHistoryState } from "../systems/dayTextureSystem.js?v=570";
 import {
   ensureMaskingDebtState,
   getMaskingDebtDebugSummary
@@ -480,6 +482,65 @@ function clearStatic() {
 // zmęczenia. Fatigue obniża nocną regenerację spoons (patrz
 // fatigueSystem.js#applyMorningSpoonsFromFatigue i
 // dayCycle.js#advanceToNextDay).
+// v0.57: Daily Texture & Pacing Director. Podglad aktualnej tekstury
+// dnia i ostatnich (do 7) wpisow historii — bez pelnego panelu, tylko
+// console.log w tym samym stylu co reszta devTools.
+function showDayTexture() {
+  const state = requireActiveState("showDayTexture()");
+  if (!state) {
+    return null;
+  }
+
+  const summary = getDayTextureDebugSummary(state);
+  if (!summary || !summary.current) {
+    console.log("[oosDev] Brak jeszcze rozwiazanej tekstury dnia (otworz agende).");
+    return summary;
+  }
+
+  console.log(
+    `[oosDev] Tekstura dnia ${summary.current.day}: "${summary.current.title}" ` +
+    `(id: ${summary.current.id}, intensity: ${summary.current.intensity}).`
+  );
+  console.log(`[oosDev] Linia: ${summary.current.line}`);
+  console.log(
+    "[oosDev] Historia (ost. 7 dni): " +
+    summary.history.map((h) => `dzień ${h.day}: ${h.id} (${h.intensity})`).join(" | ")
+  );
+  return summary;
+}
+
+// v0.57: Wymusza konkretna teksture na DZISIAJ (do testowania ważenia
+// eventow i linii porannej). Nadpisuje wpis historii dla biezacego dnia.
+function setDayTexture(id) {
+  const state = requireActiveState("setDayTexture()");
+  if (!state) {
+    return null;
+  }
+
+  const current = forceDayTexture(state, id);
+  if (!current) {
+    console.log(`[oosDev] Nieznana tekstura: "${id}". Sprawdź TEXTURES w dayTextureSystem.js.`);
+    return null;
+  }
+
+  saveGame(state);
+  console.log(`[oosDev] Tekstura dnia ustawiona na "${current.title}" (${current.id}).`);
+  return current;
+}
+
+// v0.57: Czysci historie tekstur (do testowania weekly summary od zera).
+function clearDayTextureHistory() {
+  const state = requireActiveState("clearDayTextureHistory()");
+  if (!state) {
+    return null;
+  }
+
+  clearDayTextureHistoryState(state);
+  saveGame(state);
+  console.log("[oosDev] Historia tekstur dnia wyczyszczona.");
+  return null;
+}
+
 function showFatigue() {
   const state = requireActiveState("showFatigue()");
   if (!state) {
@@ -1369,6 +1430,9 @@ if (typeof window !== "undefined") {
     showFatigue,
     setFatigueHigh,
     clearFatigue,
+    showDayTexture,
+    setDayTexture,
+    clearDayTextureHistory,
     showMetamour,
     setMetamourTensionHigh,
     clearMetamourSignal,

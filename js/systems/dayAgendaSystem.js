@@ -9,7 +9,12 @@
 // zmienił, to czysty cache-bust.
 
 import { eventPool } from "../data/eventData.js?v=540";
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=560";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=570";
+// v0.57: Daily Texture & Pacing Director. Rozwiazywane TU, PRZED
+// zbudowaniem slotow — zeby getWeightedEventForDay ponizej zawsze
+// widzialo teksture DZISIEJSZEGO dnia (idempotentne per state.day,
+// bezpieczne do wywolania wielokrotnie).
+import { resolveDayTextureForToday } from "./dayTextureSystem.js?v=570";
 
 const AGENDA_SLOT_ORDER = ["obligation", "relationship", "inner"];
 
@@ -20,6 +25,8 @@ const AGENDA_SLOT_LABELS = {
 };
 
 export function ensureDailyAgenda(state) {
+  resolveDayTextureForToday(state);
+
   if (state.dailyAgenda && state.dailyAgenda.day === state.day) {
     return state.dailyAgenda;
   }

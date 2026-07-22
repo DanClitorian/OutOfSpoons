@@ -109,7 +109,11 @@ import { renderMainMenu } from "./screens/mainMenuScreen.js";
 // relationshipModelConsequenceSystem.js wpiety w eventSystem/
 // eventWeightSystem/reflectionScreen/weeklySummaryScreen -> podbita
 // cala galaz importow az do index.html.
-import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js?v=560";
+// v0.57: Daily Texture & Pacing Director. Nowy system
+// dayTextureSystem.js wpiety w dayAgendaSystem/eventWeightSystem/
+// gameScreen/weeklySummaryScreen -> podbita cala galaz importow az
+// do index.html.
+import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js?v=570";
 // v0.50: Morning Signal Cards. Podbity WYLACZNIE import
 // gameScreen.js (?v=500) - nowa prezentacja poranka (linia ramujaca
 // + karteczki sygnalow); daily rolls i pozostale ekrany NIETKNIETE.
@@ -131,21 +135,21 @@ import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.j
 // wpiety w eventSystem/dayCycle/eventWeightSystem/gameScreen/
 // reflectionScreen/weeklySummaryScreen -> podbita cala galaz importow
 // az do index.html.
-import { renderGameScreen } from "./screens/gameScreen.js?v=560";
-import { renderEventScreen } from "./screens/eventScreen.js?v=560";
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=560";
+import { renderGameScreen } from "./screens/gameScreen.js?v=570";
+import { renderEventScreen } from "./screens/eventScreen.js?v=570";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=570";
 // v0.51: Contextual Evening Recovery. Podbity WYLACZNIE import
 // eveningScreen.js (?v=510) - kontekstowy wieczor; pozostale ekrany
 // (w tym poranek v0.50) NIETKNIETE.
-import { renderEveningScreen } from "./screens/eveningScreen.js?v=560";
+import { renderEveningScreen } from "./screens/eveningScreen.js?v=570";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=560";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=570";
 // v0.48: Visual Identity Redesign. Podbity WYLACZNIE import
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=560";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=560";
+import { appendVersionBadge } from "./versionBadge.js?v=570";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=570";
 import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=530";
 import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";
 import { renderAchievementsScreen } from "./screens/achievementsScreen.js?v=410";

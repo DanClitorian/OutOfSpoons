@@ -58,8 +58,8 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 // v0.49: cache-bust — dayCycle.js wpiął pełny cykl fatigue.
-import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=560";
-import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=560";
+import { getCurrentEvent, resolveEvent } from "../../systems/dayCycle.js?v=570";
+import { getCurrentAgendaProgress } from "../../systems/dayAgendaSystem.js?v=570";
 import { getPartnerCapacityContext } from "../../systems/partnerCapacitySystem.js?v=300";
 import { buildEventStaticLine } from "../../systems/staticSystem.js?v=300";
 import {

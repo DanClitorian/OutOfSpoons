@@ -77,6 +77,10 @@ import { buildWeeklyMemorySummary } from "../../systems/narrativeMemorySystem.js
 // v0.56: Relationship Model Consequence Pass — maksymalnie jedno
 // zdanie o tym, jak dzialaly ustalenia relacji w tym tygodniu.
 import { buildRelationshipModelWeeklyLine } from "../../systems/relationshipModelConsequenceSystem.js?v=560";
+// v0.57: Daily Texture & Pacing Director — maksymalnie 1-2 zdania o
+// rytmie tygodnia, budowane z state.dayTexture.history (bez osobnego
+// summary state, bez tabeli, bez id tekstur).
+import { buildWeeklyTextureSummary } from "../../systems/dayTextureSystem.js?v=570";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -160,6 +164,13 @@ export function renderWeeklySummaryScreen(container) {
   const relationshipModelSection = buildRelationshipModelSection(state);
   if (relationshipModelSection) {
     main.appendChild(relationshipModelSection);
+  }
+
+  // v0.57: sekcja opcjonalna — jak wyzej, renderuje sie TYLKO gdy
+  // historia tekstur cos juz zawiera.
+  const dayTextureSection = buildDayTextureSection(state);
+  if (dayTextureSection) {
+    main.appendChild(dayTextureSection);
   }
 
   // 5. Teaser kolejnego tygodnia.
@@ -588,6 +599,32 @@ function buildRelationshipModelSection(state) {
   const heading = document.createElement("p");
   heading.className = "oos-weekly-summary__section-heading";
   heading.textContent = "Ustalenia relacji";
+  section.appendChild(heading);
+
+  const body = document.createElement("p");
+  body.className = "oos-weekly-summary__consequence-item";
+  body.textContent = line;
+  section.appendChild(body);
+
+  return section;
+}
+
+/**
+ * v0.57: Daily Texture & Pacing Director. Ta sama konwencja wizualna
+ * co pozostale male sekcje powyzej (zero nowego CSS). Zwraca null, gdy
+ * historia tekstur jest jeszcze pusta (pierwszy tydzien gry przed
+ * pierwszym pelnym cyklem).
+ */
+function buildDayTextureSection(state) {
+  const line = buildWeeklyTextureSummary(state);
+  if (!line) return null;
+
+  const section = document.createElement("section");
+  section.className = "oos-weekly-summary__section oos-weekly-summary__section--consequences";
+
+  const heading = document.createElement("p");
+  heading.className = "oos-weekly-summary__section-heading";
+  heading.textContent = "Rytm tygodnia";
   section.appendChild(heading);
 
   const body = document.createElement("p");

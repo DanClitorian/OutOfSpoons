@@ -22,7 +22,7 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=560";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=570";
 import { recordPatternFromChoice } from "../../systems/patternSystem.js?v=300";
 import { buildPatternPressureReflection } from "../../systems/patternPressureSystem.js?v=300";
 import { buildRelationshipScarReflection } from "../../systems/relationshipScarsSystem.js?v=300";

@@ -59,7 +59,11 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=560";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=570";
+// v0.57: Daily Texture & Pacing Director — WYLACZNIE dopisek do
+// istniejacej linii "Stawka dnia" (buildMorningFrameLine nizej).
+// Zero nowej karteczki, zero nowego sygnalu.
+import { buildDayTextureFrameLine } from "../../systems/dayTextureSystem.js?v=570";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,
@@ -818,8 +822,18 @@ function buildMorningNarrativeSection(state) {
 // stary zapis przed pierwszym przeliczeniem), spokojny fallback.
 function buildMorningFrameLine(state) {
   const stakesLine = buildMorningStakesLine(state);
+  const textureLine = buildDayTextureFrameLine(state);
+
+  if (stakesLine && textureLine) {
+    return `${stakesLine} ${textureLine}`;
+  }
+
   if (stakesLine) {
     return stakesLine;
+  }
+
+  if (textureLine) {
+    return textureLine;
   }
 
   return "Nowy dzień się zaczyna. Zdecyduj, czym zajmiesz się najpierw.";

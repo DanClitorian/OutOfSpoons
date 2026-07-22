@@ -17,6 +17,11 @@ import { getNarrativeMemoryWeightTags } from "./narrativeMemorySystem.js?v=560";
 // flag: low-clarity/poly-open/monogamy/recent-friction) — zero
 // nowej mechaniki, tylko wplyw na losowanie.
 import { getRelationshipModelWeightTags } from "./relationshipModelConsequenceSystem.js?v=560";
+// v0.57: Daily Texture & Pacing Director. Lekki odczyt gotowej listy
+// weightTags DZISIEJSZEJ tekstury (juz rozwiazanej przez
+// dayAgendaSystem.js#ensureDailyAgenda, ktore wola sie ZAWSZE przed
+// tym systemem w tym samym cyklu budowania agendy).
+import { getDayTextureWeightTags } from "./dayTextureSystem.js?v=570";
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
@@ -237,6 +242,16 @@ function computeEventWeight(event, state) {
 
   if (modelFlags.has("recent-friction") && (tags.includes("repair") || allTags.includes("communication"))) {
     weight += 3;
+  }
+
+  // v0.57: Daily Texture & Pacing Director. Jedna DELIKATNA regula
+  // (+2, nigdy forced spawn) — kazdy event, ktorego weightTags/tags
+  // przecina sie z teksturami dzisiejszego dnia, dostaje bonus. Zero
+  // nowych tagow: getDayTextureWeightTags zwraca WYLACZNIE istniejace
+  // wartosci (low-spoons/high-fatigue/obligation/work-pressure/...).
+  const textureTags = getDayTextureWeightTags(state);
+  if (textureTags.length > 0 && textureTags.some((t) => allTags.includes(t))) {
+    weight += 2;
   }
 
   if (tags.includes("critical-event-approaching")) {

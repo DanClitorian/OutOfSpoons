@@ -31,12 +31,16 @@
 // v0.56: Relationship Model Consequence Pass. Cache-bust uiManager
 // (podbil cala galaz eventSystem/eventWeightSystem/narrativeMemory/
 // ekranow + versionBadge).
-import { initUI, showScreen } from "./ui/uiManager.js?v=560";
+// v0.57: Daily Texture & Pacing Director. Cache-bust uiManager
+// (podbil cala galaz agendy/eventWeight/gameScreen/weeklySummary +
+// versionBadge) i devTools (nowe helpery showDayTexture/setDayTexture/
+// clearDayTextureHistory).
+import { initUI, showScreen } from "./ui/uiManager.js?v=570";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
 // w normalnym gameplayu, dopóki nie zostanie ręcznie wywołane z konsoli.
-import "./dev/devTools.js?v=490";
+import "./dev/devTools.js?v=570";
 
 document.addEventListener("DOMContentLoaded", () => {
   initUI("app");

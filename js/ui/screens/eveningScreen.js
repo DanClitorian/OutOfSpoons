@@ -33,7 +33,7 @@ import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 // v0.49: cache-bust — advanceToNextDay wykonuje teraz pełny cykl
 // fatigue (rozliczenie końca dnia + nocna regeneracja minus dług).
-import { advanceToNextDay } from "../../systems/dayCycle.js?v=560";
+import { advanceToNextDay } from "../../systems/dayCycle.js?v=570";
 import { saveGame } from "../../state/saveManager.js";
 import {
   getEveningRecoveryOptions,
