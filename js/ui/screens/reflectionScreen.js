@@ -32,7 +32,7 @@
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=570";
+import { hasRemainingAgendaItems } from "../../systems/dayAgendaSystem.js?v=601";
 import {
   createGameShell,
   createTopBar,
@@ -41,7 +41,7 @@ import {
   createCtaButton
 } from "../oosLayout.js?v=530";
 // v0.59: cała selekcja/priorytetyzacja konsekwencji żyje tu.
-import { buildReflectionSummary, buildReflectionClosingLine } from "../../systems/reflectionSummarySystem.js?v=590";
+import { buildReflectionSummary, buildReflectionClosingLine } from "../../systems/reflectionSummarySystem.js?v=601";
 
 export function renderReflectionScreen(container, data) {
   const state = getState();

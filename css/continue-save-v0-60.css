@@ -1,0 +1,94 @@
+/* continue-save-v0-60.css
+ *
+ * v0.60: Continue Run UX & Save Reliability.
+ *
+ * mainMenuScreen.js nigdy nie miało realnego CSS (dawny ".main-menu"
+ * nie odpowiadał żadnej regule w style.css — martwe dopasowanie).
+ * Ten plik daje pierwszą prawdziwą, namespaced warstwę wizualną karcie
+ * kontynuacji: paper-first tokeny z v0.48 (--vi-*), zero gradientów,
+ * zero glow, zero obrazków. Reszta menu (tytuł/podtytuł/przycisk Nowa
+ * gra) zostaje przy istniejących klasach globalnych (.subtitle,
+ * .primary-button) — ten plik dotyka WYŁĄCZNIE .oos-continue-card*.
+ */
+
+.oos-main-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.oos-continue-card {
+  margin-top: 10px;
+  padding: 16px 18px 18px;
+  background: var(--vi-paper, #FAF5EA);
+  background-image: var(--vi-texture);
+  border: 1px solid var(--vi-line, rgba(74, 69, 60, 0.22));
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(63, 56, 48, 0.08), 0 6px 16px rgba(63, 56, 48, 0.06);
+}
+
+.oos-continue-card--empty {
+  background: transparent;
+  background-image: none;
+  border: 1px dashed var(--vi-line, rgba(74, 69, 60, 0.22));
+  box-shadow: none;
+}
+
+.oos-continue-card--empty p {
+  margin: 0 0 6px;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-continue-card--empty p:first-child {
+  color: var(--vi-ink, #3F3830);
+  font-weight: 600;
+}
+
+.oos-continue-card--broken {
+  border-color: rgba(168, 111, 104, 0.5);
+  background: #F1E5E1;
+}
+
+.oos-continue-card--broken p {
+  margin: 0;
+  color: #7A4640;
+  line-height: 1.55;
+}
+
+.oos-continue-card__eyebrow {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-continue-card__headline {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--vi-ink, #3F3830);
+}
+
+.oos-continue-card__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.oos-continue-card__line {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--vi-ink-soft, #6F6255);
+}
+
+.oos-continue-card__button {
+  width: 100%;
+}
+
+.oos-continue-card__muted {
+  font-size: 13.5px;
+}

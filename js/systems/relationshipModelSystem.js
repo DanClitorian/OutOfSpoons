@@ -88,12 +88,15 @@ const MORNING_LINES_LOW_CLARITY = [
   "To, co wolno, zależy dziś od tego, czy ktoś odważy się zapytać."
 ];
 
+// v0.60.1: hotfix — poprzednie linie mówiły O modelu ("Ten model
+// opiera się na...") zamiast być zdaniem Z gry. Usunięte słowa
+// "model"/"typ relacji" — to ma brzmieć jak myśl, nie jak
+// dokumentacja.
 const AGENDA_LINES = {
-  monogamy: "Ten model opiera się na wyłączności. Napięcie zaczyna się tam, gdzie zaczyna się ukrywanie.",
-  polyamory:
-    "Ten model opiera się na jawności i ustaleniach. Sama fascynacja nie jest problemem. Sekret może nim być.",
-  open: "Ten model rozdziela część wolności od części zobowiązań. Granice nadal istnieją.",
-  ambiguous: "Ten model nie jest do końca nazwany. Domysły będą kosztować."
+  monogamy: "Tu ciężar zaczyna się nie od fascynacji, tylko od tego, co zostaje przed kimś ukryte.",
+  polyamory: "Tu nie sama fascynacja robi ciężar. Ciężar robi cisza wokół niej.",
+  open: "Wolność tu nie znaczy brak granic. Znaczy tylko, że są inaczej rozłożone.",
+  ambiguous: "Nic tu nie zostało do końca nazwane. Domysły i tak swoje kosztują."
 };
 
 // --------------------------------------------------------------------

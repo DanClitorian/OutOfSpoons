@@ -21,8 +21,8 @@
 // odczytu nieustawionego stanu (maskingDebt jest już ensure'owany
 // przez pierwszy render poranka, zanim gracz w ogóle otworzy agendę).
 
-import { getCurrentWeeklyChallenge, getWeeklyChallengeCountdown } from "./weeklyChallengeSystem.js?v=300";
-import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=305";
+import { getCurrentWeeklyChallenge, getWeeklyChallengeCountdown } from "./weeklyChallengeSystem.js?v=601";
+import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=601";
 import { getWorkPressureContext } from "./workPressureSystem.js?v=300";
 import { getMetamourContext } from "./metamourSystem.js?v=300";
 import { hasRepairableScars } from "./relationshipRepairSystem.js?v=300";

@@ -403,6 +403,72 @@ function formatRequirement(requirement) {
   return `${label} ${symbol} ${requirement.value}`;
 }
 
+// v0.60.1: hotfix — formatCriticalEventCondition() powyżej generuje
+// tekst matematyczny ("Zaufanie ≥ 65 i Spoons ≥ 5 i Frustracja ≤ 55"),
+// który NIGDY nie powinien trafiać przed gracza (patrz
+// weeklySummaryScreen.js, naprawione w tym samym hotfixie). Warunek
+// nadal istnieje i działa pod spodem (checkEventSuccess/checkRequirement
+// czytają event.condition.requirements bezpośrednio, zupełnie
+// niezależnie od tego formattera) — formatCriticalEventCondition/
+// OPERATOR_SYMBOLS zostają NIETKNIĘTE. To WYŁĄCZNIE dodatkowa,
+// narracyjna alternatywa bez liczb i operatorów.
+//
+// Ta sama trójka statów co w weeklyChallengeSystem.js (trust >=,
+// frustration <=, spoons >=) — ton nieco cięższy, bo to Wielki Test,
+// nie zwykły tydzień.
+const NARRATIVE_HINTS_BY_STAT_SET = {
+  trust: [
+    "To będzie testem zaufania bardziej niż czegokolwiek innego.",
+    "Liczy się dziś to, ile wiary zostało w tej relacji."
+  ],
+  frustration: [
+    "To przetrwa tylko, jeśli napięcie nie przejmie całej sceny.",
+    "Chodzi o to, żeby nie wejść w to już podpalonym/ą."
+  ],
+  spoons: [
+    "To będzie wymagało realnej rezerwy sił, nie tylko dobrych chęci.",
+    "Bez zapasu w ciele ten moment zaboli bardziej, niż musi."
+  ],
+  "frustration,trust": [
+    "To przetrwa tylko wtedy, gdy zaufanie przeważy nad napięciem.",
+    "Liczy się, czy zostanie więcej spokoju niż pretensji."
+  ],
+  "spoons,trust": [
+    "Potrzeba na to i sił, i zaufania — jedno bez drugiego nie wystarczy.",
+    "To zada pytanie o rezerwę: ciała i relacji naraz."
+  ],
+  "frustration,spoons": [
+    "To sprawdzi, czy starczy sił, zanim napięcie weźmie górę.",
+    "Bez oddechu i bez spokoju to będzie ciężej, niż powinno."
+  ],
+  "frustration,spoons,trust": [
+    "To sprawdzi wszystko naraz: siłę, zaufanie i to, ile jeszcze da się znieść.",
+    "Nie ma tu jednej rzeczy do ocalenia. Jest kilka naraz, i żadna nie jest zbędna."
+  ]
+};
+
+const DEFAULT_NARRATIVE_HINT = "Coś w tym momencie wymaga uważności.";
+
+function pickRandom(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+/**
+ * v0.60.1: Zamiennik formatCriticalEventCondition() do UI gracza. Zero
+ * liczb, zero operatorów, zero słowa "Warunek". Zawsze zwraca jedno
+ * zdanie.
+ */
+export function buildCriticalEventNarrativeHint(event) {
+  if (!event || !event.condition || !Array.isArray(event.condition.requirements)) {
+    return DEFAULT_NARRATIVE_HINT;
+  }
+
+  const stats = Array.from(new Set(event.condition.requirements.map((r) => r.stat))).sort();
+  const key = stats.join(",");
+  const pool = NARRATIVE_HINTS_BY_STAT_SET[key];
+  return pool ? pickRandom(pool) : DEFAULT_NARRATIVE_HINT;
+}
+
 /**
  * Buduje gotowy do wyświetlenia zestaw danych dla weekly summary:
  * wynik ostatnio ocenionego Wielkiego Testu (jeśli jest) + nadchodzące
@@ -416,6 +482,8 @@ export function buildCriticalEventSummary(state) {
     lastResult: criticalState.lastResult,
     upcoming,
     upcomingConditionText: upcoming ? formatCriticalEventCondition(upcoming) : "",
+    // v0.60.1: wersja dla UI gracza — zero liczb/operatorów.
+    upcomingNarrativeHint: upcoming ? buildCriticalEventNarrativeHint(upcoming) : "",
     upcomingDaysLeft: upcoming ? getCriticalEventCountdown(state) : null
   };
 }

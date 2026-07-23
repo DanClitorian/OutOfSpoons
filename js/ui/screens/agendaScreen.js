@@ -56,11 +56,11 @@ import {
   getAvailableAgendaItems,
   selectAgendaItem,
   getAgendaSlotLabel
-} from "../../systems/dayAgendaSystem.js?v=570";
+} from "../../systems/dayAgendaSystem.js?v=601";
 import {
   ensureWeeklyChallengeState,
   getCurrentWeeklyChallenge,
-  formatWeeklyChallengeCondition
+  buildWeeklyChallengeNarrativeHint
 } from "../../systems/weeklyChallengeSystem.js";
 import {
   createGameShell,
@@ -70,7 +70,7 @@ import {
   createNarrativeStrip,
   createDecisionCard
 } from "../oosLayout.js?v=530";
-import { buildAgendaStakesBadge } from "../../systems/dailyStakesSystem.js?v=320";
+import { buildAgendaStakesBadge } from "../../systems/dailyStakesSystem.js?v=601";
 import { ensureRelationshipModelState, buildRelationshipModelAgendaLine } from "../../systems/relationshipModelSystem.js?v=340";
 
 const SLOT_ICONS = {
@@ -156,8 +156,8 @@ function buildAgendaNarrative(state, availableItems) {
 
   let text = base;
   if (challenge) {
-    const condition = formatWeeklyChallengeCondition(challenge).replace(/ i /g, " · ");
-    text = `${base} W tle wisi: ${challenge.title}. Warunek: ${condition}.`;
+    const hint = buildWeeklyChallengeNarrativeHint(challenge);
+    text = `${base} W tle wisi: ${challenge.title}. ${hint}`;
   }
 
   const hasOpenRelationshipSlot = Array.isArray(availableItems) && availableItems.some((item) => item.slot === "relationship");

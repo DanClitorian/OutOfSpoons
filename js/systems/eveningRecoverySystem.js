@@ -32,8 +32,8 @@
 // patternSystem.js).
 
 import { eveningRecoveryOptions } from "../data/eveningRecoveryData.js?v=510";
-import { getCurrentWeeklyChallenge, getWeeklyChallengeCountdown } from "./weeklyChallengeSystem.js?v=300";
-import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=305";
+import { getCurrentWeeklyChallenge, getWeeklyChallengeCountdown } from "./weeklyChallengeSystem.js?v=601";
+import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=601";
 
 // Ile opcji pokazuje wieczór. Pula ma 17 pozycji — gracz widzi wycinek
 // dobrany do dnia, nigdy całość.

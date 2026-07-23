@@ -35,7 +35,7 @@ import { buildRelationshipRepairReflection } from "./relationshipRepairSystem.js
 import { buildReflectionStaticLine } from "./staticSystem.js?v=300";
 import { buildMetamourReflection } from "./metamourSystem.js?v=300";
 import { buildWorkReflection } from "./workPressureSystem.js?v=300";
-import { buildReflectionStakesLine } from "./dailyStakesSystem.js?v=320";
+import { buildReflectionStakesLine } from "./dailyStakesSystem.js?v=601";
 import { buildReflectionMaskingDebtLine } from "./maskingDebtSystem.js?v=330";
 import { buildReflectionConflictLine } from "./conflictEscalationSystem.js?v=350";
 import { buildReflectionSecrecyLine } from "./secrecyConsequenceSystem.js?v=380";

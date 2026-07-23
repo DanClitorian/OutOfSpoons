@@ -40,12 +40,16 @@
 // (bump monthlyLoopSystem.js).
 // v0.59: Reflection Screen Game Feel & Consequence Clarity. Cache-bust
 // uiManager (podbil reflectionScreen.js + versionBadge).
-import { initUI, showScreen } from "./ui/uiManager.js?v=590";
+// v0.60: Continue Run UX & Save Reliability. Cache-bust uiManager
+// (podbil mainMenuScreen.js + versionBadge).
+// v0.60.1: hotfix — usuniete matematyczne "Warunek: ..." z UI. Cache-bust
+// uiManager (podbil cala galaz weeklyChallenge/criticalEvent + ekranow) i devTools.
+import { initUI, showScreen } from "./ui/uiManager.js?v=601";
 // v0.20.1: DEV-only helpery (window.oosDev) do testowania Weekly Stakes /
 // Wielkiego Testu bez ręcznego przeklikiwania 7/28 dni. Sam import nic
 // nie robi poza podpięciem funkcji pod window.oosDev — nic nie zmienia
 // w normalnym gameplayu, dopóki nie zostanie ręcznie wywołane z konsoli.
-import "./dev/devTools.js?v=580";
+import "./dev/devTools.js?v=601";
 
 document.addEventListener("DOMContentLoaded", () => {
   initUI("app");

@@ -30,8 +30,8 @@ import { modifySpoons } from "./spoonsSystem.js";
 import { addFatigueDebt, ensureFatigueState } from "./fatigueSystem.js?v=490";
 import { modifyTrust, modifyFrustration } from "./npcSystem.js";
 
-import { getWeightedEventForDay } from "./eventWeightSystem.js?v=570";
-import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=570";
+import { getWeightedEventForDay } from "./eventWeightSystem.js?v=601";
+import { completeCurrentAgendaItem } from "./dayAgendaSystem.js?v=601";
 import { applyPatternPressureToChoice } from "./patternPressureSystem.js?v=300";
 import { applyRelationshipScarsToChoice } from "./relationshipScarsSystem.js?v=300";
 import { applyRepairFromChoice } from "./relationshipRepairSystem.js?v=300";

@@ -17,7 +17,7 @@
 
 import { getState } from "../../state/gameState.js";
 import { saveGame } from "../../state/saveManager.js";
-import { showScreen } from "../uiManager.js?v=590";
+import { showScreen } from "../uiManager.js?v=601";
 import { createTopBar } from "../oosLayout.js?v=530";
 import { consumePendingMonthSummary, getLatestMonthSummary, advanceToNextMonth } from "../../systems/monthlyLoopSystem.js?v=580";
 

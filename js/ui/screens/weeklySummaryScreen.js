@@ -42,13 +42,13 @@ import {
   evaluateWeeklyChallenge,
   generateNextWeekChallenge,
   buildWeeklyChallengeSummary
-} from "../../systems/weeklyChallengeSystem.js?v=300";
+} from "../../systems/weeklyChallengeSystem.js?v=601";
 import {
   ensureCriticalEventState,
   evaluateCriticalEvent,
   generateNextCriticalEvent,
   buildCriticalEventSummary
-} from "../../systems/criticalEventSystem.js?v=305";
+} from "../../systems/criticalEventSystem.js?v=601";
 import {
   ensurePatternState,
   recordPatternFromWeeklyResult,
@@ -82,7 +82,7 @@ import { buildRelationshipModelWeeklyLine } from "../../systems/relationshipMode
 // v0.57: Daily Texture & Pacing Director — maksymalnie 1-2 zdania o
 // rytmie tygodnia, budowane z state.dayTexture.history (bez osobnego
 // summary state, bez tabeli, bez id tekstur).
-import { buildWeeklyTextureSummary } from "../../systems/dayTextureSystem.js?v=570";
+import { buildWeeklyTextureSummary } from "../../systems/dayTextureSystem.js?v=601";
 
 export function renderWeeklySummaryScreen(container) {
   const state = getState();
@@ -1033,7 +1033,7 @@ function buildWeeklyStakeCard(challengeSummary, summary, state) {
     card.appendChild(buildUpcomingBlock({
       eyebrowText: "Stawka nadchodzącego tygodnia",
       titleText: challengeSummary.upcoming.title,
-      conditionText: challengeSummary.upcomingConditionText,
+      conditionText: challengeSummary.upcomingNarrativeHint,
       daysLeftText: `Pozostało: ${challengeSummary.upcomingDaysLeft} dni`
     }));
   }
@@ -1105,11 +1105,13 @@ function buildCriticalEventCard(criticalSummary, state) {
   }
 
   if (criticalSummary.upcoming) {
-    // v0.20.1, Część D (przeniesione bez zmian): separator "·" zamiast
-    // " i " TYLKO w tym miejscu (Wielki Test w weekly summary) — sam
-    // formatter w criticalEventSystem.js i Weekly Stakes dalej używają
-    // pełnego " i ".
-    const compactCondition = criticalSummary.upcomingConditionText.replace(/ i /g, " · ");
+    // v0.60.1: hotfix — compactCondition dawniej skracal MATEMATYCZNY
+    // tekst warunku ("Zaufanie >= 65 i Spoons >= 5" -> "... · ...").
+    // Teraz zrodlem jest juz czysto narracyjny upcomingNarrativeHint
+    // (zero liczb/operatorow) — separator " i " tu juz nie wystepuje,
+    // wiec replace jest no-opem, ale zostawiony dla bezpieczenstwa,
+    // gdyby ktos kiedys dopisal hint z takim slowem.
+    const compactCondition = criticalSummary.upcomingNarrativeHint.replace(/ i /g, " · ");
 
     const upcomingBlock = buildUpcomingBlock({
       eyebrowText: "Na horyzoncie",
@@ -1202,7 +1204,7 @@ function buildUpcomingBlock({ eyebrowText, titleText, conditionText, daysLeftTex
 
   const condition = document.createElement("p");
   condition.className = "oos-weekly-summary__upcoming-condition";
-  condition.textContent = `Warunek: ${conditionText}`;
+  condition.textContent = conditionText;
   wrapper.appendChild(condition);
 
   const countdown = document.createElement("p");
@@ -1228,6 +1230,14 @@ function buildFooter(state) {
   continueButton.className = "primary-button";
   continueButton.textContent = "Wejdź w kolejny tydzień";
   continueButton.addEventListener("click", () => {
+    // v0.60.1: Continue Run UX & Save Reliability — zapisuje, dla
+    // ktorego completedDay gracz realnie wyszedl z tego ekranu, zeby
+    // getResumeScreenName (savePreviewSystem.js) po zapisie+reload nie
+    // wracalo do WLASNIE ZAMKNIETEGO weekly summary. state.day sie tu
+    // NIE zmienia (ten ekran nie wola advanceToNextDay) — completedDay
+    // to dokladnie ten sam tydzien, ktory wlasnie pokazalismy.
+    state.continueUX = state.continueUX || {};
+    state.continueUX.lastExitedWeeklySummaryCompletedDay = state.day - 1;
     saveGame();
     showScreen(hasPendingMonthSummary(state) ? "monthSummary" : "game");
   });

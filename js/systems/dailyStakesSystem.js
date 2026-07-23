@@ -17,8 +17,8 @@
 // Ten moduł TYLKO CZYTA z pozostałych systemów — nie modyfikuje ich
 // stanu, nie wywołuje żadnych ich funkcji "roll"/"apply".
 
-import { getCurrentWeeklyChallenge, getWeeklyChallengeCountdown } from "./weeklyChallengeSystem.js?v=300";
-import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=305";
+import { getCurrentWeeklyChallenge, getWeeklyChallengeCountdown } from "./weeklyChallengeSystem.js?v=601";
+import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=601";
 import { getStaticState } from "./staticSystem.js?v=300";
 import { getWorkPressureContext } from "./workPressureSystem.js?v=300";
 import { getMetamourContext } from "./metamourSystem.js?v=300";

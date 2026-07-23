@@ -59,23 +59,23 @@
 
 import { showScreen } from "../uiManager.js";
 import { getState } from "../../state/gameState.js";
-import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=570";
+import { ensureDailyAgenda } from "../../systems/dayAgendaSystem.js?v=601";
 // v0.57: Daily Texture & Pacing Director — WYLACZNIE dopisek do
 // istniejacej linii "Stawka dnia" (buildMorningFrameLine nizej).
 // Zero nowej karteczki, zero nowego sygnalu.
-import { buildDayTextureFrameLine } from "../../systems/dayTextureSystem.js?v=570";
+import { buildDayTextureFrameLine } from "../../systems/dayTextureSystem.js?v=601";
 import { saveGame } from "../../state/saveManager.js";
 import {
   ensureWeeklyChallengeState,
   getCurrentWeeklyChallenge,
   getWeeklyChallengeCountdown
-} from "../../systems/weeklyChallengeSystem.js?v=300";
+} from "../../systems/weeklyChallengeSystem.js?v=601";
 import {
   ensureCriticalEventState,
   generateNextCriticalEvent,
   getCurrentCriticalEvent,
   getCriticalEventCountdown
-} from "../../systems/criticalEventSystem.js?v=305";
+} from "../../systems/criticalEventSystem.js?v=601";
 import {
   ensurePatternState,
   getLatestPatternEcho
@@ -120,7 +120,7 @@ import {
 
 import { ensureMetamourState, rollDailyMetamourSignal, buildMorningMetamourLine } from "../../systems/metamourSystem.js?v=300";
 import { ensureWorkPressureState, rollDailyWorkSignal, buildMorningWorkLine, getWorkPressureContext } from "../../systems/workPressureSystem.js?v=300";
-import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=320";
+import { ensureDailyStakesState, calculateDailyStakes, buildMorningStakesLine } from "../../systems/dailyStakesSystem.js?v=601";
 import { ensureAchievementState, evaluateAchievements, buildMorningAchievementLine } from "../../systems/achievementSystem.js?v=400";
 // v0.52: Weekly Stakes Tracking — czyste odczyty śladu tygodnia
 // (linia w bloku "Na horyzoncie" + warunkowa karteczka sygnału).

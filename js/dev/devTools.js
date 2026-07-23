@@ -59,12 +59,12 @@
 import { getState } from "../state/gameState.js";
 import { saveGame } from "../state/saveManager.js";
 import { showScreen } from "../ui/uiManager.js?v=490";
-import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js";
+import { getCurrentWeeklyChallenge } from "../systems/weeklyChallengeSystem.js?v=601";
 // v0.49: Fatigue Economy Reconnection — helpery showFatigue /
 // setFatigueHigh / clearFatigue (patrz definicje przy helperach
 // Static, ta sama konwencja requireActiveState + saveGame).
 import { ensureFatigueState, getFatigueLabel } from "../systems/fatigueSystem.js?v=490";
-import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=305";
+import { getCurrentCriticalEvent } from "../systems/criticalEventSystem.js?v=601";
 import {
   ensurePartnerCapacityState,
   getPartnerCapacity,
@@ -82,9 +82,9 @@ import {
 import { getMetamourDebugSummary, setMetamourTensionHigh as setMetamourTensionHighState, clearMetamourSignal as clearMetamourSignalState } from "../systems/metamourSystem.js?v=300";
 import { getWorkPressureDebugSummary, setWorkPressureHigh as setWorkPressureHighState, clearWorkSignal as clearWorkSignalState } from "../systems/workPressureSystem.js?v=300";
 import { getMonthlyLoopDebugSummary, forceMonthSummaryPending } from "../systems/monthlyLoopSystem.js?v=580";
-import { ensureDailyStakesState, calculateDailyStakes, getDailyStakesDebugSummary } from "../systems/dailyStakesSystem.js?v=320";
+import { ensureDailyStakesState, calculateDailyStakes, getDailyStakesDebugSummary } from "../systems/dailyStakesSystem.js?v=601";
 // v0.57: Daily Texture & Pacing Director.
-import { getDayTextureDebugSummary, forceDayTexture, clearDayTextureHistory as clearDayTextureHistoryState } from "../systems/dayTextureSystem.js?v=570";
+import { getDayTextureDebugSummary, forceDayTexture, clearDayTextureHistory as clearDayTextureHistoryState } from "../systems/dayTextureSystem.js?v=601";
 import {
   ensureMaskingDebtState,
   getMaskingDebtDebugSummary

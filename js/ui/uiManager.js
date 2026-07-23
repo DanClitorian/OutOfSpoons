@@ -96,7 +96,9 @@
 // weeklySummaryScreen.js (?v=470) - tylko ten ekran zmienil sie w
 // v0.47 (nowa prezentacja; mechanika tygodnia nietknieta). Pozostale
 // ekrany zostaja przy swoich dotychczasowych query.
-import { renderMainMenu } from "./screens/mainMenuScreen.js";
+// v0.60: Continue Run UX & Save Reliability — mainMenuScreen.js
+// przepisany (karta kontynuacji, savePreviewSystem.js).
+import { renderMainMenu } from "./screens/mainMenuScreen.js?v=601";
 // v0.49: Fatigue Economy Reconnection. Podbite importy 3 ekranów,
 // ktore zmienily WLASNE importy dayCycle.js (eventScreen,
 // eveningScreen, characterCreatorScreen) oraz versionBadge.js (nowy
@@ -113,7 +115,10 @@ import { renderMainMenu } from "./screens/mainMenuScreen.js";
 // dayTextureSystem.js wpiety w dayAgendaSystem/eventWeightSystem/
 // gameScreen/weeklySummaryScreen -> podbita cala galaz importow az
 // do index.html.
-import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js?v=570";
+// v0.60.1: hotfix — usuniete matematyczne "Warunek: ..." z UI
+// (weeklyChallengeSystem/criticalEventSystem/relationshipModelSystem).
+// Kaskada cache-bustu dotknela prawie caly graf importow.
+import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.js?v=601";
 // v0.50: Morning Signal Cards. Podbity WYLACZNIE import
 // gameScreen.js (?v=500) - nowa prezentacja poranka (linia ramujaca
 // + karteczki sygnalow); daily rolls i pozostale ekrany NIETKNIETE.
@@ -135,29 +140,29 @@ import { renderCharacterCreatorScreen } from "./screens/characterCreatorScreen.j
 // wpiety w eventSystem/dayCycle/eventWeightSystem/gameScreen/
 // reflectionScreen/weeklySummaryScreen -> podbita cala galaz importow
 // az do index.html.
-import { renderGameScreen } from "./screens/gameScreen.js?v=570";
-import { renderEventScreen } from "./screens/eventScreen.js?v=570";
+import { renderGameScreen } from "./screens/gameScreen.js?v=601";
+import { renderEventScreen } from "./screens/eventScreen.js?v=601";
 // v0.59: Reflection Screen Game Feel & Consequence Clarity — nowy
 // system reflectionSummarySystem.js + calkowicie przepisany render
 // reflectionScreen.js.
-import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=590";
+import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=601";
 // v0.51: Contextual Evening Recovery. Podbity WYLACZNIE import
 // eveningScreen.js (?v=510) - kontekstowy wieczor; pozostale ekrany
 // (w tym poranek v0.50) NIETKNIETE.
-import { renderEveningScreen } from "./screens/eveningScreen.js?v=570";
+import { renderEveningScreen } from "./screens/eveningScreen.js?v=601";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=580";
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=601";
 // v0.48: Visual Identity Redesign. Podbity WYLACZNIE import
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=590";
-import { renderAgendaScreen } from "./screens/agendaScreen.js?v=570";
+import { appendVersionBadge } from "./versionBadge.js?v=601";
+import { renderAgendaScreen } from "./screens/agendaScreen.js?v=601";
 // v0.58: Month End Payoff & Run Continuity. monthSummaryScreen.js
 // przebudowany (narracyjna struktura zamiast tabeli liczb) ->
 // podbite. monthlyLoopSystem.js tez zmienil tresc, ale weeklySummaryScreen
 // juz jest bumpowany osobno (patrz jego wlasny import ?v=580).
-import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=580";
+import { renderMonthSummaryScreen } from "./screens/monthSummaryScreen.js?v=601";
 import { renderRelationshipEndScreen } from "./screens/relationshipEndScreen.js?v=420";
 import { renderAchievementsScreen } from "./screens/achievementsScreen.js?v=410";
 import { renderSoloRecoveryScreen } from "./screens/soloRecoveryScreen.js?v=430";

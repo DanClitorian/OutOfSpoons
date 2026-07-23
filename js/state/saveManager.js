@@ -77,6 +77,42 @@ export function loadGame() {
 }
 
 /**
+ * v0.60: Continue Run UX & Save Reliability. Wczytuje zapis TYLKO do
+ * podglądu (menu główne) — parsuje i sprawdza wersję dokładnie jak
+ * loadGame(), ale NIE woła setState(), więc nie aktywuje zapisu jako
+ * bieżącej gry. Bezpieczne do wywołania przy każdym renderze menu,
+ * nawet zanim gracz zdecyduje "Kontynuuj" czy "Nowa gra".
+ */
+export function inspectSavedGame() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    console.warn("Zapis jest uszkodzony i nie mógł zostać odczytany (podgląd):", error);
+    return null;
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    return null;
+  }
+
+  if (parsed.saveVersion !== SUPPORTED_SAVE_VERSION) {
+    console.warn(
+      `Podgląd: niekompatybilna wersja zapisu (${parsed.saveVersion}). ` +
+      `Ta wersja gry obsługuje zapisy w wersji ${SUPPORTED_SAVE_VERSION}.`
+    );
+    return null;
+  }
+
+  return parsed;
+}
+
+/**
  * Usuwa zapisany stan gry (przydatne np. do testowania).
  */
 export function clearSavedGame() {

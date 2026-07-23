@@ -474,6 +474,75 @@ function formatRequirement(requirement) {
   return `${label} ${symbol} ${requirement.value}`;
 }
 
+// v0.60.1: hotfix — formatWeeklyChallengeCondition() powyżej generuje
+// tekst matematyczny ("Zaufanie ≥ 60 i Frustracja ≤ 45"), który NIGDY
+// nie powinien trafiać przed gracza (patrz agendaScreen.js i
+// weeklySummaryScreen.js, oba naprawione w tym samym hotfixie).
+// Warunki i tak nadal istnieją i działają pod spodem — formatRequirement/
+// formatWeeklyChallengeCondition/OPERATOR_SYMBOLS zostają NIETKNIĘTE,
+// bo mogą być gdzieś jeszcze potrzebne do logiki/debugowania. To jest
+// WYŁĄCZNIE dodatkowa, czysto narracyjna alternatywa, bez liczb i bez
+// operatorów, budowana z tego samego zestawu wymagań.
+//
+// Pula wyzwań korzysta wyłącznie z trzech statów (trust >=, frustration
+// <=, spoons >=) w różnych kombinacjach — stąd mała, skończona baza
+// fraz kluczowana zestawem statów, nie pojedynczym szablonem na
+// wyzwanie.
+const NARRATIVE_HINTS_BY_STAT_SET = {
+  trust: [
+    "To wymaga trochę więcej zaufania niż zwykle.",
+    "Ten tydzień prosi o odrobinę więcej wiary w to, że da się to udźwignąć razem."
+  ],
+  frustration: [
+    "To działa tylko wtedy, kiedy napięcie nie prowadzi całej rozmowy.",
+    "Chodzi o to, żeby nie dokładać ognia tam, gdzie już się pali."
+  ],
+  spoons: [
+    "Trzeba dziś zostawić sobie trochę rezerwy.",
+    "Ten tydzień prosi, żeby nie wydawać wszystkiego naraz."
+  ],
+  "frustration,trust": [
+    "Ten tydzień prosi o spokojniejsze tempo w relacji.",
+    "Relacja potrzebuje teraz mniej tarcia, a więcej zwykłej obecności."
+  ],
+  "spoons,trust": [
+    "To wymaga i sił, i odrobiny zaufania naraz.",
+    "Trzeba dziś zachować rezerwę — i dla siebie, i dla relacji."
+  ],
+  "frustration,spoons": [
+    "Ten tydzień prosi, żeby nie palić się z obu końców naraz.",
+    "Chodzi o to, żeby zostawić sobie i spokój, i siłę."
+  ],
+  "frustration,spoons,trust": [
+    "Ten tydzień prosi o wszystko naraz: spokój, siłę i odrobinę zaufania.",
+    "Nie chodzi o wielki gest. Chodzi o to, żeby nic nie puściło naraz."
+  ]
+};
+
+const DEFAULT_NARRATIVE_HINT = "Coś w tym tygodniu prosi o uważność.";
+
+function pickRandom(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+/**
+ * v0.60.1: Zamiennik formatWeeklyChallengeCondition() do UI gracza.
+ * Zero liczb, zero operatorów, zero słowa "Warunek". Zawsze zwraca
+ * jedno zdanie (nigdy pustego stringa, w przeciwieństwie do formattera
+ * matematycznego) — bezpieczny fallback, gdyby jakiś przyszły szablon
+ * użył nieznanej kombinacji statów.
+ */
+export function buildWeeklyChallengeNarrativeHint(challenge) {
+  if (!challenge || !challenge.condition || !Array.isArray(challenge.condition.requirements)) {
+    return DEFAULT_NARRATIVE_HINT;
+  }
+
+  const stats = Array.from(new Set(challenge.condition.requirements.map((r) => r.stat))).sort();
+  const key = stats.join(",");
+  const pool = NARRATIVE_HINTS_BY_STAT_SET[key];
+  return pool ? pickRandom(pool) : DEFAULT_NARRATIVE_HINT;
+}
+
 /**
  * Buduje gotowy do wyświetlenia zestaw danych dla weekly summary:
  * wynik ostatnio ocenionego wyzwania (jeśli jest) + nadchodzące
@@ -487,6 +556,10 @@ export function buildWeeklyChallengeSummary(state) {
     lastResult: weeklyState.lastResult,
     upcoming,
     upcomingConditionText: upcoming ? formatWeeklyChallengeCondition(upcoming) : "",
+    // v0.60.1: wersja dla UI gracza — zero liczb/operatorów. Zostawia
+    // upcomingConditionText nietkniete, na wypadek gdyby cos innego z
+    // niego korzystalo.
+    upcomingNarrativeHint: upcoming ? buildWeeklyChallengeNarrativeHint(upcoming) : "",
     upcomingDaysLeft: upcoming ? getWeeklyChallengeCountdown(state) : null
   };
 }

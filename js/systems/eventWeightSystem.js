@@ -8,7 +8,7 @@ import { getWorkPressureContext, hasWorkSignal } from "./workPressureSystem.js?v
 // modyfikacja criticalEventSystem.js) — potrzebne do delikatnego
 // ważenia eventów "critical-event-approaching" (patrz niżej), które
 // mają zapowiadać nadchodzący Wielki Test w codziennych obowiązkach.
-import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=305";
+import { getCurrentCriticalEvent, getCriticalEventCountdown } from "./criticalEventSystem.js?v=601";
 // v0.55: Narrative Consequence Memory. Lekki odczyt aktywnych
 // sladow (Set typow, intensity >= 2) — bez importu ciezkich
 // systemow, jedna mala, czysta funkcja odczytu.
@@ -21,7 +21,7 @@ import { getRelationshipModelWeightTags } from "./relationshipModelConsequenceSy
 // weightTags DZISIEJSZEJ tekstury (juz rozwiazanej przez
 // dayAgendaSystem.js#ensureDailyAgenda, ktore wola sie ZAWSZE przed
 // tym systemem w tym samym cyklu budowania agendy).
-import { getDayTextureWeightTags } from "./dayTextureSystem.js?v=570";
+import { getDayTextureWeightTags } from "./dayTextureSystem.js?v=601";
 export function getWeightedEventForDay(events, state, previousEventId = null) {
   try {
     const candidates = excludeImmediateRepeat(events, previousEventId);
