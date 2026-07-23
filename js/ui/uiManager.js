@@ -151,12 +151,15 @@ import { renderReflectionScreen } from "./screens/reflectionScreen.js?v=601";
 // (w tym poranek v0.50) NIETKNIETE.
 import { renderEveningScreen } from "./screens/eveningScreen.js?v=601";
 
-import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=601";
+// v0.61: Player-Facing Language Audit — weeklySummaryScreen.js
+// usunelo ostatnie surowe liczby trust/frustration/spoons z chipow,
+// karty stanu i efektu Wielkiego Testu/Stawki Tygodnia.
+import { renderWeeklySummaryScreen } from "./screens/weeklySummaryScreen.js?v=610";
 // v0.48: Visual Identity Redesign. Podbity WYLACZNIE import
 // versionBadge.js (?v=480) - versionBadge.js zmienil swoj import
 // versionData.js. Zadne ekrany nie zmienily sie w v0.48 (redesign
 // jest w 100% w CSS: css/visual-identity-v0-48.css).
-import { appendVersionBadge } from "./versionBadge.js?v=601";
+import { appendVersionBadge } from "./versionBadge.js?v=610";
 import { renderAgendaScreen } from "./screens/agendaScreen.js?v=601";
 // v0.58: Month End Payoff & Run Continuity. monthSummaryScreen.js
 // przebudowany (narracyjna struktura zamiast tabeli liczb) ->
