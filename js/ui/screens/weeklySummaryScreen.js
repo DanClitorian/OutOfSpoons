@@ -650,12 +650,12 @@ function buildConsequencesSection(state, challengeSummary, criticalSummary, domi
 
   if (challengeSummary.lastResult) {
     items.push(challengeSummary.lastResult.success
-      ? "Nowy tydzień zaczyna się z odrobinę większym zapasem sił."
-      : "Początek nowego tygodnia będzie cięższy niż zwykle.");
+      ? "+1 do maksymalnych spoons — nowy tydzień zaczyna się z odrobinę większym zapasem."
+      : "-2 spoons na starcie — początek nowego tygodnia będzie cięższy.");
   }
 
   if (criticalSummary.lastResult && criticalSummary.lastResult.effect) {
-    items.push(`Wielki Test zostawił ślad: ${describeCriticalEventEffect(criticalSummary.lastResult.success)}`);
+    items.push(`Wielki Test zostawił ślad: ${formatCriticalEventEffect(criticalSummary.lastResult.effect)}.`);
   }
 
   dominantPatterns.slice(0, 2).forEach((pattern) => {
@@ -799,33 +799,15 @@ function buildStoryCard(summary, state, dominantPatterns) {
   const chips = document.createElement("div");
   chips.className = "oos-weekly-summary__effect-chips";
 
-  chips.appendChild(createEffectChip(
-    "🥄 Łyżeczki",
-    summary.spoonsChange,
-    describeChipChange(summary.spoonsChange, "trochę większa rezerwa", "koszt odczuwalny w ciele")
-  ));
-  chips.appendChild(createEffectChip(
-    "🤝 Zaufanie",
-    summary.trustChange,
-    describeChipChange(summary.trustChange, "więcej zaufania", "zaufanie trudniej oddycha")
-  ));
+  chips.appendChild(createEffectChip("🥄 Spoons", summary.spoonsChange));
+  chips.appendChild(createEffectChip("🤝 Zaufanie", summary.trustChange));
   // Frustracja ma ODWRÓCONĄ semantykę koloru — wzrost jest złym efektem
   // (czerwony), spadek dobrym (zielony). Ta sama zasada co w
   // reflectionScreen.js (patrz oosLayout.js#createResultTile).
-  chips.appendChild(createEffectChip(
-    "🌡️ Frustracja",
-    summary.frustrationChange,
-    describeChipChange(summary.frustrationChange, "więcej napięcia", "mniej napięcia"),
-    "down"
-  ));
+  chips.appendChild(createEffectChip("🌡️ Frustracja", summary.frustrationChange, "down"));
 
   if (summary.hasFatigueData && summary.fatigueChange !== 0) {
-    chips.appendChild(createEffectChip(
-      "🌀 Przeciążenie",
-      summary.fatigueChange,
-      describeChipChange(summary.fatigueChange, "więcej zmęczenia", "trochę lżej"),
-      "down"
-    ));
+    chips.appendChild(createEffectChip("🌀 Przeciążenie", summary.fatigueChange, "down"));
   }
 
   card.appendChild(chips);
@@ -889,13 +871,7 @@ function buildPatternsBlock(patterns) {
   return wrapper;
 }
 
-// v0.61: Player-Facing Language Audit. Ten chip pokazywał dotąd
-// SUROWĄ, podpisaną liczbę (formatSigned: "+8"/"-5") — dokładnie ten
-// sam problem, który reflectionScreen.js naprawiło w v0.59, tylko
-// nigdy nie przeniesiony tutaj (ta karta jest "przeniesiona 1:1" z
-// dużo wcześniejszej wersji). `value` zostaje WYŁĄCZNIE do wyboru
-// koloru (kierunek), tekst chipu to zawsze gotowa fraza jakościowa.
-function createEffectChip(label, value, text, desirableDirection) {
+function createEffectChip(label, value, desirableDirection) {
   const direction = resolveChipDirection(value, desirableDirection);
 
   const chip = document.createElement("span");
@@ -908,21 +884,10 @@ function createEffectChip(label, value, text, desirableDirection) {
 
   const valueEl = document.createElement("span");
   valueEl.className = "oos-weekly-summary__effect-chip-value";
-  valueEl.textContent = text;
+  valueEl.textContent = formatSigned(value);
   chip.appendChild(valueEl);
 
   return chip;
-}
-
-// v0.61: fraza jakościowa zamiast liczby — bez zmiany, jaki kierunek
-// (dodatni/ujemny) chip koloruje (to nadal robi resolveChipDirection
-// na surowej wartości, tylko nigdy jej nie renderujemy).
-function describeChipChange(value, positiveWord, negativeWord) {
-  if (!value) {
-    return "bez zmian";
-  }
-  const magnitude = Math.abs(value) >= 8 ? "wyraźnie " : "";
-  return value > 0 ? `${magnitude}${positiveWord}` : `${magnitude}${negativeWord}`;
 }
 
 function resolveChipDirection(value, desirableDirection) {
@@ -952,12 +917,16 @@ function buildStateCard(summary, state) {
   const list = document.createElement("div");
   list.className = "oos-weekly-summary__stat-lines";
 
-  list.appendChild(createStatLine("Łyżeczki", `${summary.currentSpoons}/${summary.maxSpoons}`));
+  list.appendChild(createStatLine("Spoons", `${summary.currentSpoons}/${summary.maxSpoons}`));
 
-  // v0.61: Player-Facing Language Audit. Dawniej tu stały surowe
-  // "Zaufanie {n}/100" i "Frustracja {n}/100" — usunięte całkowicie.
-  // relationshipMoodLabel (poniżej) już mówi to samo jakościowo i był
-  // tu od zawsze, obok liczb, zupełnie zbędnie zdublowany.
+  if (summary.currentTrust !== null) {
+    list.appendChild(createStatLine("Zaufanie", `${summary.currentTrust}/100`));
+  }
+
+  if (summary.currentFrustration !== null) {
+    list.appendChild(createStatLine("Frustracja", `${summary.currentFrustration}/100`));
+  }
+
   if (summary.relationshipMoodLabel) {
     list.appendChild(createStatLine("Stan relacji", summary.relationshipMoodLabel));
   }
@@ -1054,8 +1023,8 @@ function buildWeeklyStakeCard(challengeSummary, summary, state) {
         ? "Relacja wytrzymała próbę."
         : "Wchodzisz w kolejny tydzień z większym napięciem.",
       effectText: challengeSummary.lastResult.success
-        ? "Rezerwa łyżeczek robi się odrobinę większa."
-        : "Tydzień zaczyna się z mniejszą rezerwą niż zwykle.",
+        ? "Nagroda: +1 do maksymalnych spoons."
+        : "Kara: -2 spoons na start tygodnia.",
       success: challengeSummary.lastResult.success
     }));
   }
@@ -1130,7 +1099,7 @@ function buildCriticalEventCard(criticalSummary, state) {
         ? `Wielki Test zaliczony: ${criticalSummary.lastResult.title}`
         : `Wielki Test niezaliczony: ${criticalSummary.lastResult.title}`,
       detailText: criticalSummary.lastResult.text || "",
-      effectText: describeCriticalEventEffect(criticalSummary.lastResult.success),
+      effectText: `Efekt: ${formatCriticalEventEffect(criticalSummary.lastResult.effect)}`,
       success: criticalSummary.lastResult.success
     }));
   }
@@ -1167,16 +1136,16 @@ function buildCriticalEventCard(criticalSummary, state) {
   return card;
 }
 
-// v0.61: Player-Facing Language Audit. Dawniej: "Zaufanie +8,
-// Frustracja -6, Spoons +2" — surowe, podpisane liczby dla trzech
-// statów naraz. effect to zawsze JEDEN z dwóch stałych obiektów
-// (SUCCESS_EFFECT/FAILURE_EFFECT w criticalEventSystem.js), więc
-// wystarczy jakościowe zdanie zależne od success — bez zaglądania w
-// liczby w ogóle.
-function describeCriticalEventEffect(success) {
-  return success
-    ? "Coś w relacji się domknęło — łatwiej dziś odetchnąć."
-    : "Coś zostało nadwyrężone. To będzie jeszcze przez chwilę czuć.";
+function formatCriticalEventEffect(effect) {
+  if (!effect) {
+    return "";
+  }
+
+  return [
+    `Zaufanie ${formatSigned(effect.trustChange)}`,
+    `Frustracja ${formatSigned(effect.frustrationChange)}`,
+    `Spoons ${formatSigned(effect.spoonsChange)}`
+  ].join(", ");
 }
 
 // UWAGA: `arcStartDay` to ISTNIEJĄCA nazwa pola w zapisanym stanie gry
